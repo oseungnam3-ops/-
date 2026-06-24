@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>목양온 - 파주목양교회 통합 교회 플랫폼</title>
+  
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="css/styles.css?v=4.0">
+  <link rel="stylesheet" href="css/mobile.css?v=4.0">
+  <link rel="stylesheet" href="css/admin.css?v=4.0">
+</head>
+<body>
+
+  <!-- 개발자 및 시뮬레이션용 상단 컨트롤바 -->
+  <div class="simulator-header">
+    <div class="simulator-title">
+      <span class="simulator-logo">목양온</span>
+      <span>시뮬레이터</span>
+    </div>
+    <div class="simulator-controls">
+      <div class="role-switcher">
+        <label for="simulator-role-select"><i class="fas fa-user-shield"></i> 역할 전환 테스트:</label>
+        <select id="simulator-role-select" class="role-select">
+          <option value="none">로그아웃 상태</option>
+          <option value="pending">가입 대기자 (pending)</option>
+          <option value="member">일반 성도 (member)</option>
+          <option value="leader">소모임 리더 (leader)</option>
+          <option value="teacher">양육 교사 (teacher)</option>
+          <option value="admin">전체 관리자 (admin)</option>
+        </select>
+      </div>
+      <button id="btn-reset-db" class="btn-reset-db"><i class="fas fa-trash-alt"></i> Mock DB 초기화</button>
+    </div>
+  </div>
+
+  <!-- 메인 애플리케이션 프레임 컨테이너 -->
+  <div class="app-container">
+    
+    <!-- 1. 모바일 앱 화면 (성도/리더/대기자용 모바일 우선 프레임) -->
+    <div class="mobile-device-frame" id="mobile-device-frame">
+      <div class="device-screen" id="mobile-device-screen">
+        <!-- SPA에 의해 콘텐츠 동적 주입 -->
+      </div>
+    </div>
+
+    <!-- 2. 데스크탑 웹 화면 (관리자 대시보드 전용 와이드 컨테이너) -->
+    <div class="web-fullscreen-container" id="web-fullscreen-container">
+      <!-- SPA에 의해 콘텐츠 동적 주입 -->
+    </div>
+
+  </div>
+
+  <!-- 공통 모달 팝업 구조 (하단 슬라이드 시트 형태) -->
+  <div class="modal-overlay" id="mobile-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="mobile-modal-title">상세 정보</h3>
+        <button class="modal-close" id="mobile-modal-close">&times;</button>
+      </div>
+      <div class="modal-body" id="mobile-modal-body">
+        <!-- 동적 주입 -->
+      </div>
+    </div>
+  </div>
+
+  <!-- 글로벌 토스트 메시지 -->
+  <div class="toast-msg" id="toast">알림 메시지</div>
+
+  <!-- Javascripts (의존성 순서대로 로드) -->
+  <script src="js/db.js?v=4.0"></script>
+  <script src="js/auth.js?v=4.0"></script>
+  <script src="js/mobile.js?v=4.0"></script>
+  <script src="js/admin.js?v=4.0"></script>
+  <script src="js/app.js?v=4.0"></script>
+</body>
+</html>

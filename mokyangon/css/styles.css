@@ -1,0 +1,510 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Outfit:wght@400;500;600;700&display=swap');
+
+:root {
+  --color-navy: #1E2B4B;
+  --color-navy-light: #2E3E66;
+  --color-navy-bg: #F4F7FA;
+  --color-gold: #C5A880;
+  --color-gold-dark: #B0926A;
+  --color-gold-light: #E8DFD1;
+  --color-white: #FFFFFF;
+  --color-gray-100: #F3F4F6;
+  --color-gray-200: #E5E7EB;
+  --color-gray-300: #D1D5DB;
+  --color-gray-600: #4B5563;
+  --color-gray-800: #1F2937;
+  --color-danger: #EF4444;
+  --color-success: #10B981;
+  
+  --font-main: 'Noto Sans KR', sans-serif;
+  --font-accent: 'Outfit', sans-serif;
+  
+  /* 50대 성도용 큰 글씨 시스템 */
+  --font-size-xs: 13px;
+  --font-size-sm: 15px;
+  --font-size-base: 18px; /* 기본 본문 18px로 크게 설정 */
+  --font-size-md: 20px;
+  --font-size-lg: 24px;
+  --font-size-xl: 28px;
+  
+  --border-radius: 12px;
+  --transition-normal: all 0.25s ease-in-out;
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 10px rgba(30, 43, 75, 0.08);
+  --shadow-lg: 0 10px 25px rgba(30, 43, 75, 0.15);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-main);
+  font-size: var(--font-size-base);
+  color: var(--color-gray-800);
+  background-color: #E2E8F0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow-x: hidden;
+}
+
+/* 시뮬레이션용 상단 컨트롤바 */
+.simulator-header {
+  width: 100%;
+  background: var(--color-navy);
+  color: var(--color-white);
+  padding: 12px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: var(--shadow-sm);
+  z-index: 1000;
+  position: fixed;
+  top: 0;
+  left: 0;
+}
+
+.simulator-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: var(--font-size-md);
+  font-weight: 700;
+}
+
+.simulator-logo {
+  background: var(--color-gold);
+  color: var(--color-navy);
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-family: var(--font-accent);
+  font-weight: 800;
+}
+
+.simulator-controls {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.role-switcher {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 4px 12px;
+  border-radius: 20px;
+}
+
+.role-switcher label {
+  font-size: var(--font-size-sm);
+  color: var(--color-gold-light);
+}
+
+.role-select {
+  background: var(--color-navy-light);
+  color: var(--color-white);
+  border: 1px solid var(--color-gold);
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: var(--font-size-sm);
+  outline: none;
+  cursor: pointer;
+}
+
+.btn-reset-db {
+  background: var(--color-danger);
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  font-weight: 500;
+}
+
+/* 메인 프레임 컨테이너 */
+.app-container {
+  margin-top: 60px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  flex-grow: 1;
+}
+
+/* 모바일 디바이스 프레임 */
+.mobile-device-frame {
+  width: 420px;
+  height: 840px;
+  background: #000;
+  border: 12px solid #333;
+  border-radius: 40px;
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 디바이스 내부 스크린 */
+.device-screen {
+  width: 100%;
+  height: 100%;
+  background: var(--color-white);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* 풀 스크린 웹 (관리자 대시보드 및 가입 승인 대기 화면용) */
+.web-fullscreen-container {
+  width: 100%;
+  max-width: 1200px;
+  min-height: 780px;
+  background: var(--color-white);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-lg);
+  display: none; /* JS에서 block/flex로 활성화 */
+  overflow: hidden;
+  margin-top: 20px;
+}
+
+/* 폼 디자인 */
+.auth-page {
+  padding: 30px 20px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  justify-content: center;
+  overflow-y: auto;
+  background: linear-gradient(135deg, var(--color-navy) 0%, var(--color-navy-light) 100%);
+  color: var(--color-white);
+}
+
+.auth-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.auth-header h1 {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  color: var(--color-white);
+  margin-bottom: 5px;
+}
+
+.auth-header p {
+  color: var(--color-gold-light);
+  font-size: var(--font-size-sm);
+}
+
+.form-group {
+  margin-bottom: 18px;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: var(--font-size-sm);
+  color: var(--color-gold-light);
+  font-weight: 500;
+}
+
+.input-field {
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: var(--border-radius);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--color-white);
+  font-size: var(--font-size-base);
+  outline: none;
+  transition: var(--transition-normal);
+}
+
+.input-field:focus {
+  border-color: var(--color-gold);
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.input-field::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+  font-size: var(--font-size-sm);
+}
+
+/* 버튼 스타일 */
+.btn {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  padding: 15px 20px;
+  border-radius: var(--border-radius);
+  font-size: var(--font-size-base);
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition-normal);
+  border: none;
+  outline: none;
+  text-align: center;
+  text-decoration: none;
+  min-height: 48px; /* 터치 표준 규격 */
+}
+
+.btn-primary {
+  background: var(--color-navy);
+  color: var(--color-white);
+  border: 1px solid var(--color-navy);
+}
+
+.btn-primary:hover {
+  background: var(--color-navy-light);
+}
+
+.btn-gold {
+  background: var(--color-gold);
+  color: var(--color-navy);
+  border: 1px solid var(--color-gold);
+}
+
+.btn-gold:hover {
+  background: var(--color-gold-dark);
+  color: var(--color-white);
+}
+
+.btn-secondary {
+  background: var(--color-gray-200);
+  color: var(--color-gray-800);
+}
+
+.btn-secondary:hover {
+  background: var(--color-gray-300);
+}
+
+.btn-outline-gold {
+  background: transparent;
+  color: var(--color-gold);
+  border: 2px solid var(--color-gold);
+}
+
+.btn-outline-gold:hover {
+  background: var(--color-gold);
+  color: var(--color-navy);
+}
+
+/* 가입 대기 화면 */
+.pending-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 40px;
+  background: var(--color-white);
+  color: var(--color-gray-800);
+  height: 100%;
+  width: 100%;
+}
+
+.pending-icon {
+  width: 100px;
+  height: 100px;
+  background: var(--color-navy-bg);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-gold);
+  font-size: 48px;
+  margin-bottom: 24px;
+  border: 3px solid var(--color-gold);
+  animation: pulse 2s infinite;
+}
+
+.pending-title {
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  color: var(--color-navy);
+  margin-bottom: 12px;
+}
+
+.pending-desc {
+  font-size: var(--font-size-base);
+  color: var(--color-gray-600);
+  line-height: 1.6;
+  margin-bottom: 30px;
+}
+
+.pending-footer {
+  width: 100%;
+  border-top: 1px solid var(--color-gray-200);
+  padding-top: 20px;
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-600);
+}
+
+/* 애니메이션 */
+@keyframes pulse {
+  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(197, 168, 128, 0.4); }
+  70% { transform: scale(1.05); box-shadow: 0 0 0 15px rgba(197, 168, 128, 0); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(197, 168, 128, 0); }
+}
+
+/* 모달 팝업 */
+.modal-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: none;
+  justify-content: center;
+  align-items: flex-end; /* 모바일 하단 슬라이드 시트 형태 */
+  z-index: 2000;
+}
+
+.modal-content {
+  background: var(--color-white);
+  width: 100%;
+  max-height: 80%;
+  border-top-left-radius: 24px;
+  border-top-right-radius: 24px;
+  padding: 24px;
+  overflow-y: auto;
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--color-gray-200);
+  padding-bottom: 12px;
+}
+
+.modal-title {
+  font-size: var(--font-size-md);
+  font-weight: 700;
+  color: var(--color-navy);
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: var(--color-gray-600);
+}
+
+.form-group-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+/* 토스트 알림 */
+.toast-msg {
+  position: absolute;
+  bottom: 90px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(30, 43, 75, 0.9);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 20px;
+  font-size: var(--font-size-sm);
+  z-index: 3000;
+  pointer-events: none;
+  display: none;
+  box-shadow: var(--shadow-md);
+  width: 80%;
+  text-align: center;
+  animation: fadeIn 0.2s, fadeOut 0.2s 1.8s;
+}
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
+
+/* 모바일 웹 대응 미디어 쿼리 - 768px 이하 모바일 전면 반응형 UI 및 모바일 접속 최적화 */
+@media (max-width: 768px) {
+  .simulator-header {
+    display: flex !important;
+    padding: 8px 10px;
+    height: 50px;
+    align-items: center;
+  }
+
+  .simulator-title {
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  .simulator-title span:last-child {
+    display: none; /* 모바일에서 '시뮬레이터' 텍스트 숨김 */
+  }
+
+  .simulator-controls {
+    gap: 8px;
+  }
+
+  .role-switcher {
+    padding: 2px 8px;
+  }
+
+  .role-switcher label {
+    display: none; /* '역할 전환 테스트:' 라벨 숨김 */
+  }
+
+  .role-select {
+    padding: 2px 4px;
+    font-size: 12px;
+    max-width: 130px;
+    height: 28px;
+  }
+
+  .btn-reset-db {
+    padding: 4px 8px;
+    font-size: 12px;
+    border-radius: 14px;
+    min-height: auto;
+  }
+
+  .app-container {
+    margin-top: 50px !important;
+    padding: 0 !important;
+    height: calc(100vh - 50px);
+    width: 100%;
+  }
+
+  .mobile-device-frame {
+    width: 100% !important;
+    height: 100% !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+
+  .device-screen {
+    border-radius: 0 !important;
+  }
+
+  /* Toast position adjust for real mobile */
+  .toast-msg {
+    bottom: 80px;
+  }
+}
