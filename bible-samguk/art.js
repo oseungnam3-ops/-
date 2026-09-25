@@ -91,5 +91,8 @@ const ART = {
   "블레셋 방백": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_135555_02449625-56cf-4322-848c-453d64b95d27.png",
   "헤시온": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_135552_c4e7d3f3-5e7f-44ff-b502-d2055fab2bf3.png",
   "@map": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_141756_a215b647-7ef9-4d79-a2fe-4899cec23f48.png",
-  "@land": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_141756_70efea6c-7196-4e85-961e-387219f82069.png"
+  "@land": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_141756_70efea6c-7196-4e85-961e-387219f82069.png",
+  "@land-coast": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_142503_5d536a2d-491b-45cf-b4f3-696e287598e3.png",
+  "@land-canaan": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_142504_684536e8-3757-4373-8fbf-7cca545c9750.png",
+  "@land-desert": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_142504_92a827bc-d37e-442e-a621-c021d2757f66.png"
 };

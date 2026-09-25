@@ -715,11 +715,11 @@
   // 위치는 영지 그림 속 건물 자리(가로·세로 %). 건물마다 맡은 명령이 있다.
   let mode = 'land', landCid = null;
   const SPOTS = [
-    { id: 'palace', name: '왕궁', x: 29, y: 31, icon: 'king', stat: 'loy', cmds: ['search', 'relief', '3d'], desc: '왕이 인재를 부르고 백성을 돌보는 곳' },
-    { id: 'temple', name: '성전', x: 31, y: 21, icon: 'faith', stat: 'faith', cmds: ['worship'], desc: '하나님께 제사를 드리는 곳' },
-    { id: 'port', name: '항구', x: 84, y: 20, icon: 'port', stat: 'comm', cmds: ['diplo', 'move'], desc: '이웃 나라와 사신·배가 오가는 곳' },
-    { id: 'market', name: '마을', x: 46, y: 55, icon: 'gold', stat: 'comm', cmds: ['comm', 'relief'], desc: '장터와 백성의 집' },
-    { id: 'quarry', name: '채석장', x: 84, y: 53, icon: 'stone', stat: 'def', cmds: ['wall'], desc: '성벽을 쌓을 석회암을 캐는 곳' },
+    { id: 'palace', name: '왕궁', x: 27, y: 35, icon: 'king', stat: 'loy', cmds: ['search', 'relief', '3d'], desc: '왕이 인재를 부르고 백성을 돌보는 곳' },
+    { id: 'temple', name: '성전', x: 28, y: 24, icon: 'faith', stat: 'faith', cmds: ['worship'], desc: '하나님께 제사를 드리는 곳' },
+    { id: 'port', name: '항구', x: 84, y: 20, icon: 'port', stat: 'comm', cmds: ['diplo', 'move'], desc: '이웃 나라의 사신과 상인이 오가는 곳' },
+    { id: 'market', name: '마을', x: 46, y: 57, icon: 'gold', stat: 'comm', cmds: ['comm', 'relief'], desc: '장터와 백성의 집' },
+    { id: 'quarry', name: '채석장', x: 84, y: 51, icon: 'stone', stat: 'def', cmds: ['wall'], desc: '성벽을 쌓을 석회암을 캐는 곳' },
     { id: 'farm', name: '농장', x: 80, y: 68, icon: 'food', stat: 'agri', cmds: ['agri'], desc: '밀과 보리를 거두는 들판' },
     { id: 'camp', name: '병영', x: 20, y: 76, icon: 'troop', stat: 'train', cmds: ['recruit', 'train', 'attack'], desc: '군사를 모으고 훈련하는 진영' },
     { id: 'lumber', name: '벌목장', x: 80, y: 90, icon: 'wood', stat: 'def', cmds: ['wall'], desc: '성문과 망대에 쓸 목재를 베는 곳' },
@@ -729,6 +729,11 @@
     stone: '<svg viewBox="0 0 24 24"><path d="M3 18 L6 10 L12 8 L18 10 L21 18Z" fill="#c9c6bf" stroke="#6e6a62"/><path d="M6 10 L12 13 L18 10 M12 13 V18" stroke="#8e8a82" fill="none"/></svg>',
     wood: '<svg viewBox="0 0 24 24"><rect x="3" y="12" width="18" height="5" rx="2.5" fill="#b9853f" stroke="#5c3c16"/><rect x="5" y="7" width="15" height="5" rx="2.5" fill="#cf9a52" stroke="#5c3c16"/><circle cx="19" cy="14.5" r="2" fill="#f0d29a"/><circle cx="18" cy="9.5" r="2" fill="#f0d29a"/></svg>',
   };
+  // 영지 그림은 같은 구도에 지역 문화만 다르게 그렸다(건물 위치 동일). 지역에 따라 고른다.
+  const LAND_KIND = { coast: ['joppa', 'ekron', 'ashdod', 'gath', 'ashkelon', 'gaza', 'tyre'], canaan: ['dan', 'hazor', 'megiddo', 'bethshean', 'damascus', 'jericho', 'shechem'], desert: ['rabbah', 'dibon', 'kirhareseth', 'bozrah', 'beersheba'] };
+  const landKind = cid => Object.keys(LAND_KIND).find(k => LAND_KIND[k].includes(cid)) || 'hill';
+  const PORT_NAME = { hill: '항구', coast: '항구', canaan: '나루터', desert: '대상 숙소' };
+  const landArt = cid => { const k = landKind(cid); return (k !== 'hill' && artKey('@land-' + k)) || artKey('@land'); };
   const CMD_LABEL = { '3d': '성 안 걷기 (3D)', attack: '출진', move: '이동', diplo: '외교' };
   function showLand(cid) {
     const c = cid && city(cid);
@@ -742,7 +747,7 @@
   function showMap() { mode = 'map'; render(); }
   function centerLand() {
     const w = $('#landWrap'), l = $('#land');
-    requestAnimationFrame(() => { w.scrollLeft = l.offsetWidth * 0.36 - w.clientWidth / 2; w.scrollTop = l.offsetHeight * 0.34 - w.clientHeight / 2; });
+    requestAnimationFrame(() => { w.scrollLeft = l.offsetWidth * 0.34 - w.clientWidth / 2; w.scrollTop = l.offsetHeight * 0.37 - w.clientHeight / 2; });
   }
   function drawLand() {
     const on = mode === 'land' && landCid && city(landCid) && city(landCid).owner === S.player;
@@ -752,18 +757,18 @@
     document.querySelectorAll('[data-view]').forEach(b => b.classList.toggle('on', b.dataset.view === mode));
     if (!land) return;
     const c = city(landCid), ci = CITY_INFO[landCid], F = fac(S.player), idle = idleOffs(landCid).length;
-    const img = $('#landImg'), u = artKey('@land');
-    if (u && img.getAttribute('src') !== u) { img.src = u; $('#landBg').style.backgroundImage = `url('${u}')`; }
+    const img = $('#landImg'), u = landArt(landCid), kind = landKind(landCid);
+    if (u && img.getAttribute('src') !== u) { $('#land').classList.remove('noart'); img.src = u; $('#landBg').style.backgroundImage = `url('${u}')`; }
     const lv = v => Math.max(1, Math.ceil(v / 10));
-    $('#landSpots').innerHTML = `<div class="l-banner" style="left:29%;top:26%"><span class="fbadge" style="--fc:${F.color}">${esc(F.name[0])}</span><b>${ci.name}</b></div>` +
-      SPOTS.map(s => `<button class="spot" data-spot="${s.id}" style="left:${s.x}%;top:${s.y}%"><i>${SPOT_ICON[s.icon] || ICON[s.icon]}</i><b>${s.name}</b><em>${lv(c[s.stat])}</em>${idle && s.cmds.some(k => CMDS[k]) ? '<u aria-label="명령 가능"></u>' : ''}</button>`).join('');
+    $('#landSpots').innerHTML = `<div class="l-banner" style="left:26%;top:29.5%"><span class="fbadge" style="--fc:${F.color}">${esc(F.name[0])}</span><b>${ci.name}</b></div>` +
+      SPOTS.map(s => `<button class="spot" data-spot="${s.id}" style="left:${s.x}%;top:${s.y}%"><i>${SPOT_ICON[s.icon] || ICON[s.icon]}</i><b>${s.id === 'port' ? PORT_NAME[kind] : s.name}</b><em>${lv(c[s.stat])}</em>${idle && s.cmds.some(k => CMDS[k]) ? '<u aria-label="명령 가능"></u>' : ''}</button>`).join('');
     $('#landCity').innerHTML = `<b>${ci.name}</b><span>병력 ${fmt(c.soldiers)}</span><span>농업 ${c.agri}</span><span>상업 ${c.comm}</span><span>성벽 ${c.def}</span><span>신앙 ${c.faith}</span><span>민심 ${c.loy}</span><span>대기 장수 ${idle}</span>`;
   }
   function onSpot(id) {
-    const s = SPOTS.find(x => x.id === id), cid = landCid; sel = cid;
+    const s = SPOTS.find(x => x.id === id), cid = landCid, nm = s.id === 'port' ? PORT_NAME[landKind(cid)] : s.name; sel = cid;
     const run = k => { if (k === '3d') { if (window.TOWN) TOWN.enter(cid); } else { sel = cid; onCmd(k); } };
     const btns = s.cmds.map((k, i) => ({ label: CMDS[k] ? `${CMDS[k].label} — ${CMDS[k].hint}` : CMD_LABEL[k], primary: i === 0, fn: () => run(k) }));
-    openModal(`<p class="mute">${esc(s.desc)}</p><p>대기 중인 장수 <b>${idleOffs(cid).length}명</b> · 금 ${fmt(fac(S.player).gold)} · 식량 ${fmt(fac(S.player).food)}</p>`, btns, { title: `${CITY_INFO[cid].name} ${s.name}` });
+    openModal(`<p class="mute">${esc(s.desc)}</p><p>대기 중인 장수 <b>${idleOffs(cid).length}명</b> · 금 ${fmt(fac(S.player).gold)} · 식량 ${fmt(fac(S.player).food)}</p>`, btns, { title: `${CITY_INFO[cid].name} ${nm}` });
   }
   function landFx(key, text) {
     if (mode !== 'land') return;
