@@ -3,8 +3,8 @@
 const ART = {
   "다윗": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_130218_718f3761-508f-4784-8e5e-b4f7fd1c7a54.png",
   "요압": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_122145_cdbfa45e-659a-4333-97c6-6882db5e9180.png",
-  "여호수아": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_122424_e34d58d7-ab71-468a-b3c6-32d0e0dae4ed.png",
-  "갈렙": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_122425_60d7f6dc-3e98-4393-a83f-4be0895c2cc2.png",
+  "여호수아": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_131644_0afdd0cd-bfb2-44ca-8941-8f82eb4b0810.png",
+  "갈렙": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_131645_69eecb4d-f252-4df5-87f5-17cf12ad786a.png",
   "conquest:엘르아살": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_122424_eb2b2498-fe11-4c61-a425-132b9b101280.png",
   "비느하스": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_122424_355f961c-4a4a-4167-99dc-0da33efbd414.png",
   "옷니엘": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_122424_c8fb5776-aa07-419e-aeee-50cfca3a62b3.png",
@@ -74,5 +74,8 @@ const ART = {
   "@david": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_123152_90ca1369-f0ae-4e94-bb03-0012502d8416.png",
   "@divided": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_123215_d913547f-4461-42f3-b0e9-a430d66a0262.png",
   "사울": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_130650_b2ad1d3f-5c16-4c99-96f4-eabebefb5613.png",
-  "요나단": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_130908_286a8d83-91ee-497c-a555-b0e0e27337ad.png"
+  "요나단": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_130908_286a8d83-91ee-497c-a555-b0e0e27337ad.png",
+  "기드온": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_131644_ef4ba8ea-41a6-43e7-8a37-5b7e28519ca8.png",
+  "삼손": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_131645_22e4fcd0-e6b3-4c8f-9f6a-1c059e980264.png",
+  "르우벤": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_131645_dfa615f3-904e-4df0-9589-b6d57f1711fc.png"
 };
