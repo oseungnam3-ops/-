@@ -1,0 +1,200 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>성경 삼국지</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Song+Myung&family=IBM+Plex+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+  /* 단일 테마: 청금석 밤하늘 위의 금박. 의도적으로 다크 하나만 사용 */
+  :root {
+    color-scheme: dark;
+    --bg: #0d1424;
+    --panel: #141d31;
+    --panel-2: #1a2540;
+    --line: #2a3857;
+    --ink: #ece5d3;
+    --mute: #95a0b7;
+    --gold: #deaa45;
+    --gold-ink: #1b1406;
+    --war: #d4583f;
+    --good: #6fb28a;
+    --faith: #9fc3ee;
+    --land: #3b3222;
+    --land-hi: #574a31;
+    --sea: #0f2b42;
+    --sea-line: #1d4462;
+    --river: #3e7aa6;
+    --neutral: #7c7667;
+    --display: 'Song Myung', 'Nanum Myeongjo', 'Batang', serif;
+    --body: 'IBM Plex Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', system-ui, sans-serif;
+    --mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', monospace;
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html, body { height: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.55 var(--body); padding-inline: 16px; }
+  button { font: inherit; color: inherit; cursor: pointer; }
+  button:focus-visible, select:focus-visible, input:focus-visible, .city:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+  h1, h2, h3 { font-family: var(--display); font-weight: 400; text-wrap: balance; margin: 0; }
+  .mute { color: var(--mute); }
+  .eyebrow { font-size: 11px; letter-spacing: .14em; color: var(--gold); margin: 0 0 4px; }
+  small { color: var(--mute); }
+
+  /* ---------- 타이틀 ---------- */
+  #title { min-height: 100%; padding-block: 40px 56px; }
+  .title-inner { max-width: 1040px; margin: 0 auto; }
+  #title h1 { font-size: clamp(48px, 10vw, 96px); line-height: 1; color: var(--gold); letter-spacing: .04em; }
+  .lede { font-size: 17px; max-width: 34em; margin: 14px 0 26px; color: var(--ink); }
+  .sec { font-size: 22px; margin: 34px 0 14px; color: var(--mute); }
+  .scns { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 16px; }
+  .scn { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 18px; display: flex; flex-direction: column; gap: 10px; }
+  .scn header { display: grid; gap: 2px; }
+  .scn h3 { font-size: 26px; }
+  .yr { font: 500 12px var(--mono); color: var(--gold); }
+  .ref { font-size: 12px; color: var(--mute); }
+  .scn p { margin: 0; color: #cfd3dc; font-size: 13.5px; }
+  .facs { display: grid; gap: 6px; }
+  .facbtn { display: grid; grid-template-columns: 10px 1fr auto; align-items: center; gap: 10px; text-align: left; padding: 9px 12px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 4px; }
+  .facbtn i { width: 10px; height: 10px; border-radius: 50%; background: var(--fc); }
+  .facbtn:hover { border-color: var(--fc); }
+  details summary { color: var(--mute); cursor: pointer; font-size: 13px; padding: 4px 0; }
+  details .facs { margin-top: 6px; }
+  .foot { margin-top: 30px; font-size: 12px; color: var(--mute); }
+
+  /* ---------- 게임 화면 ---------- */
+  #app { height: 100%; display: flex; flex-direction: column; }
+  .bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; padding-block: 10px; border-bottom: 1px solid var(--line); }
+  .brand { font-family: var(--display); font-size: 22px; color: var(--gold); margin-right: 4px; }
+  #barInfo { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; flex: 1; }
+  .chip { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border: 1px solid var(--line); border-radius: 999px; font-size: 13px; white-space: nowrap; }
+  .chip.fac i { width: 9px; height: 9px; border-radius: 50%; background: var(--fc); }
+  .stat { font: 500 13px var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .stat b { font: 400 11px var(--body); color: var(--mute); margin-right: 5px; letter-spacing: .06em; }
+  .actions { display: flex; gap: 6px; }
+  .btn { padding: 8px 14px; border-radius: 4px; border: 1px solid var(--line); background: var(--panel-2); }
+  .btn:hover { border-color: var(--gold); }
+  .btn.primary { background: var(--gold); color: var(--gold-ink); border-color: var(--gold); font-weight: 700; }
+  .btn.danger { border-color: var(--war); }
+  .btn.primary.danger { background: var(--war); color: #fff; border-color: var(--war); }
+
+  main { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 16px; padding-block: 12px; }
+  #mapWrap { min-height: 0; display: flex; justify-content: center; align-items: center; background: var(--sea); border-radius: 6px; overflow: hidden; border: 1px solid var(--line); }
+  #map { width: 100%; height: 100%; max-height: 100%; display: block; overflow: visible; }
+  .geo { fill: #c9b88f; opacity: .35; font: 22px var(--display); letter-spacing: .3em; pointer-events: none; }
+  .geo.sm { font-size: 11px; letter-spacing: .2em; opacity: .5; }
+  .road { stroke: #c9b88f; stroke-opacity: .22; stroke-width: 1.4; stroke-dasharray: 4 3; }
+  .road.hot { stroke: var(--gold); stroke-opacity: .9; stroke-width: 2; }
+  .city { cursor: pointer; }
+  .city .dot { stroke: #0d1424; stroke-width: 2; transition: r .2s; }
+  .city:hover .dot { stroke: var(--ink); }
+  .city .halo { fill: none; stroke: var(--gold); stroke-width: 2; }
+  .cname { fill: var(--ink); font: 500 11.5px var(--body); text-anchor: middle; paint-order: stroke; stroke: #0d1424; stroke-width: 3px; pointer-events: none; }
+  .csold { fill: #0d1424; font: 500 9px var(--mono); text-anchor: middle; pointer-events: none; }
+  .city.sel .cname { fill: var(--gold); }
+
+  #side { min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; padding-right: 2px; }
+  #cityPanel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+  .city-head { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; }
+  .city-head h2 { font-size: 30px; line-height: 1.1; }
+  .city-head p { margin: 4px 0 0; font-size: 12.5px; }
+  .nums { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .nums div { display: grid; }
+  .nums span { font-size: 11px; color: var(--mute); letter-spacing: .06em; }
+  .nums b { font: 500 17px var(--mono); font-variant-numeric: tabular-nums; }
+  .meters { display: grid; gap: 5px; }
+  .meter { display: grid; grid-template-columns: 34px 1fr 28px; gap: 8px; align-items: center; font-size: 12px; }
+  .meter span { color: var(--mute); }
+  .meter em { font: 500 12px var(--mono); font-style: normal; text-align: right; }
+  .track { height: 6px; background: var(--panel-2); border-radius: 3px; overflow: hidden; }
+  .track div { height: 100%; background: var(--gold); opacity: .8; }
+  .meter.faith .track div { background: var(--faith); }
+  .meter.warn .track div { background: var(--war); }
+  h3 { font-size: 18px; color: var(--gold); }
+  h3 small { font: 12px var(--body); }
+  .offs { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+  .offs li { display: grid; grid-template-columns: auto 1fr auto; gap: 8px; align-items: center; padding: 5px 8px; background: var(--panel-2); border-radius: 4px; }
+  .offs li.done { opacity: .5; }
+  .oname { background: none; border: 0; padding: 0; font-weight: 700; text-align: left; text-decoration: underline dotted var(--mute); text-underline-offset: 3px; }
+  .crown { font-family: var(--display); color: var(--gold); margin-right: 4px; }
+  .st { font: 500 11.5px var(--mono); color: var(--mute); font-variant-numeric: tabular-nums; }
+  .tag { font-size: 11px; color: var(--mute); }
+  .hint { margin: 0; font-size: 12.5px; color: var(--faith); }
+  .cmds { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .cmd { display: grid; gap: 1px; text-align: left; padding: 8px 9px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 4px; }
+  .cmd b { font-size: 14px; }
+  .cmd small { font-size: 10.5px; line-height: 1.3; }
+  .cmd:hover { border-color: var(--gold); }
+  .cmd.war { border-color: rgba(212, 88, 63, .6); }
+  .cmd.war b { color: var(--war); }
+  .logbox h3 { margin-bottom: 6px; }
+  #log { list-style: none; margin: 0; padding: 0; font-size: 12.5px; display: grid; gap: 3px; }
+  #log li { color: #c3c8d3; }
+  #log li.gold { color: var(--gold); }
+  #log li.bad { color: #e98b77; }
+  #log time { font: 500 10.5px var(--mono); color: var(--mute); margin-right: 8px; }
+
+  /* ---------- 모달 ---------- */
+  #modal { position: fixed; inset: 0; background: rgba(5, 8, 16, .72); display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 20; }
+  .dlg { width: min(560px, 100%); max-height: calc(100% - 32px); overflow-y: auto; background: var(--panel); border: 1px solid var(--gold); border-radius: 6px; padding: 22px; display: flex; flex-direction: column; gap: 14px; }
+  #modalBody { display: flex; flex-direction: column; gap: 10px; }
+  #modalBody h2 { font-size: 30px; line-height: 1.15; }
+  #modalBody p { margin: 0; }
+  .scripture { font-family: var(--display); font-size: 17px; line-height: 1.75; border-left: 2px solid var(--gold); padding-left: 14px; }
+  .result { font-size: 16px; color: var(--gold); }
+  #modalBtns { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
+  .blog { max-height: 46vh; overflow-y: auto; font-size: 13px; display: grid; gap: 3px; background: var(--bg); padding: 12px; border-radius: 4px; font-variant-numeric: tabular-nums; }
+  .picklist { display: grid; gap: 6px; }
+  .pick { display: flex; justify-content: space-between; padding: 10px 12px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 4px; }
+  .pick:hover { border-color: var(--gold); }
+  .pick span { font: 500 13px var(--mono); color: var(--gold); }
+  .fld { font-size: 12px; color: var(--mute); letter-spacing: .04em; }
+  select, input[type=range] { width: 100%; }
+  select { background: var(--panel-2); color: var(--ink); border: 1px solid var(--line); border-radius: 4px; padding: 8px; }
+  input[type=range] { accent-color: var(--gold); }
+  .checks { display: flex; flex-wrap: wrap; gap: 6px 14px; }
+  .checks label { display: inline-flex; gap: 6px; align-items: center; }
+  .help { margin: 0; padding-left: 18px; display: grid; gap: 6px; color: #cfd3dc; }
+  .tablewrap { overflow-x: auto; }
+  .roster { width: 100%; border-collapse: collapse; font-size: 12.5px; font-variant-numeric: tabular-nums; }
+  .roster th, .roster td { padding: 5px 6px; border-bottom: 1px solid var(--line); text-align: left; white-space: nowrap; }
+  .roster th { color: var(--mute); font-weight: 400; }
+  .roster td:nth-child(n+4) { font-family: var(--mono); text-align: right; }
+  .roster tr.dead { opacity: .45; }
+  #toast { position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--gold); color: var(--gold-ink); padding: 9px 16px; border-radius: 4px; font-weight: 700; z-index: 30; max-width: calc(100% - 32px); }
+
+  @media (max-width: 860px) {
+    #app { height: auto; }
+    main { grid-template-columns: 1fr; }
+    #mapWrap { height: 62vh; }
+    #side { overflow: visible; }
+    .cmds { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<section id="title"></section>
+
+<div id="app" hidden>
+  <header class="bar">
+    <span class="brand">성경 삼국지</span>
+    <div id="barInfo"></div>
+    <div class="actions">
+      <button class="btn" id="rosterBtn">인물</button>
+      <button class="btn" id="menuBtn">메뉴</button>
+      <button class="btn primary" id="endTurn">턴 종료</button>
+    </div>
+  </header>
+  <main>
+    <div id="mapWrap"><svg id="map" viewBox="0 0 620 800" preserveAspectRatio="xMidYMid meet" aria-label="가나안 지도"></svg></div>
+    <aside id="side">
+      <div id="cityPanel"></div>
+      <div class="logbox"><h3>연대기</h3><ul id="log"></ul></div>
+    </aside>
+  </main>
+</div>
+
+<div id="modal" hidden><div class="dlg" role="dialog" aria-modal="true"><div id="modalBody"></div><div id="modalBtns"></div></div></div>
+<div id="toast" hidden></div>
+
+<script src="data.js"></script>
+<script src="game.js"></script>
