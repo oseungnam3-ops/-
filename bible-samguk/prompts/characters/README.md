@@ -23,3 +23,16 @@
 | [사울](saul.md) | 초기 이스라엘 왕정, 철기 시대 I (BC 1050–1010년 무렵) | "이스라엘의 첫 번째 왕" | [보기](https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_130650_b2ad1d3f-5c16-4c99-96f4-eabebefb5613.png) |
 | [요나단](jonathan.md) | 초기 이스라엘 왕정, 철기 시대 I (BC 1040년 무렵) | "왕좌보다 언약과 우정을 선택한 전사" | [보기](https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_130908_286a8d83-91ee-497c-a555-b0e0e27337ad.png) |
 | [다윗](david.md) | 고대 이스라엘 통일왕국, 철기 시대 IIA (BC 1000년 무렵) | 목동에서 왕이 된 인물 | [보기](https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_130218_718f3761-508f-4784-8e5e-b4f7fd1c7a54.png) |
+
+## 적대 세력의 왕과 전사
+
+| 인물 | 시대 | 핵심 | 일러스트 |
+|---|---|---|---|
+| [아기스](achish.md) | 철기 시대 IIA (BC 1010년 무렵) | "다윗을 자신의 군대 안으로 받아들인 블레셋의 강력한 왕" | [보기](https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_133201_23becd3e-9e26-46d3-8550-ff466b4fac55.png) |
+| [시돈 왕](king-of-sidon.md) | 철기 시대 (BC 1000년 무렵) | "바다와 무역을 지배하는 페니키아의 왕" | [보기](https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_133202_1df6dc93-7f21-44ff-99c7-e658f2f0e6dc.png) |
+| [아각](agag.md) | 철기 시대 I (BC 1040년 무렵) | "광야를 지배하는 아말렉의 전사 왕" | [보기](https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_133202_726eb351-b6f4-4ad2-8f32-26f3358e6fc4.png) |
+| [아도니세덱](adoni-zedek.md) | 후기 청동기 (BC 1400년 무렵) | "이스라엘에 맞서 남부 연합군을 결성한 왕" | [보기](https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_133201_2129efa1-6c4b-4e77-9cbe-f9fb28ecfc72.png) |
+| [야빈](jabin.md) | 후기 청동기 (BC 1400년 무렵) | "북방 가나안 연합군의 지배자" | [보기](https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_133242_02d7c090-db96-4515-a144-82698fc71444.png) |
+| [에글론](eglon.md) | 사사 시대 초기 (BC 1300년 무렵) | "이스라엘을 지배하는 모압의 왕" | [보기](https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_133243_d177da09-cdd4-49aa-8544-1f6f200377fa.png) |
+| [나하스](nahash.md) | 철기 시대 I (BC 1050년 무렵) | "요단 동쪽에서 이스라엘을 압박하는 전사 왕" | [보기](https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_133243_b5cac6fa-ccc5-46d5-b385-8721532c670b.png) |
+| [골리앗](goliath.md) | 철기 시대 IIA (BC 1020년 무렵) | "블레셋의 최강 전사" | [보기](https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_133242_e3cac057-768e-428d-8401-27c193d501bf.png) |
