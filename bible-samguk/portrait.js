@@ -5,7 +5,7 @@
   const hash = s => { let h = 2166136261; for (const ch of s) { h ^= ch.codePointAt(0); h = Math.imul(h, 16777619); } return h >>> 0; };
   const rng = seed => () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
   const pickR = (r, a) => a[Math.floor(r() * a.length)];
-  const WOMEN = ['라합'];
+  const WOMEN = ['라합', '사라', '하갈', '리브가', '라헬', '레아', '드보라', '야엘', '들릴라', '악사', '미갈'];
   const OLD = ['갈렙', '엘르아살', '나단', '아히야', '잇도', '벧엘의 늙은 선지자', '아히도벨', '르호보암', '히람', '아기스'];
 
   function roleOf(o, isRuler) {

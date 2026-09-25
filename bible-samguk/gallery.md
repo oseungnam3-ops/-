@@ -1,4 +1,4 @@
-# 성경 삼국지 — 웹툰풍 캐릭터 갤러리 (96장)
+# 성경 삼국지 — 웹툰풍 캐릭터 갤러리 (100장)
 
 ## 영웅 카드 (27장, 9:16)
 
@@ -14,13 +14,15 @@
 | <img src="https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_134220_90feb812-9bb4-4fe1-b5d2-adb7a43252dd.png" width="220"><br>**납달리** | <img src="https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_134259_e240194a-b159-4ccf-9b02-16d26e627625.png" width="220"><br>**르우벤** | <img src="https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_134258_6ef8d664-a3c4-4b5b-98d4-c651fd2f8bed.png" width="220"><br>**삼손** |
 | <img src="https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_134259_cddf12e4-017b-4286-82b9-a450258a6cd3.png" width="220"><br>**사울** | <img src="https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_134259_0030c8ab-c3b1-443d-9056-999e3e0ac2d7.png" width="220"><br>**시므온** | <img src="https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_134343_247e067d-1408-4e32-86e5-9efc262a7393.png" width="220"><br>**스불론** |
 
-## 족장 시대 영웅 카드 (7장, 9:16)
+## 족장 시대 영웅 카드 (11장, 9:16)
 
 | | | |
 |---|---|---|
 | <img src="https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_215220_22a8e2d5-5512-4f99-ad7b-6b0031909143.png" width="220"><br>**아브라함** | <img src="https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_215154_0f601f17-7b48-4f24-801f-5181fdfffea2.png" width="220"><br>**사라** | <img src="https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_215154_79c306a6-8cc2-43bd-a65a-41edb0872be7.png" width="220"><br>**이삭** |
 | <img src="https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_215154_073c6870-813a-4a70-b294-865ae2f2560d.png" width="220"><br>**야곱** | <img src="https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_215154_9a907223-a022-486a-ad1e-56a3c0ada8ba.png" width="220"><br>**에서** | <img src="https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_215154_44311481-9691-4f33-9daa-63a8347221cf.png" width="220"><br>**롯** |
 | <img src="https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_215154_c4cf446c-f295-407b-8d83-78d92389d37a.png" width="220"><br>**멜기세덱** |  |  |
+| <img src="https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_235255_1c53d1b3-1bda-4d7c-becd-667c71dda3ae.png" width="220"><br>**엘리에셀** | <img src="https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_235255_b156a051-6530-4610-b9a5-3de7c687ddbe.png" width="220"><br>**이스마엘** | <img src="https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_235257_8dcfb827-c54f-4683-885c-e851e60b1d9d.png" width="220"><br>**마므레** |
+| <img src="https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_235256_91d59799-1c43-4052-8dfa-f75c9e1eea73.png" width="220"><br>**하갈** |  |  |
 
 ## 게임 초상 (62장, 3:4)
 
