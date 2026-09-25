@@ -78,5 +78,15 @@ const ART = {
   "기드온": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_131644_ef4ba8ea-41a6-43e7-8a37-5b7e28519ca8.png",
   "삼손": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_131645_22e4fcd0-e6b3-4c8f-9f6a-1c059e980264.png",
   "르우벤": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_131645_dfa615f3-904e-4df0-9589-b6d57f1711fc.png",
-  "시므온": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_132028_f5ce8864-c21c-43fc-8460-949abd49da44.png"
+  "시므온": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_132028_f5ce8864-c21c-43fc-8460-949abd49da44.png",
+  "레위": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_132424_c103e56c-d782-4f1a-8e18-46601598151b.png",
+  "유다": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_132424_2536b952-8a4b-4c7e-8d7e-550f0886b28d.png",
+  "단": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_132507_ad61cf80-e840-4ff2-ae49-e9189b34aae1.png",
+  "납달리": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_132424_c18096aa-06a1-4062-996a-a343af1e8d63.png",
+  "갓": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_132424_5258c565-32c7-4a6d-bafb-74501eff8862.png",
+  "아셀": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_132507_9014008f-0af6-48e4-96eb-40dd35d984d1.png",
+  "잇사갈": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_132507_4f494524-0e8e-44ff-9563-8339c194bb45.png",
+  "스불론": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_132507_fa7d3825-f5df-4d26-ab48-125ad424e02a.png",
+  "요셉": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_132507_7e930fa6-dd49-4c42-b00d-4ba0b2d52b06.png",
+  "베냐민": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_132536_ffa3193f-aa6f-482f-b556-f96daf834936.png"
 };
