@@ -77,5 +77,6 @@ const ART = {
   "요나단": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_130908_286a8d83-91ee-497c-a555-b0e0e27337ad.png",
   "기드온": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_131644_ef4ba8ea-41a6-43e7-8a37-5b7e28519ca8.png",
   "삼손": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_131645_22e4fcd0-e6b3-4c8f-9f6a-1c059e980264.png",
-  "르우벤": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_131645_dfa615f3-904e-4df0-9589-b6d57f1711fc.png"
+  "르우벤": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_131645_dfa615f3-904e-4df0-9589-b6d57f1711fc.png",
+  "시므온": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_132028_f5ce8864-c21c-43fc-8460-949abd49da44.png"
 };
