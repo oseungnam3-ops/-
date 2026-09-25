@@ -608,7 +608,7 @@
         a.mode = 'idle'; a.face = 0;
         wait(reduce ? 0.05 : 0.9, () => {
           a.goTo(a.home, () => { a.face = 0; }, 8);
-          setBusy(false); focus = null; GM().render();
+          setBusy(false); focus = null; GM().render(); GM().checkStory();
         });
       });
     }, reduce ? 999 : Math.max(6, pathLen(a.g.position, pts) / 3.2));
