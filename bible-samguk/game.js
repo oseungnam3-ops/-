@@ -110,6 +110,7 @@
     eachCity: (f, fn) => citiesOf(f).forEach(c => { fn(c); fixCity(c); }),
     buff: (f, k, turns, val) => { S.buffs[f] = S.buffs[f] || {}; S.buffs[f][k] = { turns, val }; },
     rel: (a, b, d) => setRel(a, b, getRel(a, b) + d),
+    kingdom: (d, why) => { if (S.story) addKingdom(d, why); },
     item: (f, id, n = 1) => { if (!exists(f) || !ITEMS[id]) return; const F = fac(f); F.items = F.items || {}; F.items[id] = (F.items[id] || 0) + n; },
     res: (f, add) => { if (!exists(f)) return; const F = fac(f); Object.entries(add).forEach(([k, v]) => { F[k] = Math.max(0, (F[k] || 0) + v); }); },
     kill: n => { const o = offByName(n); if (o && o.alive) killOfficer(o); },
@@ -1390,12 +1391,12 @@
     if (window.TOWN) TOWN.exit(true);
     t.hidden = false;
     $('#app').hidden = true;
-    const A = { '@title': artKey('@title'), '@conquest': artKey('@conquest'), '@david': artKey('@david'), '@divided': artKey('@divided') };
+    const A = { '@title': artKey('@title'), '@conquest': artKey('@conquest'), '@david': artKey('@david'), '@divided': artKey('@divided'), '@saul': artKey('@saul') || artKey('사울') };
     let h = `<div class="title-art" style="${A['@title'] ? `background-image:url('${A['@title']}')` : ''}"></div>
       <div class="title-inner">
       <p class="eyebrow">성경 역사 전략 시뮬레이션</p>
       <h1>성경 삼국지</h1>
-      <p class="lede">여호수아의 정복에서 다윗의 통일, 왕국의 분열까지. 인물들과 대화하며 성을 다스리고, 칼이 아닌 언약 위에 하나님 나라를 세워 간다.</p>
+      <p class="lede">여호수아의 정복에서 사울의 왕국, 다윗의 통일, 왕국의 분열까지. 인물들과 대화하며 성을 다스리고, 칼이 아닌 언약 위에 하나님 나라를 세워 간다.</p>
       <div class="title-btns">${saved ? `<button class="gbtn" id="contBtn"><span>이어하기</span><small>${esc(SCENARIOS.find(x => x.id === saved.scn).title)} · ${esc(saved.facName)} · BC ${saved.year}년 ${SEASONS[saved.season] || ''} · ${saved.turn}턴</small></button>` : ''}
       <button class="btn" id="loadBtn">불러오기</button></div>
       <h2 class="sec">시나리오</h2><div class="scns">`;

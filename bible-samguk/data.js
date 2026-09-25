@@ -115,6 +115,85 @@ const SCENARIOS = [
     goalText: { israel: '요단 서편 가나안 12성(단~브엘세바)을 차지한다.' },
   },
   {
+    id: 'saul',
+    title: '사울의 왕국',
+    year: 1050,
+    ref: '사무엘상 9–17장',
+    intro: '"우리에게 왕을 주어 다른 나라들 같이 되게 하소서." 백성의 요구에 사무엘이 베냐민 사람 기스의 아들 사울에게 기름을 부었다. 그러나 이스라엘에는 대장장이가 없고, 블레셋 수비대가 믹마스와 게바의 산지를 누르고 있다. 동쪽에서는 암몬 왕 나하스가 길르앗 야베스를 에워쌌다.',
+    factions: [
+      { id: 'israel', name: '이스라엘', ruler: '사울', color: '#e2b04a', capital: 'bethel', gold: 500, food: 8000, aggr: 0.4,
+        desc: '갓 세워진 첫 왕국. 사울이 "믹마스와 벧엘 산지"(벧엘)에 진을 쳤다. 블레셋이 대장장이를 막아 칼과 창을 가진 이는 사울과 요나단뿐이다 (삼상 13:19-22).',
+        cities: { bethel: 3000, shiloh: 1500, shechem: 2000, bethlehem: 1200, hebron: 1500, jericho: 1200, mahanaim: 1500 } },
+      { id: 'philistia', name: '블레셋', ruler: '아기스', color: '#c9573f', capital: 'gath', gold: 1500, food: 9000, aggr: 0.55,
+        desc: '철을 다루는 해안의 다섯 성읍. 병거 삼만과 마병 육천, 해변의 모래 같은 백성으로 믹마스에 진을 쳤다 (삼상 13:5).',
+        cities: { gath: 6000, ekron: 5000, ashdod: 4500, ashkelon: 3500, gaza: 4000, joppa: 2500 } },
+      { id: 'ammon', name: '암몬', ruler: '나하스', color: '#5ea67c', capital: 'rabbah', gold: 700, food: 6000, aggr: 0.5,
+        desc: '길르앗 야베스(라못길르앗)를 에워싸고 "너희 오른눈을 다 빼야" 언약하겠다고 한 나하스의 나라 (삼상 11:1-2).',
+        cities: { rabbah: 5000 } },
+      { id: 'amalek', name: '아말렉', ruler: '아각', color: '#a0876a', capital: 'beersheba', gold: 600, food: 5000, aggr: 0.4,
+        desc: '광야에서 이스라엘의 뒤를 친 남방의 유목민. 여호와께서 그 죄를 기억하셨다 (삼상 15:2).',
+        cities: { beersheba: 3500 } },
+      { id: 'moab', name: '모압', ruler: '모압 왕', color: '#9a6fbf', capital: 'kirhareseth', gold: 700, food: 5000, aggr: 0.25,
+        desc: '사울이 사방에서 싸운 대적 중 하나 (삼상 14:47).', cities: { kirhareseth: 3000, dibon: 2000 } },
+      { id: 'edom', name: '에돔', ruler: '에돔 왕', color: '#b5804f', capital: 'bozrah', gold: 600, food: 4000, aggr: 0.2,
+        desc: '세일 산의 에돔. 사울의 목자장 도엑이 이 백성이다.', cities: { bozrah: 2500 } },
+      { id: 'aram', name: '소바', ruler: '아람 왕', color: '#cf6d9c', capital: 'damascus', gold: 1200, food: 8000, aggr: 0.3,
+        desc: '다메섹 북쪽 소바의 왕들이 이끄는 아람 연합 (삼상 14:47).', cities: { damascus: 5000 } },
+      { id: 'tyre', name: '두로', ruler: '두로 왕', color: '#3fb3b5', capital: 'tyre', gold: 2000, food: 5000, aggr: 0.05,
+        desc: '바다 무역으로 부유한 베니게의 성읍. 싸움보다 장사를 좋아한다.', cities: { tyre: 4000 } },
+      { id: 'jebus', name: '여부스', ruler: '아라우나', color: '#8f86a8', capital: 'jerusalem', gold: 600, food: 4000, aggr: 0.05,
+        desc: '베냐민 땅 한가운데 남은 가나안의 산성.', cities: { jerusalem: 2500 } },
+    ],
+    // 라못길르앗 = 나하스에게 포위된 길르앗 야베스. 북쪽 성읍들은 가나안의 남은 무리.
+    neutral: { ramoth: 1500, hazor: 1500, megiddo: 1500, bethshean: 1200, dan: 800 },
+    officers: [
+      ['사울', 85, 50, 60, 85, 60, 'israel', 'bethel', '베냐민 사람 기스의 아들. 모든 백성보다 어깨 위만큼 컸던 이스라엘의 첫 왕.', '삼상 9:1-2; 10:1'],
+      ['요나단', 90, 75, 65, 90, 92, 'israel', 'bethel', '사울의 맏아들. "여호와의 구원은 사람이 많고 적음에 달리지 아니하였느니라."', '삼상 14:6'],
+      ['아브넬', 88, 78, 72, 75, 55, 'israel', 'bethel', '넬의 아들, 사울의 숙부의 아들이자 군사령관.', '삼상 14:50'],
+      ['사무엘', 15, 95, 90, 92, 99, 'israel', 'bethel', '마지막 사사이자 선지자. 벧엘·길갈·미스바를 돌며 이스라엘을 다스렸다. 장수가 아니라 말씀을 전하는 자.', '삼상 7:15-17; 15:22'],
+      ['아히야', 20, 70, 60, 65, 85, 'israel', 'shiloh', '아히둡의 아들, 실로의 엘리 가문 제사장. 에봇을 입고 사울 곁에 있었다.', '삼상 14:3, 18'],
+      ['기스', 35, 55, 60, 60, 55, 'israel', 'bethel', '아비엘의 아들, 베냐민의 유력한 사람. 사울의 아버지.', '삼상 9:1'],
+      ['이스보셋', 30, 40, 55, 50, 50, 'israel', 'mahanaim', '사울의 아들 (이스위). 훗날 마하나임에서 왕이 된다.', '삼상 14:49; 삼하 2:8'],
+      ['말기수아', 70, 45, 40, 50, 55, 'israel', 'shechem', '사울의 아들, 아버지와 함께 싸운 왕자.', '삼상 14:49; 31:2'],
+      ['아비나답', 68, 45, 40, 50, 55, 'israel', 'jericho', '사울의 아들.', '삼상 31:2'],
+      ['미갈', 10, 72, 55, 85, 60, 'israel', 'bethel', '사울의 작은 딸. 다윗을 사랑하여 창문으로 달아나게 했다.', '삼상 18:20; 19:11-17'],
+      ['도엑', 75, 50, 40, 20, 5, 'israel', 'bethel', '에돔 사람, 사울의 목자장. 훗날 놉의 제사장들을 죽였다.', '삼상 21:7; 22:18'],
+      ['엘리압', 78, 45, 40, 60, 50, 'israel', 'bethlehem', '이새의 맏아들. 용모와 키가 뛰어났으나 여호와께서 버리셨다.', '삼상 16:6-7; 17:13'],
+      ['다윗', 85, 78, 65, 92, 98, null, 'bethlehem', '이새의 막내, 들에서 양을 치는 소년. 사자와 곰의 발톱에서 양을 건졌다.', '삼상 16:11-13; 17:34-37'],
+      ['이새', 20, 60, 55, 70, 85, null, 'bethlehem', '베들레헴 사람, 오벳의 아들. 여덟 아들의 아버지.', '삼상 16:1; 17:12'],
+      ['요압', 85, 70, 55, 55, 50, null, 'bethlehem', '다윗의 누이 스루야의 아들. 아직 이름 없는 젊은 용사.', '삼상 26:6; 삼하 2:13'],
+      ['아비새', 85, 50, 40, 55, 60, null, 'hebron', '스루야의 아들, 요압의 아우.', '삼상 26:6-9'],
+      ['아사헬', 75, 45, 35, 55, 60, null, 'hebron', '스루야의 아들, 발이 들노루 같이 빠른 청년.', '삼하 2:18'],
+      ['발디엘', 40, 50, 55, 60, 60, null, 'bethel', '갈림 사람 라이스의 아들. 훗날 미갈의 남편이 된다.', '삼상 25:44'],
+      ['아기스', 60, 70, 75, 70, 20, 'philistia', 'gath', '가드 왕 마옥의 아들.', '삼상 21:10; 27:2'],
+      ['골리앗', 99, 30, 20, 40, 5, 'philistia', 'gath', '가드 사람, 키가 여섯 규빗 한 뼘. 놋 투구와 오천 세겔 비늘 갑옷을 입고 사십 일 동안 이스라엘을 모욕했다.', '삼상 17:4-10'],
+      ['가드 방백', 70, 55, 55, 45, 5, 'philistia', 'gath', '가드의 방백.', '삼상 29:2'],
+      ['블레셋 방백', 68, 60, 60, 45, 5, 'philistia', 'ashdod', '블레셋 다섯 방백 중 하나.', '삼상 6:16; 29:6'],
+      ['블레셋 수비대장', 72, 45, 40, 35, 5, 'philistia', 'ekron', '게바와 믹마스 어귀를 지키던 블레셋 수비대의 장수.', '삼상 13:3, 23'],
+      ['블레셋 병거대장', 80, 50, 40, 40, 5, 'philistia', 'gaza', '병거 삼만과 마병 육천을 거느린 장수.', '삼상 13:5'],
+      ['나하스', 82, 55, 50, 40, 10, 'ammon', 'rabbah', '길르앗 야베스를 에워싸고 오른눈을 빼겠다던 암몬 왕.', '삼상 11:1-2'],
+      ['암몬 장수', 75, 40, 30, 30, 5, 'ammon', 'rabbah', '새벽에 사울의 세 부대에 흩어진 암몬 군의 장수.', '삼상 11:11'],
+      ['하눈', 55, 45, 45, 35, 15, 'ammon', 'rabbah', '나하스의 아들.', '삼하 10:1'],
+      ['아각', 75, 55, 50, 45, 5, 'amalek', 'beersheba', '아말렉 왕. "진실로 사망의 괴로움이 지났도다" 하며 나아왔다.', '삼상 15:8, 32'],
+      ['아말렉 장수', 72, 40, 30, 30, 5, 'amalek', 'beersheba', '하윌라에서 술까지 흩어진 아말렉 군의 장수.', '삼상 15:7; 30:1'],
+      ['모압 왕', 60, 55, 60, 50, 20, 'moab', 'kirhareseth', '모압의 왕. 훗날 다윗의 부모를 맡아 준다.', '삼상 14:47; 22:3-4'],
+      ['에돔 왕', 65, 55, 50, 45, 10, 'edom', 'bozrah', '에돔의 왕.', '삼상 14:47'],
+      ['아람 왕', 72, 60, 60, 55, 10, 'aram', 'damascus', '소바의 왕.', '삼상 14:47'],
+      ['소바 장수', 78, 45, 35, 40, 10, 'aram', 'damascus', '소바 왕의 군대 장관.', '삼상 14:47'],
+      ['두로 왕', 50, 75, 85, 75, 20, 'tyre', 'tyre', '바다의 상인 왕.', ''],
+      ['아라우나', 40, 60, 70, 60, 40, 'jebus', 'jerusalem', '여부스 사람, 훗날 성전 터의 주인.', '삼하 24:18'],
+    ],
+    rel: [['israel', 'tyre', 50], ['israel', 'moab', 40], ['philistia', 'ammon', 45], ['philistia', 'amalek', 45], ['israel', 'philistia', 10], ['israel', 'ammon', 10], ['israel', 'amalek', 5]],
+    goals: {
+      israel: ['bethel', 'shiloh', 'shechem', 'jericho', 'mahanaim', 'ramoth', 'bethlehem', 'hebron', 'beersheba', 'rabbah', 'ekron', 'gath'],
+      philistia: ['gath', 'ekron', 'ashdod', 'ashkelon', 'gaza', 'joppa', 'bethel', 'shiloh', 'shechem', 'jericho', 'bethlehem', 'hebron'],
+    },
+    goalText: {
+      israel: '사방의 대적에게서 이스라엘을 건진다 (삼상 14:47-48). 본토의 성과 길르앗 야베스, 아말렉의 브엘세바, 암몬의 랍바, 블레셋의 에그론·가드까지 12성을 차지한다.',
+      philistia: '다섯 성읍과 욥바를 지키고, 벧엘에서 헤브론까지 이스라엘 산지 전체를 다스린다.',
+    },
+  },
+  {
     id: 'david',
     title: '다윗의 통일 전쟁',
     year: 1010,
@@ -376,6 +455,151 @@ const EVENTS = {
       choices: [
         { label: '후새를 보내 아히도벨의 계략을 무너뜨린다', ok: G => G.alive('후새') && G.facOf('후새') === 'judah', run: G => { G.rebel('absalom', '압살롬', 'hebron', ['압살롬', 70, 75, 70, 95, 30, null, 'hebron', '다윗의 셋째 아들, 백성의 마음을 훔친 자.', '삼하 15:6']); return '압살롬이 헤브론에서 일어났지만, 후새 덕분에 아히도벨은 떠나지 못했다.'; } },
         { label: '성을 떠나 감람산을 울며 오른다', run: G => { G.rebel('absalom', '압살롬', 'hebron', ['압살롬', 70, 75, 70, 95, 30, null, 'hebron', '다윗의 셋째 아들, 백성의 마음을 훔친 자.', '삼하 15:6']); if (G.alive('아히도벨') && G.facOf('아히도벨') === 'judah') G.join('아히도벨', 'absalom', 'hebron'); G.eachCity('judah', c => c.faith += 5); return '압살롬이 헤브론을 차지했고 아히도벨이 그에게 갔다. 왕의 겸손에 백성의 신앙 +5.'; } },
+      ] },
+  ],
+  saul: [
+    { id: 'smiths', who: 'israel', auto: 0,
+      cond: G => G.turn >= 1 && G.exists('israel') && G.exists('philistia'),
+      title: '이스라엘에 대장장이가 없다', ref: '삼상 13:19-22',
+      text: '블레셋 사람들이 "히브리 사람이 칼이나 창을 만들까 하노라" 하여 이스라엘 온 땅에 대장장이를 두지 않았다. 보습과 곡괭이를 벼리려면 블레셋 사람에게로 내려가야 했고, 싸우는 날에 칼과 창을 가진 자는 사울과 요나단뿐이었다.',
+      choices: [
+        { label: '돌과 나무로 물매와 방패를 스스로 마련한다', run: G => {
+          G.fac('israel').gold -= 100;
+          if (G.item) { G.item('israel', 'sling', 1); G.item('israel', 'shield', 1); }
+          if (G.res) G.res('israel', { wood: 200, stone: 200 });
+          G.eachCity('israel', c => c.train += 5);
+          return '금 -100. 물매 돌과 큰 방패를 얻고 나무·돌 +200. 이스라엘 모든 성의 훈련 +5.'; } },
+        { label: '블레셋에 은을 내고 농기구를 벼린다', run: G => {
+          G.fac('israel').gold -= 150; G.fac('israel').food += 1500; G.rel('israel', 'philistia', 10);
+          return '금 -150, 식량 +1500. 블레셋과의 관계 +10. 칼과 창은 여전히 없다.'; } },
+      ] },
+    { id: 'jabesh', who: 'israel', auto: 0,
+      cond: G => G.turn >= 2 && G.exists('israel') && G.exists('ammon') && !G.ownerOf('ramoth'),
+      title: '길르앗 야베스를 구원하라', ref: '삼상 11:1-11',
+      text: '암몬 사람 나하스가 길르앗 야베스(라못길르앗)를 에워싸고 "너희 오른눈을 다 빼야 언약하리라" 하였다. 밭에서 소를 몰고 오던 사울이 이 말을 듣자 하나님의 영이 크게 임하였다. 그가 소 한 겨리를 잡아 각을 떠서 이스라엘 온 지경에 보냈다.',
+      choices: [
+        { label: '온 이스라엘을 모아 새벽에 세 부대로 친다', run: G => {
+          const r = G.city('ramoth'); r.owner = 'israel'; r.soldiers += 1500; r.loy = 90; r.faith += 15;
+          G.city('rabbah').soldiers = Math.floor(G.city('rabbah').soldiers * 0.7);
+          G.buff('israel', 'atk', 3, 0.25); G.eachCity('israel', c => c.loy += 5);
+          G.flags.jabesh = true;
+          return '새벽에 암몬 군을 쳐서 날이 더울 때까지 죽였다. 길르앗 야베스(라못길르앗)가 이스라엘에 합류했고, 랍바의 암몬 군 30% 궤멸. 3턴 동안 공격력 +25%, 민심 +5. "오늘은 사람을 죽이지 못할 것은 여호와께서 이스라엘 중에 구원을 베푸셨음이라" (11:13).'; } },
+        { label: '싸움을 피하고 야베스를 내버려 둔다', run: G => {
+          const r = G.city('ramoth'); r.owner = 'ammon'; r.soldiers = 2500;
+          G.eachCity('israel', c => { c.loy -= 10; c.faith -= 5; });
+          return '나하스가 길르앗 야베스(라못길르앗)를 차지했다. 이스라엘 민심 -10, 신앙 -5. "이 사람이 어떻게 우리를 구원하겠느냐" 하는 불량배들의 말이 퍼진다.'; } },
+      ],
+      altWho: 'ammon', altText: '나하스가 야베스 사람들에게 이레의 말미를 주었다. 이스라엘의 새 왕이 온다는 소문이다.',
+      altChoices: [
+        { label: '이레를 기다리지 않고 성을 친다', run: G => { const r = G.city('ramoth'); r.owner = 'ammon'; r.soldiers = 2000; G.eachCity('ammon', c => c.loy -= 5); return '암몬이 길르앗 야베스(라못길르앗)를 차지했다. 서두른 공격에 암몬 민심 -5.'; } },
+        { label: '약속대로 이레를 기다린다', run: G => { G.city('ramoth').owner = 'israel'; G.city('rabbah').soldiers = Math.floor(G.city('rabbah').soldiers * 0.7); G.buff('israel', 'atk', 3, 0.25); G.flags.jabesh = true; return '새벽에 사울의 군대가 들이닥쳤다. 라못길르앗을 잃고 랍바의 군사 30%가 흩어졌다.'; } },
+      ] },
+    { id: 'gilgal', who: 'israel', auto: 1,
+      cond: G => G.turn >= 5 && G.exists('israel') && G.exists('philistia') && G.alive('사울') && G.facOf('사울') === 'israel' && G.alive('사무엘'),
+      title: '길갈의 제사', ref: '삼상 13:8-14',
+      text: '블레셋이 믹마스에 진을 치자 백성이 굴과 수풀과 바위틈에 숨었다. 사울은 사무엘이 정한 이레를 기다렸으나 사무엘이 오지 않고 백성은 흩어져 간다. 사울이 말했다. "번제와 화목제물을 이리로 가져오라."',
+      choices: [
+        { label: '흩어지는 백성을 보면서도 사무엘을 끝까지 기다린다', run: G => {
+          const cap = G.city(G.fac('israel').capital); cap.soldiers = Math.floor(cap.soldiers * 0.85);
+          G.eachCity('israel', c => { c.faith += 10; c.loy -= 3; });
+          const s = G.o('사울'); s.fai = Math.min(100, s.fai + 10);
+          G.flags.waitedSamuel = true; if (G.kingdom) G.kingdom(5, '말씀을 기다림');
+          return '도읍의 병력 15%가 흩어졌지만, 사무엘이 와서 제사를 드렸다. 신앙 +10, 민심 -3, 사울 신앙 +10.'; } },
+        { label: '왕이 직접 번제를 드린다', run: G => {
+          G.eachCity('israel', c => { c.faith -= 10; c.loy += 3; });
+          const s = G.o('사울'); s.fai = Math.max(0, s.fai - 15);
+          G.flags.gilgalSin = true; if (G.kingdom) G.kingdom(-5, '망령된 제사');
+          return '번제를 마치자마자 사무엘이 왔다. "왕이 망령되이 행하였도다. 이제는 왕의 나라가 길지 못할 것이라" (13:13-14). 신앙 -10, 사울 신앙 -15.'; } },
+      ] },
+    { id: 'michmash', who: 'israel', auto: 0,
+      cond: G => G.turn >= 7 && G.exists('israel') && G.exists('philistia') && G.alive('요나단') && G.facOf('요나단') === 'israel',
+      title: '요나단과 무기를 든 소년', ref: '삼상 14:1-23',
+      text: '요나단이 무기를 든 소년에게 말했다. "할례 받지 않은 자들의 부대에게로 건너가자. 여호와의 구원은 사람이 많고 적음에 달리지 아니하였느니라." 둘이 보세스와 세네 바위 사이로 기어올라 블레셋 수비대를 치자, 땅이 진동하고 블레셋 진영에 큰 떨림이 일어났다.',
+      choices: [
+        { label: '요나단을 따라 온 군대가 추격하고, 백성을 먹여 힘을 얻게 한다', run: G => {
+          G.buff('israel', 'atk', 4, 0.3);
+          const t = ['ekron', 'gath', 'ashdod'].find(id => G.ownerOf(id) === 'philistia'); if (t) G.city(t).soldiers = Math.floor(G.city(t).soldiers * 0.6);
+          const j = G.o('요나단'); j.war = Math.min(100, j.war + 3); j.cha = Math.min(100, j.cha + 3);
+          if (G.item) G.item('israel', 'trumpet', 1);
+          return '블레셋 사람들이 서로 칼로 쳤다. 4턴 동안 공격력 +30%' + (t ? `, ${{ ekron: '에그론', gath: '가드', ashdod: '아스돗' }[t]}의 블레셋 수비대 40% 궤멸` : '') + '. 요나단 무력·매력 +3. 양각 나팔을 얻었다.'; } },
+        { label: '"원수에게 갚기까지 음식을 먹는 자는 저주를 받으리라" 맹세한다', run: G => {
+          G.buff('israel', 'atk', 3, 0.15); G.eachCity('israel', c => c.loy -= 10);
+          G.flags.saulOath = true;
+          return '백성이 피곤하여 탈진했다. 요나단이 꿀을 찍어 먹은 일로 죽을 뻔했으나 백성이 그를 구원했다 (14:24-45). 3턴 동안 공격력 +15%, 민심 -10.'; } },
+      ],
+      altWho: 'philistia', altText: '믹마스 어귀의 수비대가 기습을 받았다. 진영이 크게 떨고 있다.',
+      altChoices: [
+        { label: '진영을 수습한다', run: G => { G.buff('israel', 'atk', 3, 0.2); G.buff('philistia', 'atk', 2, -0.1); return '이스라엘 3턴 동안 공격력 +20%, 블레셋 2턴 동안 공격력 -10%.'; } },
+      ] },
+    { id: 'amalek', who: 'israel', auto: 1,
+      cond: G => G.turn >= 10 && G.exists('israel') && G.exists('amalek') && G.alive('사울') && G.facOf('사울') === 'israel',
+      title: '아말렉을 치라', ref: '삼상 15:1-23',
+      text: '사무엘이 사울에게 말했다. "만군의 여호와께서 이같이 말씀하시되, 아말렉이 이스라엘에게 행한 일 곧 애굽에서 올라올 때에 길에서 대적한 일로 내가 그들을 벌하노니, 지금 가서 그들의 모든 소유를 남기지 말라."',
+      choices: [
+        { label: '말씀대로 온전히 행한다', run: G => {
+          G.kill('아각'); G.eachCity('amalek', c => c.soldiers = Math.floor(c.soldiers * 0.4));
+          G.eachCity('israel', c => c.faith += 15);
+          const s = G.o('사울'); if (s) s.fai = Math.min(100, s.fai + 10);
+          G.flags.amalekObeyed = true; if (G.kingdom) G.kingdom(10, '온전한 순종');
+          return '하윌라에서 술까지 아말렉을 쳤다. 아각이 죽고 아말렉 병력 60% 궤멸. 이스라엘 신앙 +15, 사울 신앙 +10.'; } },
+        { label: '아각과 가장 좋은 양과 소를 남긴다', run: G => {
+          G.kill('아각'); G.eachCity('amalek', c => c.soldiers = Math.floor(c.soldiers * 0.6));
+          const F = G.fac('israel'); F.food += 3000; F.gold += 300;
+          G.eachCity('israel', c => c.faith -= 20);
+          const s = G.o('사울'); if (s) s.fai = Math.max(0, s.fai - 20);
+          G.flags.saulRejected = true; if (G.kingdom) G.kingdom(-10, '여호와께서 사울을 버리심');
+          return '식량 +3000, 금 +300. 그러나 사무엘이 말했다. "여호와께서 번제와 다른 제사를 그의 목소리를 청종하는 것을 좋아하심 같이 좋아하시겠나이까. 순종이 제사보다 낫고 듣는 것이 숫양의 기름보다 나으니" (15:22). 사무엘이 길갈에서 아각을 찍었다. 여호와께서 사울을 버리셨다 — 이스라엘 신앙 -20, 사울 신앙 -20.'; } },
+      ] },
+    { id: 'anoint', who: 'israel', auto: 0,
+      cond: G => G.done.amalek && G.exists('israel') && G.alive('다윗') && G.alive('사무엘') && (!G.facOf('다윗') || G.facOf('다윗') === 'israel'),
+      title: '이새의 막내에게 기름을 붓다', ref: '삼상 16:1-13',
+      text: '"너는 뿔에 기름을 채워 가지고 베들레헴 사람 이새에게로 가라." 엘리압을 보고 사무엘이 "여호와의 기름 부으실 자가 과연 주님 앞에 있도다" 하였으나 여호와께서 말씀하셨다. "사람은 외모를 보거니와 나 여호와는 중심을 보느니라." 들에서 양을 치던 막내 다윗이 불려 왔다.',
+      choices: [
+        { label: '다윗을 궁으로 불러 수금을 타게 한다', run: G => {
+          const d = G.o('다윗'); d.fai = 99; d.cha = Math.min(100, d.cha + 3);
+          if (G.facOf('다윗') !== 'israel') G.join('다윗', 'israel');
+          G.flags.davidAnointed = true;
+          return '여호와의 영이 다윗에게 크게 감동되었다. 사울이 다윗을 사랑하여 무기를 드는 자로 삼았다 (16:21). 다윗이 이스라엘에 합류했다.'; } },
+        { label: '이새의 집에 조용히 머물게 둔다', run: G => {
+          const d = G.o('다윗'); d.fai = 99; G.flags.davidAnointed = true;
+          return '사무엘이 형들 가운데서 다윗에게 기름을 부었다. 다윗은 아직 베들레헴의 들에서 양을 친다 (인재 명령으로 등용할 수 있다).'; } },
+      ] },
+    { id: 'goliath', who: 'israel', auto: 0,
+      cond: G => G.turn >= 12 && G.exists('israel') && G.exists('philistia') && G.alive('골리앗') && G.facOf('골리앗') === 'philistia' && G.alive('다윗') && (!G.facOf('다윗') || G.facOf('다윗') === 'israel'),
+      title: '엘라 골짜기의 골리앗', ref: '삼상 17장',
+      text: '가드 사람 골리앗이 사십 일 동안 아침저녁으로 나와 "사람을 택하여 내게로 내려보내라" 하고 이스라엘을 모욕했다. 형들에게 떡을 가져온 소년 다윗이 말했다. "너는 칼과 창과 단창으로 내게 나아오거니와 나는 만군의 여호와의 이름으로 네게 나아가노라."',
+      choices: [
+        { label: '사울의 갑옷을 벗고 물매와 매끄러운 돌 다섯을 든 다윗을 보낸다', run: G => {
+          if (G.facOf('다윗') !== 'israel') G.join('다윗', 'israel');
+          G.kill('골리앗');
+          const d = G.o('다윗'); d.war = Math.min(100, d.war + 5); d.cha = Math.min(100, d.cha + 5);
+          if (G.item) G.item('israel', 'sword_goliath', 1);
+          G.buff('israel', 'atk', 4, 0.3);
+          ['gath', 'ekron'].forEach(id => { if (G.ownerOf(id) === 'philistia') G.city(id).soldiers = Math.floor(G.city(id).soldiers * 0.7); });
+          G.eachCity('israel', c => { c.faith += 10; c.loy += 5; });
+          G.flags.goliathSlain = true; if (G.kingdom) G.kingdom(8, '여호와의 이름으로');
+          return '돌이 골리앗의 이마에 박혔다. 다윗이 이스라엘에 합류하고 골리앗의 칼을 얻었다. 4턴 동안 공격력 +30%, 가드·에그론의 블레셋 군 30% 궤멸, 신앙 +10, 민심 +5. "전쟁은 여호와께 속한 것이라" (17:47).'; } },
+        { label: '사십 일을 더 버티며 용사를 찾는다', run: G => {
+          G.eachCity('israel', c => c.loy -= 10); G.buff('philistia', 'atk', 3, 0.2);
+          return '이스라엘 군이 크게 두려워한다. 민심 -10, 블레셋 3턴 동안 공격력 +20%.'; } },
+      ] },
+    { id: 'covenant', who: 'israel', auto: 1,
+      cond: G => G.done.goliath && G.flags.goliathSlain && G.turn >= 14 && G.alive('다윗') && G.facOf('다윗') === 'israel' && G.alive('사울') && G.facOf('사울') === 'israel',
+      title: '사울은 천천이요 다윗은 만만이로다', ref: '삼상 18:1-16; 20:12-17',
+      text: '요나단의 마음이 다윗의 마음과 하나가 되어 자기 겉옷과 칼과 활과 띠를 다윗에게 주고 언약을 맺었다. 그러나 여인들이 춤추며 "사울이 죽인 자는 천천이요 다윗은 만만이로다" 하고 노래하자, 그날부터 사울이 다윗을 주목하였다.',
+      choices: [
+        { label: '질투를 내려놓고 다윗을 천부장으로 세운다', ok: G => G.alive('요나단'), run: G => {
+          const d = G.o('다윗'), j = G.o('요나단'); d.fai = Math.min(100, d.fai + 1); j.fai = Math.min(100, j.fai + 3);
+          const s = G.o('사울'); s.fai = Math.min(100, s.fai + 5); s.cha = Math.min(100, s.cha + 5);
+          G.eachCity('israel', c => c.loy += 10);
+          G.flags.jonathanCovenant = true; if (G.kingdom) G.kingdom(5, '요나단과 다윗의 언약');
+          return '요나단과 다윗이 여호와 앞에서 언약을 맺었다. 사울이 다윗을 시기하지 않으니 온 이스라엘과 유다가 기뻐했다. 민심 +10, 사울 신앙·매력 +5.'; } },
+        { label: '수금을 타는 다윗에게 창을 던진다', run: G => {
+          const d = G.o('다윗'); d.fac = null; d.city = 'gath';
+          G.eachCity('israel', c => { c.loy -= 10; c.faith -= 10; });
+          const s = G.o('사울'); s.fai = Math.max(0, s.fai - 10);
+          G.flags.saulJealous = true; if (G.kingdom) G.kingdom(-5, '사울의 질투');
+          return '다윗이 두 번 몸을 피했다. 미갈이 그를 창문으로 달아나게 했고, 다윗은 가드 왕 아기스에게로 도망했다 (19:11-17; 21:10). 다윗이 재야로 떠났다. 이스라엘 민심 -10, 신앙 -10.'; } },
       ] },
   ],
   divided: [
