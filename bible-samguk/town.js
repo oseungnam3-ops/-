@@ -694,7 +694,7 @@
     const owner = c.owner, mine = owner === P;
     const oc = owner ? Gm.fac(owner).color : '#7c7667';
     $('#townTitle').innerHTML = `<h2>${ci.name}</h2><span class="chip fac" style="--fc:${oc}"><i></i>${owner ? Gm.esc(Gm.fac(owner).name) : '주인 없음'}${owner && Gm.fac(owner).capital === cid ? ' · 도읍' : ''}</span>`;
-    $('#townRes').innerHTML = `<span class="stat"><b>${Gm.yearLabel()}</b></span><span class="stat"><b>금</b>${Gm.fmt(F.gold)}</span><span class="stat"><b>식량</b>${Gm.fmt(F.food)}</span>`;
+    $('#townRes').innerHTML = `<span class="stat"><b>${Gm.yearLabel()}</b></span><span class="stat"><b>금</b>${Gm.fmt(F.gold)}</span><span class="stat"><b>식량</b>${Gm.fmt(F.food)}</span><span class="stat"><b>목재</b>${Gm.fmt(F.wood || 0)}</span><span class="stat"><b>석재</b>${Gm.fmt(F.stone || 0)}</span>`;
     const st = [['병력', Gm.fmt(c.soldiers)], ['인구', Gm.fmt(c.pop)], ['농업', c.agri], ['상업', c.comm], ['성벽', c.def], ['훈련', c.train], ['민심', c.loy], ['신앙', c.faith]];
     $('#townStats').innerHTML = st.map(([k, val]) => `<span><b>${k}</b>${val}</span>`).join('');
     const offs = owner ? Gm.offsIn(cid, owner) : [];

@@ -80,6 +80,7 @@
     Object.values(S.cities).forEach(c => { if (c.owner) { const r = offById(fac(c.owner).ruler); c.faith = r ? Math.round(30 + r.fai * 0.35) : 40; } fixCity(c); });
     Object.keys(S.facs).forEach(a => Object.keys(S.facs).forEach(b => { if (a < b) setRel(a, b, 30); }));
     (sc.rel || []).forEach(([a, b, v]) => setRel(a, b, v));
+    initEcon();
     S.story = { ch: 0, counts: {}, base: 0, done: [], kingdom: 10 };
     startChapter();
     log(`${sc.title} — ${fac(player).name}의 역사가 시작된다.`, 'gold');
@@ -109,6 +110,8 @@
     eachCity: (f, fn) => citiesOf(f).forEach(c => { fn(c); fixCity(c); }),
     buff: (f, k, turns, val) => { S.buffs[f] = S.buffs[f] || {}; S.buffs[f][k] = { turns, val }; },
     rel: (a, b, d) => setRel(a, b, getRel(a, b) + d),
+    item: (f, id, n = 1) => { if (!exists(f) || !ITEMS[id]) return; const F = fac(f); F.items = F.items || {}; F.items[id] = (F.items[id] || 0) + n; },
+    res: (f, add) => { if (!exists(f)) return; const F = fac(f); Object.entries(add).forEach(([k, v]) => { F[k] = Math.max(0, (F[k] || 0) + v); }); },
     kill: n => { const o = offByName(n); if (o && o.alive) killOfficer(o); },
     join: (n, f, cid) => { const o = offByName(n); if (!o || !o.alive || !exists(f)) return; const wasRuler = o.fac && fac(o.fac).ruler === o.id; const from = o.fac; o.fac = f; o.city = cid || fac(f).capital; if (wasRuler) succession(from); },
     transferAll: (from, to) => {
@@ -153,7 +156,7 @@
   const CMDS = {
     agri: { label: '개간', stat: 'pol', cost: { gold: 100 }, hint: '농업 ↑ (가을 수확)' },
     comm: { label: '상업', stat: 'pol', cost: { gold: 100 }, hint: '상업 ↑ (매 계절 금)' },
-    wall: { label: '성벽', stat: 'pol', cost: { gold: 100 }, hint: '성벽 ↑ (수비력)' },
+    wall: { label: '성벽', stat: 'pol', cost: { gold: 50, wood: 200, stone: 300 }, hint: '성벽 ↑ (목재·석재)' },
     worship: { label: '제사', stat: 'fai', cost: { gold: 60 }, hint: '신앙 ↑ (사기·민심)' },
     relief: { label: '구휼', stat: 'cha', cost: { food: 500 }, hint: '민심 ↑' },
     recruit: { label: '징병', stat: 'cha', cost: { gold: 0 }, hint: '병력 ↑ 민심 ↓' },
@@ -162,23 +165,104 @@
   };
   const STAT_NAME = { war: '무력', int: '지력', pol: '정치', cha: '매력', fai: '신앙' };
 
+  // ---------- 건물·자원·전쟁 도구 ----------
+  // 성마다 여덟 건물(레벨 1~10). 왕궁 레벨이 다른 건물의 상한이다. 공사는 계절 단위로 진행된다.
+  const BLD = {
+    palace: { name: '왕궁', max: 10, stat: '민심·건물 상한', eff: l => `민심 매 계절 +${(l - 1) * 0.3}, 다른 건물 최대 Lv.${l}` },
+    temple: { name: '성전', max: 10, stat: '신앙', eff: l => `제사 효과 +${(l - 1) * 8}%, 신앙 매 계절 +${((l - 1) * 0.3).toFixed(1)}` },
+    market: { name: '마을', max: 10, stat: '금', eff: l => `금 수입 +${(l - 1) * 8}%, 상업 명령 +${(l - 1) * 6}%` },
+    farm: { name: '농장', max: 10, stat: '식량', eff: l => `가을 수확 +${(l - 1) * 8}%, 개간 명령 +${(l - 1) * 6}%` },
+    quarry: { name: '채석장', max: 10, stat: '석재', eff: l => `석재 매 계절 +${fmt(quarryOut(l))}` },
+    lumber: { name: '벌목장', max: 10, stat: '목재', eff: l => `목재 매 계절 +${fmt(lumberOut(l))}` },
+    camp: { name: '병영', max: 10, stat: '군사', eff: l => `징병·훈련 +${(l - 1) * 8}%, 제작 가능 도구 늘어남${l >= 5 ? ', 전차병 출전 가능' : ''}` },
+    port: { name: '항구', max: 10, stat: '교역', eff: l => `교역 금 매 계절 +${(l - 1) * 25}` },
+  };
+  const BLD_ORDER = ['palace', 'temple', 'market', 'farm', 'quarry', 'lumber', 'camp', 'port'];
+  const lumberOut = l => 80 + l * 70, quarryOut = l => 60 + l * 60;
+  const bl = (c, k) => (c.bld && c.bld[k]) || 1;
+  const bMul = (c, k, p = 0.08) => 1 + (bl(c, k) - 1) * p;
+  function upCost(k, l) { // l → l+1
+    const m = k === 'palace' ? 1.6 : k === 'temple' ? 1.3 : 1;
+    return { gold: Math.round(80 * l * m), wood: Math.round(160 * l * m), stone: Math.round(140 * l * m) };
+  }
+  const upTurns = l => (l >= 7 ? 3 : l >= 4 ? 2 : 1);
+  const canPay = (F, cost) => Object.entries(cost).every(([k, v]) => (F[k] || 0) >= v);
+  const pay = (F, cost) => Object.entries(cost).forEach(([k, v]) => { F[k] = (F[k] || 0) - v; });
+  const costText = cost => Object.entries(cost).filter(([, v]) => v).map(([k, v]) => `${RES_NAME[k]} ${fmt(v)}`).join(' · ');
+  const RES_NAME = { gold: '금', food: '식량', wood: '목재', stone: '석재' };
+  function upBlock(c, k) {
+    const F = fac(c.owner), l = bl(c, k);
+    if (c.build) return c.build.k === k ? '공사 중' : `${BLD[c.build.k].name} 공사 중`;
+    if (l >= BLD[k].max) return '최고 레벨';
+    if (k !== 'palace' && l >= bl(c, 'palace')) return `왕궁 Lv.${l + 1} 필요`;
+    if (!canPay(F, upCost(k, l))) return '자원 부족';
+    return '';
+  }
+  function startUpgrade(c, k) {
+    const why = upBlock(c, k); if (why) return why;
+    const l = bl(c, k); pay(fac(c.owner), upCost(k, l));
+    c.build = { k, left: upTurns(l) };
+    return '';
+  }
+  function tickBuilds(F) {
+    citiesOf(F.id).forEach(c => {
+      if (!c.build) return;
+      if (--c.build.left > 0) return;
+      const k = c.build.k; c.bld[k] = bl(c, k) + 1; c.build = null;
+      if (F.id === S.player) { log(`${CITY_INFO[c.id].name}의 ${BLD[k].name}이(가) Lv.${c.bld[k]}(으)로 올라갔다.`, 'gold'); S.story.counts['bld'] = (S.story.counts['bld'] || 0) + 1; }
+    });
+  }
+  // 전쟁 도구: 병영에서 만들고 출진할 때 두 가지까지 쓴다. 성물(relic)은 쓰고도 남는다.
+  const ITEMS = {
+    ladder: { name: '공성 사다리', cost: { wood: 300 }, camp: 1, desc: '성벽의 방어 효과를 절반으로 줄인다' },
+    sling: { name: '물매 돌', cost: { stone: 250 }, camp: 1, desc: '적에게 주는 피해 +12%' },
+    rations: { name: '군량 수레', cost: { wood: 100, food: 800 }, camp: 1, desc: '출진 군량 소모를 절반으로' },
+    shield: { name: '큰 방패', cost: { wood: 250, gold: 60 }, camp: 2, desc: '아군이 받는 피해 -20%' },
+    torch: { name: '횃불과 항아리', cost: { wood: 150, gold: 60 }, camp: 2, desc: '첫 합에 기습 — 적 병력 -12% (삿 7:20)' },
+    trumpet: { name: '양각 나팔', cost: { gold: 180 }, camp: 3, desc: '적의 사기를 꺾어 병력 -8%, 계략 적중 +' },
+    ram: { name: '충차', cost: { wood: 600, stone: 200, gold: 120 }, camp: 4, desc: '성벽 효과 -35%, 함락 뒤 성벽 손상 적음' },
+    sword_goliath: { name: '골리앗의 칼', cost: null, relic: true, desc: '성물 — 일기토에서 대장의 무력 +15 (삼상 21:9)' },
+  };
+  const ITEM_ORDER = ['ladder', 'sling', 'rations', 'shield', 'torch', 'trumpet', 'ram', 'sword_goliath'];
+  // 병종
+  const UNITS = {
+    spear: { name: '창병', desc: '균형 잡힌 보병' },
+    sling: { name: '물매병', desc: '처음 두 합 피해 +35%, 이후 -10% (삿 20:16)' },
+    chariot: { name: '전차병', desc: '평지 성 공격 +25%, 산지 -15% · 병영 Lv.5 · 금 소모', camp: 5 },
+  };
+  const PLAINS = ['megiddo', 'bethshean', 'gaza', 'ashdod', 'ashkelon', 'ekron', 'joppa', 'hazor', 'damascus', 'jericho', 'beersheba', 'dan', 'tyre'];
+  // 선지자·제사장(또는 신앙 90 이상)은 출진에서 장군과 따로 '선지자' 자리로 따라가 기도한다.
+  const isProphet = o => { const r = window.PORTRAIT ? PORTRAIT.roleOf(o) : ''; return r === 'prophet' || r === 'priest' || o.fai >= 90; };
+  function initEcon() {
+    Object.values(S.facs).forEach(F => { if (F.wood == null) F.wood = 2000; if (F.stone == null) F.stone = 1500; if (!F.items) F.items = {}; });
+    Object.values(S.cities).forEach(c => {
+      if (c.bld) return;
+      const lv = v => clamp(Math.ceil(v / 14), 1, 6);
+      const cap = c.owner && fac(c.owner).capital === c.id;
+      c.bld = { palace: cap ? 5 : 3, temple: lv(c.faith), market: lv(c.comm), farm: lv(c.agri), quarry: lv(c.def * 0.8), lumber: lv(c.def * 0.8), camp: lv(c.train * 0.8), port: PLAINS.includes(c.id) && ['joppa', 'tyre', 'gaza', 'ashdod', 'ashkelon'].includes(c.id) ? 3 : 1 };
+      BLD_ORDER.forEach(k => { if (k !== 'palace') c.bld[k] = Math.min(c.bld[k], c.bld.palace); });
+      c.build = null;
+    });
+  }
+
   function doCmd(f, o, cid, key) {
     const c = city(cid), F = fac(f), C = CMDS[key];
     if (C.cost.gold && F.gold < C.cost.gold) return { ok: false, msg: '금이 부족하다.' };
     if (C.cost.food && F.food < C.cost.food) return { ok: false, msg: '식량이 부족하다.' };
-    if (C.cost.gold) F.gold -= C.cost.gold;
-    if (C.cost.food) F.food -= C.cost.food;
+    if (C.cost.wood && (F.wood || 0) < C.cost.wood) return { ok: false, msg: `목재가 부족하다. (필요 ${C.cost.wood})` };
+    if (C.cost.stone && (F.stone || 0) < C.cost.stone) return { ok: false, msg: `석재가 부족하다. (필요 ${C.cost.stone})` };
+    pay(F, C.cost);
     const s = o[C.stat]; let msg = '', found = null;
     const gain = (base) => Math.max(1, Math.round(base * s / 100 + rnd(0, 3)));
     switch (key) {
-      case 'agri': { const g = gain(8); c.agri += g; msg = `농업 +${g}`; break; }
-      case 'comm': { const g = gain(8); c.comm += g; msg = `상업 +${g}`; break; }
+      case 'agri': { const g = Math.round(gain(8) * bMul(c, 'farm', 0.06)); c.agri += g; msg = `농업 +${g}`; break; }
+      case 'comm': { const g = Math.round(gain(8) * bMul(c, 'market', 0.06)); c.comm += g; msg = `상업 +${g}`; break; }
       case 'wall': { const g = gain(7); c.def += g; msg = `성벽 +${g}`; break; }
-      case 'worship': { const g = gain(9); c.faith += g; c.loy += 2; msg = `신앙 +${g}, 민심 +2`; break; }
+      case 'worship': { const g = Math.round(gain(9) * bMul(c, 'temple')); c.faith += g; c.loy += 2; msg = `신앙 +${g}, 민심 +2`; break; }
       case 'relief': { const g = gain(10); c.loy += g; msg = `민심 +${g}`; break; }
-      case 'train': { const g = gain(10); c.train += g; msg = `훈련 +${g}`; break; }
+      case 'train': { const g = Math.round(gain(10) * bMul(c, 'camp')); c.train += g; msg = `훈련 +${g}`; break; }
       case 'recruit': {
-        const n = Math.round(Math.min((400 + s * 12 + c.pop / 60) * (0.6 + c.loy / 250), (c.pop - 1000) * 0.2) / 50) * 50;
+        const n = Math.round(Math.min((400 + s * 12 + c.pop / 60) * (0.6 + c.loy / 250) * bMul(c, 'camp'), (c.pop - 1000) * 0.2) / 50) * 50;
         if (n < 100) return { ok: false, msg: '이 성에는 더 모을 장정이 없다.' };
         const cost = Math.round(n / 8);
         if (F.gold < cost) { return { ok: false, msg: `징병에는 금 ${cost}이 필요하다.` }; }
@@ -202,34 +286,45 @@
   }
 
   // ---------- 전투 ----------
-  function sidePower(f, offs, train, isDef, c) {
+  function sidePower(f, offs, train, isDef, c, wallK = 1) {
     const lead = offs.reduce((m, o) => Math.max(m, o.war), 30);
     const strat = offs.reduce((m, o) => Math.max(m, o.int), 30);
     let p = (1 + (lead - 50) / 100 + (strat - 50) / 250) * (0.6 + train / 250) * (0.85 + avgFaith(f) / 330);
     p *= 1 + buffVal(f, 'atk');
-    if (isDef) p *= 1 + c.def / 180;
+    if (isDef) p *= 1 + c.def * wallK / 180;
     return p;
   }
 
   // 공격 실행. 반환: {win, attLeft, lines[], summary, captives[]}
-  function battle(af, aoffs, soldiers, cid, train) {
+  // opts: { unit: 병종, prophet: 동행 선지자, items: 쓰는 전쟁 도구 id[] }
+  function battle(af, aoffs, soldiers, cid, train, opts = {}) {
     const c = city(cid), df = c.owner;
     const doffs = df ? offsIn(cid, df) : [];
     const lines = [];
     const aName = facName(af), dName = df ? facName(df) : '성읍 백성';
     let A = soldiers, D = c.soldiers;
     let aP = sidePower(af, aoffs, train, false, c);
-    let dP = df ? sidePower(df, doffs, c.train, true, c) : 0.8 * (1 + c.def / 180);
+    const it = new Set(opts.items || []), unit = opts.unit || 'spear', pr = opts.prophet && opts.prophet.alive ? opts.prophet : null;
+    const wallK = (it.has('ladder') ? 0.5 : 1) * (it.has('ram') ? 0.65 : 1);
+    let dP = df ? sidePower(df, doffs, c.train, true, c, wallK) : 0.8 * (1 + c.def * wallK / 180);
     const aL = aoffs.slice().sort((a, b) => b.war - a.war)[0];
     const dL = doffs.slice().sort((a, b) => b.war - a.war)[0];
     lines.push(`⚔ ${aName}군 ${fmt(A)}명이 ${CITY_INFO[cid].name}(${dName} ${fmt(D)}명)을 공격한다.`);
     if (aL) lines.push(`공격 대장: ${aoffs.map(o => o.name).join(', ')}`);
     if (dL) lines.push(`수비 대장: ${doffs.map(o => o.name).join(', ')}`);
+    if (unit !== 'spear') lines.push(`병종: ${UNITS[unit].name}`);
+    if (unit === 'chariot') { const flat = PLAINS.includes(cid); aP *= flat ? 1.25 : 0.85; lines.push(flat ? '🐎 평지에서 전차가 거침없이 달린다!' : '⛰ 산지라 전차가 제 힘을 쓰지 못한다.'); }
+    if (pr) { aP *= 1 + Math.max(0, pr.fai - 60) / 200; lines.push(`🙏 선지자 ${pr.name}이(가) 여호와께 기도하니 군사들의 마음이 굳세어진다.`); }
+    if (it.size) lines.push(`전쟁 도구: ${[...it].map(k => ITEMS[k].name).join(', ')}`);
+    if (wallK < 1 && c.def > 0) lines.push(`🪜 ${[it.has('ladder') && '사다리', it.has('ram') && '충차'].filter(Boolean).join('와 ')}로 성벽을 넘본다 — 성벽 효과 ${Math.round((1 - wallK) * 100)}% 감소.`);
+    if (it.has('trumpet')) { D *= 0.92; lines.push('📯 양각 나팔 소리가 울리자 적진이 술렁인다!'); }
+    if (it.has('torch')) { D *= 0.88; lines.push('🔥 한밤에 항아리를 깨뜨리고 횃불을 들었다! 적이 혼란에 빠졌다. (삿 7:20)'); }
     const wounded = new Set();
     for (let r = 1; r <= 8 && A > 0 && D > 0; r++) {
       // 일기토
       if (aL && dL && !wounded.has(aL.id) && !wounded.has(dL.id) && Math.random() < 0.16) {
-        const pa = aL.war ** 3 / (aL.war ** 3 + dL.war ** 3);
+        const aw = aL.war + (it.has('sword_goliath') ? 15 : 0);
+        const pa = aw ** 3 / (aw ** 3 + dL.war ** 3);
         const w = Math.random() < pa ? aL : dL, l = w === aL ? dL : aL;
         lines.push(`🗡 일기토! ${aL.name} 대 ${dL.name} — ${w.name}의 승리!`);
         wounded.add(l.id);
@@ -238,12 +333,14 @@
       }
       // 계략
       const aI = aoffs.reduce((m, o) => Math.max(m, o.int), 20), dI = doffs.reduce((m, o) => Math.max(m, o.int), 20);
+      if (pr && r === 2 && Math.random() < 0.15) { D *= 0.85; lines.push('⚡ 여호와께서 큰 우레를 발하사 적진이 어지러워졌다! (삼상 7:10)'); }
       if (Math.random() < 0.14) {
-        if (aI * Math.random() > dI * Math.random()) { D *= 0.88; lines.push(`🔥 ${aName}군의 계략이 적중했다! (지력 ${aI})`); }
+        if (aI * (pr || it.has('trumpet') ? 1.15 : 1) * Math.random() > dI * Math.random()) { D *= 0.88; lines.push(`🔥 ${aName}군의 계략이 적중했다! (지력 ${aI})`); }
         else { A *= 0.9; lines.push(`🛡 ${dName}이(가) 계략을 간파하고 역습했다.`); }
       }
-      const dmgD = Math.min(D, A * 0.11 * aP / Math.max(0.3, dP) * rnd(0.8, 1.2));
-      const dmgA = Math.min(A, D * 0.11 * dP / Math.max(0.3, aP) * rnd(0.8, 1.2) + (df ? 0 : 0));
+      const uK = unit === 'sling' ? (r <= 2 ? 1.35 : 0.9) : 1;
+      const dmgD = Math.min(D, A * 0.11 * aP / Math.max(0.3, dP) * rnd(0.8, 1.2) * uK * (it.has('sling') ? 1.12 : 1));
+      const dmgA = Math.min(A, D * 0.11 * dP / Math.max(0.3, aP) * rnd(0.8, 1.2) * (it.has('shield') ? 0.8 : 1));
       D -= dmgD; A -= dmgA;
       lines.push(`${r}합 — 공격 ${fmt(A)} / 수비 ${fmt(D)}`);
       if (A < soldiers * 0.25) { lines.push(`${aName}군의 사기가 꺾여 퇴각한다.`); break; }
@@ -251,12 +348,12 @@
     A = Math.max(0, Math.round(A)); D = Math.max(0, Math.round(D));
     const win = D <= 0 || (A > D * 2.5 && A > 300);
     const res = { win, attLeft: A, lines, captives: [], summary: '' };
-    fac(af).food = Math.max(0, fac(af).food - Math.round(soldiers * 0.3));
+    fac(af).food = Math.max(0, fac(af).food - Math.round(soldiers * 0.3 * (it.has('rations') ? 0.5 : 1)));
     if (win) {
       lines.push(`🏳 ${CITY_INFO[cid].name} 함락! ${aName}의 깃발이 오른다.`);
       const lootG = c.comm * 8, lootF = c.agri * 40; fac(af).gold += lootG; fac(af).food += lootF;
       lines.push(`전리품: 금 ${fmt(lootG)}, 식량 ${fmt(lootF)}`);
-      c.owner = af; c.soldiers = A; c.train = train; c.loy = clamp(c.loy - 15, 0, 100); c.def = Math.round(c.def * 0.85);
+      c.owner = af; c.soldiers = A; c.train = train; c.loy = clamp(c.loy - 15, 0, 100); c.def = Math.round(c.def * (it.has('ram') ? 0.95 : 0.85));
       aoffs.forEach(o => { if (o.alive) o.city = cid; });
       if (df) {
         const escape = (ADJ[cid] || []).filter(n => city(n).owner === df);
@@ -342,6 +439,13 @@
         }
       }
     });
+    // 건물 공사: 가장 낮은 건물부터 (왕궁 먼저 올려 상한을 연다)
+    citiesOf(f).forEach(c => {
+      if (c.build || Math.random() > 0.5) return;
+      const ks = BLD_ORDER.filter(k => !upBlock(c, k)).sort((a, b) => bl(c, a) - bl(c, b));
+      if (ks.length) startUpgrade(c, ks[0]);
+      else if (!upBlock(c, 'palace')) startUpgrade(c, 'palace');
+    });
     // 후방 병력을 전선으로
     citiesOf(f).forEach(c => {
       const front = (ADJ[c.id] || []).some(n => city(n).owner !== f);
@@ -357,10 +461,13 @@
     Object.values(S.facs).forEach(F => {
       if (!F.alive) return;
       const cs = citiesOf(F.id);
-      let gold = 0, food = 0, sold = 0;
+      let gold = 0, food = 0, sold = 0, wood = 0, stone = 0;
+      tickBuilds(F);
       cs.forEach(c => {
-        gold += (c.comm * 2 + c.pop / 500) * (0.5 + c.loy / 200);
-        if (S.season === 2) food += c.agri * c.pop / 250 * (0.6 + c.loy / 250);
+        gold += (c.comm * 2 + c.pop / 500) * (0.5 + c.loy / 200) * bMul(c, 'market') + (bl(c, 'port') - 1) * 25;
+        if (S.season === 2) food += c.agri * c.pop / 250 * (0.6 + c.loy / 250) * bMul(c, 'farm');
+        wood += lumberOut(bl(c, 'lumber')); stone += quarryOut(bl(c, 'quarry'));
+        c.faith += (bl(c, 'temple') - 1) * 0.3; c.loy += (bl(c, 'palace') - 1) * 0.3;
         sold += c.soldiers;
         c.pop *= 1 + (c.loy - 40) / 4000;
         c.faith -= 1;
@@ -370,6 +477,7 @@
       });
       if (F.id === 'israel' && S.scn === 'conquest' && S.turn <= 12) food += 1500; // 만나
       F.gold = Math.round(F.gold + gold);
+      F.wood = Math.round((F.wood || 0) + wood); F.stone = Math.round((F.stone || 0) + stone);
       F.food = Math.round(F.food + food - sold * 0.12);
       if (F.food < 0) {
         cs.forEach(c => { c.soldiers *= 0.8; c.loy -= 8; fixCity(c); });
@@ -639,6 +747,7 @@
     applyView();
     drawMini();
   }
+  const fmtM = n => n >= 10000 ? (n / 10000).toFixed(1) + '만' : fmt(n);
   const fmtK = n => n >= 1000 ? (n / 1000).toFixed(1) + 'k' : String(n);
   // 그림 지도: Higgsfield로 벡터 지형을 참조해 그린 채색 지도. 불러오지 못하면 지워져 벡터 지형이 그대로 보인다.
   const MAP_BOX = 'x="-160" y="-170" width="920" height="1150" preserveAspectRatio="none"';
@@ -690,6 +799,8 @@
     city: '<svg viewBox="0 0 24 24"><path d="M3 20 V9 H6 V12 H9 V7 H15 V12 H18 V9 H21 V20Z" fill="#c9bfa6" stroke="#6d6250"/></svg>',
     faith: '<svg viewBox="0 0 24 24"><path d="M12 3 C15 8 18 10 17 15 A5 5 0 0 1 7 15 C6 11 10 10 12 3Z" fill="#ff9a3c"/><path d="M12 10 C13.5 13 15 14 14.5 16 A2.6 2.6 0 0 1 9.5 16 C9.3 14 11 13 12 10Z" fill="#ffe08a"/></svg>',
     king: '<svg viewBox="0 0 24 24"><path d="M3 18 L5 8 L9.5 12 L12 5 L14.5 12 L19 8 L21 18Z" fill="#e6b64a" stroke="#8a5d12"/></svg>',
+    wood: '<svg viewBox="0 0 24 24"><rect x="2" y="12" width="19" height="6" rx="3" fill="#b9853f" stroke="#5c3c16"/><rect x="4" y="6" width="17" height="6" rx="3" fill="#cf9a52" stroke="#5c3c16"/><circle cx="19" cy="15" r="2.2" fill="#f0d29a" stroke="#8a5d2a" stroke-width=".6"/><circle cx="18.5" cy="9" r="2.2" fill="#f0d29a" stroke="#8a5d2a" stroke-width=".6"/></svg>',
+    stone: '<svg viewBox="0 0 24 24"><path d="M3 17 L5 10 L11 7 L17 9 L21 16 L15 20 L7 20Z" fill="#c9c6bf" stroke="#5e5a52"/><path d="M5 10 L11 13 L17 9 M11 13 L11 20" stroke="#8e8a82" fill="none"/></svg>',
   };
   function power(f) {
     const cs = citiesOf(f), offs = S.offs.filter(o => o.alive && o.fac === f);
@@ -699,7 +810,7 @@
     const F = fac(S.player), cs = citiesOf(S.player), sold = cs.reduce((s, c) => s + c.soldiers, 0);
     const ks = kStage();
     $('#resBar').innerHTML = [
-      ['gold', '금', fmt(F.gold)], ['food', '식량', fmtK(F.food)], ['troop', '병력', fmtK(sold)], ['city', '성', cs.length], ['faith', '신앙', Math.round(avgFaith(S.player))], ['king', '나라', S.story.kingdom],
+      ['food', '식량', fmtM(F.food)], ['wood', '목재', fmtM(F.wood || 0)], ['stone', '석재', fmtM(F.stone || 0)], ['gold', '금', fmtM(F.gold)], ['troop', '병력', fmtM(sold)], ['faith', '신앙', Math.round(avgFaith(S.player))], ['king', '나라', S.story.kingdom],
     ].map(([k, lb, v]) => `<span class="res" title="${lb}"><i>${ICON[k]}</i><b>${v}</b><small>${lb}</small></span>`).join('');
     const ruler = offById(F.ruler);
     $('#lordBtn').innerHTML = `<span class="lord-img">${ruler ? portraitOf(ruler) : ''}<em>${ks.lv}</em></span><span class="lord-name">${ruler ? esc(ruler.name) : '공위'}</span>`;
@@ -772,20 +883,62 @@
     const c = city(landCid), ci = CITY_INFO[landCid], F = fac(S.player), idle = idleOffs(landCid).length;
     const img = $('#landImg'), u = landArt(landCid), kind = landKind(landCid);
     if (u && img.getAttribute('src') !== u) { $('#land').classList.remove('noart'); img.src = u; $('#landBg').style.backgroundImage = `url('${u}')`; }
-    const lv = v => Math.max(1, Math.ceil(v / 10));
     $('#landSpots').innerHTML = `<div class="l-banner" style="left:26%;top:29.5%"><span class="fbadge" style="--fc:${F.color}">${esc(F.name[0])}</span><b>${ci.name}</b></div>` +
-      SPOTS.map(s => `<button class="spot" data-spot="${s.id}" style="left:${s.x}%;top:${s.y}%"><i>${SPOT_ICON[s.icon] || ICON[s.icon]}</i><b>${s.id === 'port' ? PORT_NAME[kind] : s.name}</b><em>${lv(c[s.stat])}</em>${idle && s.cmds.some(k => CMDS[k]) ? '<u aria-label="명령 가능"></u>' : ''}</button>`).join('');
-    $('#landCity').innerHTML = `<b>${ci.name}</b><span>병력 ${fmt(c.soldiers)}</span><span>농업 ${c.agri}</span><span>상업 ${c.comm}</span><span>성벽 ${c.def}</span><span>신앙 ${c.faith}</span><span>민심 ${c.loy}</span><span>대기 장수 ${idle}</span>`;
+      SPOTS.map(s => { const b = c.build && c.build.k === s.id; return `<button class="spot" data-spot="${s.id}" style="left:${s.x}%;top:${s.y}%"><i>${SPOT_ICON[s.icon] || ICON[s.icon]}</i><b>${s.id === 'port' ? PORT_NAME[kind] : s.name}</b><em>${bl(c, s.id)}</em>${b ? `<span class="bld-timer">🔨 ${c.build.left}계절</span>` : ''}${(idle && s.cmds.some(k => CMDS[k])) || !upBlock(c, s.id) ? '<u aria-label="명령·공사 가능"></u>' : ''}</button>`; }).join('');
+    $('#landCity').innerHTML = `<b>${ci.name}</b>${c.build ? `<span>🔨 ${BLD[c.build.k].name} 공사 ${c.build.left}계절</span>` : ''}<span>병력 ${fmt(c.soldiers)}</span><span>농업 ${c.agri}</span><span>상업 ${c.comm}</span><span>성벽 ${c.def}</span><span>신앙 ${c.faith}</span><span>민심 ${c.loy}</span><span>대기 장수 ${idle}</span>`;
   }
   function onSpot(id) {
-    const s = SPOTS.find(x => x.id === id), cid = landCid, nm = s.id === 'port' ? PORT_NAME[landKind(cid)] : s.name; sel = cid;
+    const s = SPOTS.find(x => x.id === id), cid = landCid, c = city(cid), F = fac(S.player), nm = s.id === 'port' ? PORT_NAME[landKind(cid)] : s.name; sel = cid;
+    const l = bl(c, id), B = BLD[id], why = upBlock(c, id), cost = upCost(id, l);
     const run = k => { if (k === '3d') { if (window.TOWN) TOWN.enter(cid); } else { sel = cid; onCmd(k); } };
-    const btns = s.cmds.map((k, i) => ({ label: CMDS[k] ? `${CMDS[k].label} — ${CMDS[k].hint}` : CMD_LABEL[k], primary: i === 0, fn: () => run(k) }));
-    openModal(`<p class="mute">${esc(s.desc)}</p><p>대기 중인 장수 <b>${idleOffs(cid).length}명</b> · 금 ${fmt(fac(S.player).gold)} · 식량 ${fmt(fac(S.player).food)}</p>`, btns, { title: `${CITY_INFO[cid].name} ${nm}` });
+    const costHtml = Object.entries(cost).map(([k, v]) => `<span class="${(F[k] || 0) < v ? 'no' : ''}">${RES_NAME[k]} ${fmt(v)}</span>`).join('') + `<span>공사 ${upTurns(l)}계절</span>`;
+    let body = `<div class="bld-head"><span class="bld-lv"><small>Lv.</small>${l}</span><div class="bld-eff"><span>${esc(s.desc)}</span><span>현재: ${B.eff(l)}</span>${l < B.max ? `<span class="next">다음 Lv.${l + 1}: ${B.eff(l + 1)}</span>` : ''}</div></div>`;
+    if (c.build && c.build.k === id) body += `<p class="bld-note">🔨 Lv.${l + 1}(으)로 공사 중 — ${c.build.left}계절 남음</p>`;
+    else if (l < B.max) body += `<p class="fld">업그레이드 비용</p><div class="bld-cost">${costHtml}</div>${why && why !== '자원 부족' ? `<p class="bld-note">${esc(why)}</p>` : ''}`;
+    body += `<p class="mute">대기 장수 <b>${idleOffs(cid).length}명</b> · 금 ${fmt(F.gold)} · 목재 ${fmt(F.wood || 0)} · 석재 ${fmt(F.stone || 0)} · 식량 ${fmt(F.food)}</p>`;
+    if (id === 'camp') body += craftHtml(c);
+    if (id === 'port' || id === 'market') body += tradeHtml(c);
+    const btns = [];
+    if (l < B.max && !(c.build && c.build.k === id)) btns.push({ label: why ? `업그레이드 (${why})` : `업그레이드 → Lv.${l + 1}`, primary: !why, fn: () => { const e = startUpgrade(c, id); if (e) toast(e); else { toast(`${nm} 공사를 시작했습니다. (${upTurns(l)}계절)`); landFx('bld:' + id, `🔨 Lv.${l + 1} 공사 시작`); } render(); } });
+    s.cmds.forEach(k => btns.push({ label: CMDS[k] ? `${CMDS[k].label} — ${CMDS[k].hint}` : CMD_LABEL[k], fn: () => run(k) }));
+    openModal(body, btns, { title: `${CITY_INFO[cid].name} ${nm} Lv.${l}` });
+    if (id === 'camp') bindCraft(c);
+    if (id === 'port' || id === 'market') bindTrade(c, id);
+  }
+  // 교역: 남는 목재·석재를 금으로 바꾼다(항구 레벨이 높을수록 값을 더 받는다). 한 계절에 성마다 세 번까지.
+  const TRADE = { wood: 110, stone: 130 };
+  const tradeGold = (c, k) => Math.round(TRADE[k] * (1 + (bl(c, 'port') - 1) * 0.1));
+  function tradeHtml(c) {
+    const F = fac(S.player), left = 3 - ((c.trade && c.trade.turn === S.turn) ? c.trade.n : 0);
+    return `<p class="fld">교역 <small class="mute">(이번 계절 ${left}회 남음 · 항구 Lv.${bl(c, 'port')})</small></p><div class="craft-list">${['wood', 'stone'].map(k => { const ok = left > 0 && (F[k] || 0) >= 500;
+      return `<div class="craft"><b>${RES_NAME[k]} 500 → 금 ${tradeGold(c, k)}</b><small>두로·시돈 상인과 거래한다 (왕상 5:9-11)</small><button class="btn${ok ? ' primary' : ''}" data-trade="${k}" ${ok ? '' : 'disabled'}>팔기</button></div>`; }).join('')}</div>`;
+  }
+  function bindTrade(c, id) {
+    $('#modalBody').querySelectorAll('[data-trade]').forEach(b => b.addEventListener('click', () => {
+      const k = b.dataset.trade, F = fac(S.player);
+      if (!c.trade || c.trade.turn !== S.turn) c.trade = { turn: S.turn, n: 0 };
+      if (c.trade.n >= 3 || (F[k] || 0) < 500) return;
+      c.trade.n++; F[k] -= 500; F.gold += tradeGold(c, k);
+      toast(`${RES_NAME[k]} 500을 팔아 금 ${tradeGold(c, k)}을 얻었습니다.`); render(); onSpot(id);
+    }));
+  }
+  function craftHtml(c) {
+    const F = fac(S.player);
+    return `<p class="fld">전쟁 도구 제작 <small class="mute">(병영 Lv.${bl(c, 'camp')} · 출진할 때 두 가지까지 사용)</small></p><div class="craft-list">${ITEM_ORDER.filter(k => ITEMS[k].cost).map(k => { const it = ITEMS[k], lock = bl(c, 'camp') < it.camp; const ok = !lock && canPay(F, it.cost);
+      return `<div class="craft${lock ? ' lock' : ''}"><b>${it.name} <small class="mute">보유 ${(F.items || {})[k] || 0}</small></b><small>${esc(it.desc)}</small><small>${lock ? `병영 Lv.${it.camp} 필요` : costText(it.cost)}</small><button class="btn${ok ? ' primary' : ''}" data-craft="${k}" ${ok ? '' : 'disabled'}>제작</button></div>`; }).join('')}</div>`;
+  }
+  function bindCraft(c) {
+    $('#modalBody').querySelectorAll('[data-craft]').forEach(b => b.addEventListener('click', () => {
+      const k = b.dataset.craft, it = ITEMS[k], F = fac(S.player);
+      if (bl(c, 'camp') < it.camp || !canPay(F, it.cost)) return;
+      pay(F, it.cost); F.items[k] = (F.items[k] || 0) + 1; S.story.counts.craft = (S.story.counts.craft || 0) + 1;
+      log(`${CITY_INFO[c.id].name} 병영에서 ${it.name}을(를) 만들었다.`); toast(`${it.name} 제작 완료`);
+      render(); onSpot('camp');
+    }));
   }
   function landFx(key, text) {
     if (mode !== 'land') return;
-    const s = SPOTS.find(x => x.cmds.includes(key)); if (!s) return;
+    const s = key.startsWith('bld:') ? SPOTS.find(x => x.id === key.slice(4)) : SPOTS.find(x => x.cmds.includes(key)); if (!s) return;
     const el = document.createElement('div'); el.className = 'l-fx'; el.textContent = text;
     el.style.left = s.x + '%'; el.style.top = s.y + '%';
     $('#land').appendChild(el); setTimeout(() => el.remove(), 1800);
@@ -856,6 +1009,8 @@
       case 'officers': { const cur = S.offs.filter(o => o.alive && o.fac === P).length; return { cur: Math.min(cur, g.n), n: g.n, done: cur >= g.n }; }
       case 'flag': { const ok = !!S.flags[g.flag]; return { cur: ok ? 1 : 0, n: 1, done: ok }; }
       case 'rel': { const cur = exists(g.fac) ? getRel(P, g.fac) : 100; return { cur: Math.min(cur, g.n), n: g.n, done: cur >= g.n }; }
+      case 'bld': { const cur = Math.max(0, ...citiesOf(P).map(c => bl(c, g.key))); return { cur: Math.min(cur, g.n), n: g.n, done: cur >= g.n }; }
+      case 'item': { const F = fac(P), cur = Math.max(Object.values(F.items || {}).reduce((s, v) => s + v, 0), S.story.counts.craft || 0); return { cur: Math.min(cur, g.n), n: g.n, done: cur >= g.n }; }
       case 'gain': { const cur = Math.max(0, citiesOf(P).length - (S.story.base || 0)); return { cur: Math.min(cur, g.n), n: g.n, done: cur >= g.n }; }
       case 'goal': {
         const list = (scn().goals || {})[P] || HOLY_LAND; const cur = list.filter(c => city(c).owner === P).length;
@@ -1002,7 +1157,9 @@
   }
   function showHelp() {
     openModal(`<ul class="help">
-      <li>내 성을 누르면 <b>3D 성 안</b>으로 들어가 장수에게 명령합니다. 적의 성을 누르면 <b>정벌</b> 창이 열립니다.</li>
+      <li>내 성을 누르면 <b>영지</b>로 들어갑니다. 건물을 눌러 명령을 내리거나 <b>업그레이드</b>합니다(왕궁 레벨이 다른 건물의 상한, 공사는 1~3계절). 적의 성을 누르면 <b>정벌</b> 창이 열립니다.</li>
+      <li><b>벌목장·채석장</b>은 계절마다 목재·석재를 만듭니다. 목재·석재는 <b>성벽</b> 공사, 건물 업그레이드, 전쟁 도구 제작에 씁니다.</li>
+      <li><b>출진</b>할 때 장군(3명까지)·군사(창병/물매병/전차병)·선지자(기도로 전력 상승)·아이템(병영에서 만든 전쟁 도구 2가지)을 고릅니다.</li>
       <li>장수 한 명은 한 계절에 명령 하나. 모두 마쳤으면 <b>턴 종료</b>.</li>
       <li>가을에 농업만큼 식량을 거두고, 계절마다 상업만큼 금이 들어옵니다. 병사는 계절마다 식량을 먹습니다.</li>
       <li><b>신앙</b>이 높으면 전투 사기가 오르고 민심이 따라옵니다. 계절마다 식으니 <b>제사</b>로 지키세요.</li>
@@ -1089,36 +1246,68 @@
   }
 
   function attackDialog(cid, pre) {
-    const P = S.player, c = city(cid);
+    const P = S.player, c = city(cid), F = fac(P);
     const targets = (ADJ[cid] || []).filter(n => city(n).owner !== P);
     const offs = idleOffs(cid);
     if (!targets.length) { toast('맞닿은 적의 성이 없습니다.'); return; }
     if (!offs.length) { toast('출진할 장수가 없습니다.'); return; }
     if (c.soldiers < 500) { toast('병력이 500명 이상 있어야 출진할 수 있습니다.'); return; }
-    openModal(`<h2>출진 — ${CITY_INFO[cid].name}</h2>
+    const gens = offs.slice().sort((a, b) => b.war - a.war);
+    const pros = offs.filter(o => isProphet(o) && F.ruler !== o.id).sort((a, b) => b.fai - a.fai);
+    const own = ITEM_ORDER.filter(k => (F.items || {})[k] > 0);
+    const n0 = Math.round(c.soldiers * 0.7 / 100) * 100;
+    openModal(`<div class="war-form">
       <label class="fld" for="atTo">공격할 성</label>
-      <select id="atTo">${targets.map(t => { const tc = city(t); const w0 = tc.owner ? (allied(P, tc.owner) ? ' · 동맹!' : peaceBlocks(P, tc.owner) ? ' · 휴전 중' : '') : ''; const w = w0; return `<option value="${t}" ${t === pre ? 'selected' : ''}>${CITY_INFO[t].name} — ${tc.owner ? esc(fac(tc.owner).name) : '주인 없음'} ${fmt(tc.soldiers)}명 · 성벽 ${tc.def}${w}</option>`; }).join('')}</select>
-      <p class="fld">출진 장수 (최대 3명)</p>
-      <div class="checks">${offs.sort((a, b) => b.war - a.war).map((o, i) => `<label><input type="checkbox" value="${o.id}" ${i === 0 ? 'checked' : ''}> ${esc(o.name)} <small>무${o.war} 지${o.int}</small></label>`).join('')}</div>
-      <label class="fld" for="atN">출진 병력: <b id="atNv">${fmt(Math.round(c.soldiers * 0.7 / 100) * 100)}</b> / ${fmt(c.soldiers)}</label>
-      <input id="atN" type="range" min="500" max="${c.soldiers}" step="100" value="${Math.round(c.soldiers * 0.7 / 100) * 100}">
-      <p class="mute">군량 ${fmt(Math.round(c.soldiers * 0.7 * 0.3))} 소모 예상 · 훈련 ${c.train} · 신앙 ${Math.round(avgFaith(P))}</p>`,
-      [{ label: '출진!', primary: true, danger: true, fn: () => {
+      <select id="atTo">${targets.map(t => { const tc = city(t); const w = tc.owner ? (allied(P, tc.owner) ? ' · 동맹!' : peaceBlocks(P, tc.owner) ? ' · 휴전 중' : '') : ''; return `<option value="${t}" ${t === pre ? 'selected' : ''}>${CITY_INFO[t].name} — ${tc.owner ? esc(fac(tc.owner).name) : '주인 없음'} ${fmt(tc.soldiers)}명 · 성벽 ${tc.def}${PLAINS.includes(t) ? ' · 평지' : ' · 산지'}${w}</option>`; }).join('')}</select>
+      <section class="wf-sec"><h3>① 장군 <small>최대 3명 · 무력 순</small></h3>
+        <div class="wf-cards">${gens.map((o, i) => `<label class="wf-card"><input type="checkbox" name="gen" value="${o.id}" ${i === 0 && !isProphet(o) ? 'checked' : ''}><span class="thumb">${portraitOf(o)}</span><b>${esc(o.name)}</b><small>무${o.war} 지${o.int}</small></label>`).join('')}</div></section>
+      <section class="wf-sec"><h3>② 군사</h3>
+        <div class="wf-units">${Object.entries(UNITS).map(([k, u], i) => { const lock = u.camp && bl(c, 'camp') < u.camp; return `<label class="wf-unit${lock ? ' lock' : ''}"><input type="radio" name="unit" value="${k}" ${i === 0 ? 'checked' : ''} ${lock ? 'disabled' : ''}><b>${u.name}</b><small>${esc(u.desc)}${lock ? ` — 병영 Lv.${u.camp} 필요 (지금 Lv.${bl(c, 'camp')})` : ''}</small></label>`; }).join('')}</div>
+        <label class="fld" for="atN">출진 병력: <b id="atNv">${fmt(n0)}</b> / ${fmt(c.soldiers)}</label>
+        <input id="atN" type="range" min="500" max="${c.soldiers}" step="100" value="${n0}"></section>
+      <section class="wf-sec"><h3>③ 선지자 <small>장군과 따로 동행해 기도한다</small></h3>
+        ${pros.length ? `<div class="wf-cards"><label class="wf-card none"><input type="radio" name="pro" value="" checked><b>동행 없음</b></label>${pros.map(o => `<label class="wf-card"><input type="radio" name="pro" value="${o.id}"><span class="thumb">${portraitOf(o)}</span><b>${esc(o.name)}</b><small>신앙 ${o.fai} · 전력 +${Math.round(Math.max(0, o.fai - 60) / 2)}%</small></label>`).join('')}</div>` : '<p class="mute">이 성에 대기 중인 선지자·제사장(신앙 90 이상 포함)이 없습니다.</p>'}</section>
+      <section class="wf-sec"><h3>④ 아이템 <small>두 가지까지 · 병영에서 제작</small></h3>
+        ${own.length ? `<div class="wf-items">${own.map(k => `<label class="wf-item"><input type="checkbox" name="item" value="${k}"><b>${ITEMS[k].name}</b><em>×${F.items[k]}</em><small>${esc(ITEMS[k].desc)}</small></label>`).join('')}</div>` : '<p class="mute">가진 전쟁 도구가 없습니다. 영지의 병영에서 만들 수 있습니다.</p>'}</section>
+      <p class="mute" id="atCost"></p></div>`,
+      [{ label: '출진!', primary: true, danger: true, keep: true, fn: () => {
         const to = $('#atTo').value, n = +$('#atN').value;
-        const ids = [...document.querySelectorAll('#modalBody .checks input:checked')].map(i => i.value).slice(0, 3);
-        if (!ids.length) { toast('장수를 한 명 이상 고르세요.'); return; }
+        const q = s => [...document.querySelectorAll('#modalBody ' + s)];
+        const pro = (q('input[name=pro]:checked')[0] || {}).value || '';
+        const ids = q('input[name=gen]:checked').map(i => i.value).filter(id => id !== pro);
+        const unit = (q('input[name=unit]:checked')[0] || {}).value || 'spear';
+        const items = q('input[name=item]:checked').map(i => i.value);
+        if (!ids.length) { toast('장군을 한 명 이상 고르세요.'); return; }
+        if (ids.length > 3) { toast('장군은 세 명까지 데려갈 수 있습니다.'); return; }
+        if (items.length > 2) { toast('전쟁 도구는 두 가지까지 쓸 수 있습니다.'); return; }
+        const chariotGold = unit === 'chariot' ? Math.round(n / 20) : 0;
+        if (F.gold < chariotGold) { toast(`전차 유지에 금 ${chariotGold}이 필요합니다.`); return; }
         const tOwner = city(to).owner;
         if (tOwner && peaceBlocks(P, tOwner)) { toast('말씀에 순종하여 휴전 중입니다. 아직 공격할 수 없습니다.'); return; }
+        closeModal();
         if (tOwner && allied(P, tOwner)) { setRel(P, tOwner, 0); citiesOf(P).forEach(x => { x.loy -= 10; fixCity(x); }); log(`${fac(tOwner).name}와의 동맹을 깨뜨렸다. 민심이 흔들린다.`, 'bad'); }
-        const offs = ids.map(offById);
-        offs.forEach(o => { o.done = true; });
+        const gs = ids.map(offById), prophet = pro ? offById(pro) : null;
+        gs.forEach(o => { o.done = true; }); if (prophet) prophet.done = true;
+        items.forEach(k => { if (!ITEMS[k].relic) F.items[k]--; });
+        F.gold -= chariotGold;
         c.soldiers -= n;
-        const r = battle(P, offs, n, to, c.train);
+        const r = battle(P, gs, n, to, c.train, { unit, prophet, items });
         if (!r.win) { c.soldiers += r.attLeft; }
         sel = r.win ? to : cid;
         playBattle(r, () => captiveDialog(r.captives));
-      } }], { cancel: true, title: `출진 · ${CITY_INFO[cid].name}` });
-    const r = $('#atN'); r.addEventListener('input', () => { $('#atNv').textContent = fmt(r.value); });
+      } }], { cancel: true, title: `출진 · ${CITY_INFO[cid].name}`, wide: true });
+    const upd = () => {
+      const n = +$('#atN').value, unit = (document.querySelector('#modalBody input[name=unit]:checked') || {}).value, rat = !!document.querySelector('#modalBody input[name=item][value=rations]:checked');
+      $('#atNv').textContent = fmt(n);
+      $('#atCost').textContent = `군량 ${fmt(Math.round(n * 0.3 * (rat ? 0.5 : 1)))} 소모 예상${unit === 'chariot' ? ` · 전차 유지 금 ${fmt(Math.round(n / 20))}` : ''} · 훈련 ${c.train} · 신앙 ${Math.round(avgFaith(P))}`;
+    };
+    $('#modalBody').addEventListener('input', upd); upd();
+    // 선지자로 고른 인물은 장군 칸에서 자동으로 빠진다
+    $('#modalBody').addEventListener('change', e => {
+      if (e.target.name === 'pro' && e.target.value) { const g = document.querySelector(`#modalBody input[name=gen][value="${e.target.value}"]`); if (g) g.checked = false; }
+      if (e.target.name === 'gen' && e.target.checked) { const p = document.querySelector(`#modalBody input[name=pro][value="${e.target.value}"]`); if (p && p.checked) document.querySelector('#modalBody input[name=pro][value=""]').checked = true; }
+      if (e.target.name === 'item' && document.querySelectorAll('#modalBody input[name=item]:checked').length > 2) { e.target.checked = false; toast('전쟁 도구는 두 가지까지 쓸 수 있습니다.'); }
+    });
   }
 
   function playBattle(r, then) {
@@ -1227,6 +1416,7 @@
   function migrate() {
     if (!S.story) { S.story = { ch: 0, counts: {}, base: citiesOf(S.player).length, done: [], kingdom: 10 }; }
     S.offs.forEach(o => { if (o.origin === undefined) o.origin = o.fac; });
+    initEcon();
   }
 
   function confirmStart(scnId, facId) {
