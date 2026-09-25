@@ -72,5 +72,6 @@ const ART = {
   "@title": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_123153_a2ed2566-c83c-454c-ad0f-f3c7812aa9fa.png",
   "@conquest": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_123153_da4c61a0-e2d7-407a-addf-b8317671ed50.png",
   "@david": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_123152_90ca1369-f0ae-4e94-bb03-0012502d8416.png",
-  "@divided": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_123215_d913547f-4461-42f3-b0e9-a430d66a0262.png"
+  "@divided": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_123215_d913547f-4461-42f3-b0e9-a430d66a0262.png",
+  "사울": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_130650_b2ad1d3f-5c16-4c99-96f4-eabebefb5613.png"
 };
