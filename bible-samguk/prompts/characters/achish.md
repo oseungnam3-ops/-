@@ -46,3 +46,5 @@ Premium cinematic historical fantasy mobile strategy game character art, AAA key
 생성: Higgsfield `gpt_image_2_5` (quality low, 1k), 9:16 — job `23becd3e-9e26-46d3-8550-ff466b4fac55`
 
 결과: https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_133201_23becd3e-9e26-46d3-8550-ff466b4fac55.png
+
+웹툰 버전: https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_133908_ecabd9d9-544f-4d3c-8fee-094e8e4b496e.png

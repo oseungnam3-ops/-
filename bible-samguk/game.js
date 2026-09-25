@@ -40,7 +40,9 @@
   const ART_STYLE_KEY = 'bible-samguk-artstyle';
   const artStyle = () => { try { return localStorage.getItem(ART_STYLE_KEY) || 'webtoon'; } catch (e) { return 'webtoon'; } };
   const setArtStyle = v => { try { localStorage.setItem(ART_STYLE_KEY, v); } catch (e) { /* 저장소 없음 */ } };
-  const artKey = k => { const a = (artStyle() === 'real' ? window.ART_REAL : window.ART) || {}, b = (artStyle() === 'real' ? window.ART : window.ART_REAL) || {}; return a[k] || b[k] || null; };
+  // art.js·art-real.js는 최상위 const라 window 속성이 아니므로 이름으로 직접 참조한다.
+  const artSets = () => { const w = typeof ART !== 'undefined' ? ART : {}, r = typeof ART_REAL !== 'undefined' ? ART_REAL : {}; return artStyle() === 'real' ? [r, w] : [w, r]; };
+  const artKey = k => { const [a, b] = artSets(); return a[k] || b[k] || null; };
   const artOf = o => artKey(S.scn + ':' + o.name) || artKey(o.name);
   const portraitOf = (o, big) => {
     const svg = window.PORTRAIT ? PORTRAIT.portrait(o, { color: o.fac && S.facs[o.fac] ? fac(o.fac).color : '#6b6250', ruler: !!(o.fac && S.facs[o.fac] && fac(o.fac).ruler === o.id) }) : '';
