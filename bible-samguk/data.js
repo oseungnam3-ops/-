@@ -54,6 +54,92 @@ const CANAAN_WEST = ['dan', 'hazor', 'megiddo', 'bethshean', 'shechem', 'shiloh'
 // 인물: [이름, 무력, 지력, 정치, 매력, 신앙, 세력(null=재야), 도시, 소개, 성경]
 const SCENARIOS = [
   {
+    id: 'patriarchs',
+    title: '족장 시대',
+    year: 2090,
+    ref: '창세기 12–35장',
+    intro: '"너는 너의 고향과 친척과 아버지의 집을 떠나 내가 네게 보여 줄 땅으로 가라" (창 12:1). 일흔다섯 살의 아브람이 하란을 떠나 가나안에 들어왔다. 그러나 그는 성을 빼앗는 정복자가 아니라 장막에 거하는 나그네였다. "이는 그가 하나님이 계획하시고 지으실 터가 있는 성을 바랐음이라" (히 11:9-10). 아브라함·이삭·야곱 삼대 약 이백 년을 한 시대로 압축했다. 족장은 사건을 따라 차례로 대를 잇고, 열두 아들은 야곱의 귀향과 함께 모여든다. 이 시대에는 칼보다 제단과 우물과 언약이 땅을 얻는다.',
+    factions: [
+      { id: 'abraham', name: '아브라함의 장막', ruler: '아브라함', color: '#e2b04a', capital: 'hebron', gold: 800, food: 9000, aggr: 0.15,
+        desc: '성을 쌓지 않고 장막에 거하는 유목 족속. 가축과 은과 금이 풍부하나(13:2) 약속의 땅은 아직 한 뼘도 제 것이 아니다. 헤브론 마므레 상수리나무 숲과 벧엘 동쪽 제단 곁에 장막을 쳤다. 이삭과 야곱은 사건을 따라 차례로 족장이 되고, 열두 아들은 야곱의 귀향 때 합류한다. 야곱이 이스라엘이라는 이름을 받으면 "이스라엘 족속"이 된다.',
+        cities: { hebron: 3000, bethel: 2000 } },
+      { id: 'gerar', name: '그랄', ruler: '아비멜렉', color: '#c9573f', capital: 'gaza', gold: 1200, food: 7000, aggr: 0.2,
+        desc: '네겝 서쪽 그랄의 왕 아비멜렉. 지도에 그랄이 없어 가까운 해안 성 가사로 대신한다. 브엘세바의 우물들을 두고 아브라함·이삭의 목자들과 다투었다 (21:25; 26:15-22). 훗날 블레셋 땅이 되는 곳이다.',
+        cities: { gaza: 3500, beersheba: 1800 } },
+      { id: 'salem', name: '살렘', ruler: '멜기세덱', color: '#8f86a8', capital: 'jerusalem', gold: 800, food: 5000, aggr: 0.02,
+        desc: '살렘 왕이요 지극히 높으신 하나님의 제사장 멜기세덱의 성, 훗날의 예루살렘 (14:18; 시 76:2). 싸움보다 축복을 베푸는 "평강의 왕" (히 7:2).',
+        cities: { jerusalem: 2000 } },
+      { id: 'sodom', name: '소돔 (요단 온 들)', ruler: '소돔 왕 베라', color: '#9a6fbf', capital: 'jericho', gold: 1500, food: 9000, aggr: 0.1,
+        desc: '"여호와의 동산 같고 애굽 땅과 같이" 물이 넉넉한 요단 온 들의 다섯 성읍 (13:10). 지도에 소돔이 없어 요단 들의 성 여리고로 대신한다. 소돔 사람은 악하여 여호와 앞에 큰 죄인이었다 (13:13). 소돔의 멸망 사건 때 사라진다.',
+        cities: { jericho: 3000 } },
+      { id: 'east', name: '동방 연합 (엘람)', ruler: '그돌라오멜', color: '#6f8fd8', capital: 'damascus', gold: 1400, food: 9000, aggr: 0.45,
+        desc: '엘람 왕 그돌라오멜과 시날·엘라살·고임의 왕들. 요단 들의 왕들을 열두 해 동안 섬기게 했다 (14:1-4). 먼 동방의 연합군을 지도 북동쪽 다메섹과 단에 둔다 — 아브람은 그들을 단까지 쫓아가 다메섹 왼편 호바까지 쳤다 (14:14-15).',
+        cities: { damascus: 6000, dan: 3000 } },
+      { id: 'hamor', name: '세겜 (히위 족속)', ruler: '하몰', color: '#5ea67c', capital: 'shechem', gold: 700, food: 5000, aggr: 0.1,
+        desc: '히위 족속 하몰과 그의 아들 세겜이 다스리는 성. 아브람이 처음 제단을 쌓은 모레 상수리나무가 이 곁에 있고(12:6-7), 훗날 야곱이 이 성 앞에서 밭을 산다 (33:18-20).',
+        cities: { shechem: 2500 } },
+      { id: 'edom', name: '세일 (에서의 족속)', ruler: '에서', color: '#b5804f', capital: 'bozrah', gold: 700, food: 5000, aggr: 0.15,
+        desc: '이삭의 맏아들 에서가 세일 땅 에돔 들에 이룬 족속 (32:3; 36:8). 시대를 압축해 처음부터 보스라에 있다. 장자의 명분과 축복을 빼앗긴 원한을 품고 사백 명을 거느린다 (27:41; 32:6).',
+        cities: { bozrah: 2500 } },
+    ],
+    // 라못길르앗 = 하란(밧단아람)의 라반 집과 길르앗 미스바 (31:44-55). 마하나임 = 야곱의 귀향길 (32:1-2).
+    // 나머지는 가나안 족속과 브리스 족속의 작은 성읍들 (12:6; 13:7). 애굽은 지도 밖이다.
+    neutral: { tyre: 3000, hazor: 2500, megiddo: 2500, bethshean: 2000, ramoth: 2000, mahanaim: 1500, joppa: 1800, shiloh: 1500,
+      rabbah: 2500, ekron: 2000, ashdod: 2500, bethlehem: 1500, gath: 2500, ashkelon: 2000, dibon: 1800, kirhareseth: 2500 },
+    officers: [
+      ['아브라함', 68, 85, 78, 92, 99, 'abraham', 'hebron', '데라의 아들, 믿음의 조상. 갈 바를 알지 못하고 부르심에 순종하여 나아갔다. "너는 복이 될지라".', '창 12:1-4; 15:6; 히 11:8-10'],
+      ['사라', 15, 75, 70, 88, 88, 'abraham', 'hebron', '아브라함의 아내 사래. 경수가 끊어진 뒤 웃었으나, 약속하신 이를 미쁘신 줄 알고 아들을 낳았다.', '창 17:15-19; 18:12; 21:1-7; 히 11:11'],
+      ['롯', 45, 58, 62, 60, 55, 'abraham', 'bethel', '아브라함의 조카, 하란의 아들. 요단 온 들을 바라보고 소돔으로 옮겨 갔다. "무법한 자들의 음란한 행실로 말미암아 고통 당하는 의로운 롯".', '창 12:5; 13:10-12; 벧후 2:7'],
+      ['엘리에셀', 55, 82, 80, 70, 88, 'abraham', 'hebron', '다메섹 사람, 아브라함 집의 상속자가 될 뻔한 종. 이삭의 신부를 찾아 나홀의 성으로 간 늙은 종으로 전해진다.', '창 15:2-3; 24:2-27'],
+      ['하갈', 10, 55, 45, 62, 65, 'abraham', 'hebron', '사래의 애굽 여종, 이스마엘의 어머니. 광야 샘물 곁에서 "나를 살피시는 하나님"을 만났다.', '창 16:1-13; 21:14-19'],
+      ['이스마엘', 78, 45, 40, 55, 45, 'abraham', 'hebron', '하갈이 낳은 아브라함의 아들. 활 쏘는 자가 되었고, 하나님이 그도 큰 민족이 되게 하셨다.', '창 16:11-12; 17:20; 21:13, 20'],
+      ['마므레', 70, 50, 52, 60, 50, null, 'hebron', '아모리 족속, 에스골과 아넬의 형제. 아브람과 동맹하여 그의 장막이 그 상수리나무 숲에 있었다.', '창 13:18; 14:13, 24'],
+      ['에스골', 72, 45, 45, 55, 45, null, 'hebron', '마므레의 형제, 아브람의 아모리 동맹. 네 왕을 쫓는 길에 함께 갔다.', '창 14:13, 24'],
+      ['아넬', 70, 45, 45, 55, 45, null, 'hebron', '마므레의 형제, 아브람의 아모리 동맹. 전리품 가운데 자기 몫을 받았다.', '창 14:13, 24'],
+      ['이삭', 35, 70, 74, 72, 93, null, 'hebron', '약속의 아들, 이름의 뜻은 "웃음". 모리아 산에 번제 나무를 지고 올랐고, 그랄에서 다투지 않고 우물을 팠다.', '창 21:1-7; 22:6-8; 26:17-25'],
+      ['야곱', 62, 90, 80, 78, 80, null, 'hebron', '이삭의 둘째 아들, 형의 발꿈치를 잡은 자. 벧엘에서 사닥다리를 보고 얍복 강에서 이스라엘이 되었다.', '창 25:26; 28:10-22; 32:24-30'],
+      ['리브가', 12, 86, 72, 86, 82, null, 'ramoth', '브두엘의 딸, 라반의 누이. 우물가에서 약대들에게까지 물을 길어 주고 "가겠나이다" 하여 이삭의 아내가 되었다.', '창 24:15-67; 25:21-28'],
+      ['라반', 50, 82, 72, 55, 30, null, 'ramoth', '브두엘의 아들, 하란의 라반. 야곱의 품삯을 열 번이나 바꾸었고, 길르앗 미스바에서 야곱과 돌무더기 언약을 맺었다.', '창 24:29; 29:15-30; 31:41-55'],
+      ['라헬', 10, 72, 60, 92, 70, null, 'ramoth', '라반의 작은딸, 곱고 아리따운 목녀. 요셉과 베냐민의 어머니.', '창 29:9-18; 30:22-24; 35:16-20'],
+      ['레아', 10, 72, 68, 70, 86, null, 'ramoth', '라반의 큰딸. "이제는 내가 여호와를 찬송하리로다" 하며 유다를 낳았다. 막벨라 굴에 장사되었다.', '창 29:16-35; 49:31'],
+      ['르우벤', 68, 55, 50, 62, 60, null, 'mahanaim', '야곱의 장자. 물의 끓음 같이 안정이 없었으나 요셉을 구덩이에서 건지려 했다.', '창 29:32; 37:21-22; 49:3-4'],
+      ['시므온', 86, 55, 40, 42, 32, null, 'mahanaim', '레아의 둘째 아들. 레위와 함께 세겜에서 칼을 휘둘렀다. "그들의 칼은 폭력의 도구로다".', '창 29:33; 34:25; 49:5-7'],
+      ['레위', 84, 60, 45, 45, 38, null, 'mahanaim', '레아의 셋째 아들. 세겜의 일로 저주를 받았으나, 훗날 그 자손이 여호와 편에 서서 제사장 지파가 된다.', '창 29:34; 34:25; 49:5-7; 출 32:26-29'],
+      ['유다', 85, 72, 74, 88, 72, null, 'mahanaim', '레아의 넷째 아들. "홀이 유다를 떠나지 아니하며" — 사자 새끼 같은 형제들의 지도자.', '창 29:35; 44:18-34; 49:8-10'],
+      ['단', 70, 65, 55, 55, 55, null, 'mahanaim', '라헬의 여종 빌하의 아들. "하나님이 나의 억울함을 푸셨다". 길의 뱀 같은 재판관.', '창 30:5-6; 49:16-17'],
+      ['납달리', 72, 58, 50, 62, 60, null, 'mahanaim', '빌하의 둘째 아들. "놓인 암사슴이라 아름다운 소리를 발하는도다".', '창 30:7-8; 49:21'],
+      ['갓', 78, 50, 45, 55, 55, null, 'mahanaim', '레아의 여종 실바의 아들. "군대가 그를 급격하나 그는 도리어 그 뒤를 급격하리로다".', '창 30:10-11; 49:19'],
+      ['아셀', 55, 58, 70, 62, 60, null, 'mahanaim', '실바의 둘째 아들, "기쁨". "그 먹을 것은 기름진 것이라 그가 왕의 수라상을 차리리로다".', '창 30:12-13; 49:20'],
+      ['잇사갈', 62, 62, 68, 50, 60, null, 'mahanaim', '레아의 다섯째 아들. "양의 우리 사이에 꿇어앉은 건장한 나귀로다".', '창 30:17-18; 49:14-15'],
+      ['스불론', 60, 60, 70, 58, 60, null, 'mahanaim', '레아의 여섯째 아들. "해변에 거주하리니 그 곳은 배 매는 해변이라".', '창 30:19-20; 49:13'],
+      ['요셉', 60, 95, 95, 90, 96, null, 'mahanaim', '라헬의 맏아들, 채색옷을 입은 꿈꾸는 자. "요셉은 무성한 가지 곧 샘 곁의 무성한 가지라".', '창 30:22-24; 37:3-11; 49:22-26'],
+      ['베냐민', 76, 55, 50, 65, 70, null, 'bethlehem', '라헬이 에브랏(베들레헴) 길에서 낳고 숨을 거둔 막내. 베노니라 불렸으나 야곱이 "오른손의 아들"이라 했다.', '창 35:16-18; 49:27'],
+      ['에서', 90, 40, 50, 70, 30, 'edom', 'bozrah', '이삭의 맏아들, 붉고 털이 많은 익숙한 사냥꾼. 팥죽 한 그릇에 장자의 명분을 팔았으나 끝내 아우를 안고 울었다. 에돔의 조상.', '창 25:25-34; 33:4; 36:8'],
+      ['엘리바스', 60, 55, 55, 50, 25, 'edom', 'bozrah', '에서의 맏아들, 데만 족속의 조상.', '창 36:4, 10-11'],
+      ['아비멜렉', 60, 76, 78, 72, 55, 'gerar', 'gaza', '그랄 왕. 꿈에 하나님의 경고를 듣고 사라를 돌려보냈고, 브엘세바에서 아브라함·이삭과 언약을 맺었다.', '창 20:1-18; 21:22-34; 26:26-31'],
+      ['비골', 82, 55, 45, 50, 30, 'gerar', 'beersheba', '아비멜렉의 군대 장관. 왕과 함께 와서 우물의 언약을 맺었다.', '창 21:22, 32; 26:26'],
+      ['멜기세덱', 30, 92, 88, 92, 99, 'salem', 'jerusalem', '살렘 왕이요 지극히 높으신 하나님의 제사장. 떡과 포도주를 가지고 나와 아브람을 축복했다. "의의 왕, 평강의 왕".', '창 14:18-20; 시 110:4; 히 7:1-3'],
+      ['소돔 왕 베라', 50, 55, 60, 45, 5, 'sodom', 'jericho', '요단 들 다섯 왕 가운데 소돔의 왕. "사람은 내게 보내고 물품은 네가 가지라" 했다.', '창 14:2, 17, 21'],
+      ['고모라 왕 비르사', 55, 45, 50, 40, 5, 'sodom', 'jericho', '고모라의 왕. 싯딤 골짜기 역청 구덩이에서 네 왕에게 패했다.', '창 14:2, 10'],
+      ['그돌라오멜', 85, 70, 65, 60, 5, 'east', 'damascus', '엘람 왕. 요단 들의 다섯 왕을 열두 해 동안 섬기게 한 동방 연합의 맹주.', '창 14:1-5, 17'],
+      ['아므라벨', 75, 68, 66, 55, 5, 'east', 'damascus', '시날 왕. 그돌라오멜과 함께 요단 들을 친 동방의 왕.', '창 14:1, 9'],
+      ['아리옥', 80, 50, 45, 45, 5, 'east', 'dan', '엘라살 왕. 동방 연합의 네 왕 가운데 하나.', '창 14:1, 9'],
+      ['디달', 78, 45, 40, 45, 5, 'east', 'dan', '고임(여러 민족)의 왕. 동방 연합의 네 왕 가운데 하나.', '창 14:1, 9'],
+      ['하몰', 45, 60, 70, 60, 15, 'hamor', 'shechem', '히위 족속, 세겜 성의 추장. "이 땅이 너희 앞에 있으니 거주하며 매매하며 기업을 얻으라" 했다.', '창 33:19; 34:2, 8-10, 20-24'],
+      ['세겜', 60, 45, 45, 55, 10, 'hamor', 'shechem', '하몰의 아들, 그 땅의 추장. 야곱의 딸 디나에게 큰 잘못을 저질렀다.', '창 34:2-3, 19'],
+    ],
+    rel: [['abraham', 'salem', 60], ['abraham', 'gerar', 35], ['abraham', 'sodom', 40], ['abraham', 'east', 10], ['abraham', 'edom', 25], ['abraham', 'hamor', 35],
+      ['east', 'sodom', 10], ['east', 'salem', 20], ['gerar', 'edom', 40]],
+    goals: {
+      abraham: ['hebron', 'beersheba', 'bethel', 'shechem', 'bethlehem', 'mahanaim'],
+      east: ['damascus', 'dan', 'hazor', 'ramoth', 'rabbah', 'jericho', 'dibon', 'kirhareseth'],
+    },
+    goalText: {
+      abraham: '나그네로 살며 약속의 땅에 제단을 쌓고 열두 아들을 이룬다. 헤브론·브엘세바·벧엘·세겜·베들레헴·마하나임 — 족장들이 장막을 치고 제단을 쌓고 우물을 판 여섯 곳을 지킨다 (창 13:14-17; 28:13-15; 히 11:9-10).',
+      east: '왕의 대로를 따라 다메섹에서 하솔·길르앗·요단 들과 모압 고원까지 여덟 성을 조공 아래 둔다 (창 14:1-7).',
+    },
+  },
+  {
     id: 'conquest',
     title: '가나안 정복',
     year: 1406,
@@ -443,8 +529,337 @@ const JUDGE_KIT = {
   },
 };
 
+// 족장 시대 이벤트 도우미. 족장이 차례로 대를 잇고(아브라함 → 이삭 → 야곱), 열두 아들이 모여든다.
+const PATRI_KIT = {
+  SONS: ['르우벤', '시므온', '레위', '유다', '단', '납달리', '갓', '아셀', '잇사갈', '스불론', '요셉'],
+  // 인물을 장막에 합류시키고, lead면 족장(군주)으로 세운다 (JUDGE_KIT.raise와 같은 방식)
+  raise: (G, name, cid, lead) => {
+    if (!G.exists('abraham') || !G.alive(name)) return false;
+    if (G.facOf(name) !== 'abraham') G.join(name, 'abraham', cid && G.ownerOf(cid) === 'abraham' ? cid : undefined);
+    if (lead) G.fac('abraham').ruler = G.o(name).id;
+    return true;
+  },
+  // 앞 사건이 끝나고 정해진 턴이 지났는가
+  after: (G, id) => !!G.done[id] && G.turn >= (G.flags.pNext || 0) && G.exists('abraham'),
+  next: (G, n) => { G.flags.pNext = G.turn + n; },
+  faithAll: (G, d, loy) => G.eachCity('abraham', c => { c.faith += d; if (loy) c.loy += loy; }),
+  cut: (G, f, k) => G.eachCity(f, c => { c.soldiers = Math.floor(c.soldiers * k); }),
+  pay: (G, gold, food) => { const F = G.fac('abraham'); F.gold = Math.max(0, F.gold - gold); F.food = Math.max(0, F.food - food); },
+  stat: (G, name, k, d) => { const o = G.o(name); if (o && o.alive) o[k] = Math.max(0, Math.min(100, o[k] + d)); },
+  // 주인 없는 성에 장막을 친다
+  settle: (G, cid, sold, loy) => {
+    const c = G.city(cid); if (c.owner) return false;
+    c.owner = 'abraham'; c.soldiers += sold; c.loy = loy; c.faith += 10; return true;
+  },
+  // 롯이 요단 들(소돔)로 옮겨 간다 (13:11-12)
+  part: G => { if (G.alive('롯') && G.facOf('롯') === 'abraham' && G.exists('sodom')) G.join('롯', 'sodom', G.fac('sodom').capital); },
+  // 네 왕의 약탈 (14:8-12)
+  sack: G => {
+    const j = G.city('jericho'); if (j.owner && j.owner !== 'abraham') { j.soldiers = Math.floor(j.soldiers * 0.5); j.loy -= 15; }
+    if (G.exists('sodom')) { const S = G.fac('sodom'), g = Math.min(S.gold, 600); S.gold -= g; S.food = Math.floor(S.food * 0.6); if (G.exists('east')) G.fac('east').gold += g; }
+    let lot = false;
+    if (G.exists('east') && G.alive('롯') && G.facOf('롯') !== 'abraham') { G.join('롯', 'east', G.fac('east').capital); lot = true; }
+    return '싯딤 골짜기에서 요단 들의 왕들이 패하여 역청 구덩이에 빠졌다. 네 왕이 여리고(소돔)의 수비병 절반을 무너뜨리고 재물과 양식을 빼앗았다' + (lot ? ', 롯도 사로잡혀 다메섹으로 끌려갔다.' : '.');
+  },
+  // 롯을 되찾는다 (14:16)
+  rescue: G => {
+    ['마므레', '에스골', '아넬'].forEach(n => PATRI_KIT.raise(G, n, 'hebron'));
+    if (G.alive('롯') && G.facOf('롯') === 'east') G.join('롯', G.exists('sodom') && G.cityCount('sodom') ? 'sodom' : 'abraham');
+    if (G.exists('east')) G.fac('east').aggr = Math.min(G.fac('east').aggr, 0.25); // 호바까지 쫓긴 동방 연합의 기세가 꺾인다
+    G.flags.lotRescued = true;
+  },
+  // 소돔과 고모라가 엎어진다 (19:24-29)
+  overturn: G => {
+    const c = G.city('jericho'); let t = '';
+    if (c.owner !== 'abraham') { c.owner = null; c.soldiers = 0; c.agri = 5; c.comm = 5; c.pop = Math.floor(c.pop * 0.2); c.loy = 0; t = ' 여리고(소돔)가 폐허가 되어 주인 없는 성이 되었다.'; }
+    if (G.exists('sodom')) {
+      ['소돔 왕 베라', '고모라 왕 비르사'].forEach(n => { if (G.facOf(n) === 'sodom') G.kill(n); });
+      G.eachCity('sodom', x => { x.owner = null; x.soldiers = Math.floor(x.soldiers * 0.3); });
+      G.fac('sodom').alive = false; t += ' 소돔 세력이 사라졌다.';
+    }
+    const f = G.facOf('롯');
+    if (G.alive('롯') && (f === 'sodom' || !f)) { G.join('롯', 'abraham'); t += ' 롯이 두 딸과 함께 소알을 거쳐 살아남아 아브라함의 장막에 합류했다.'; }
+    G.flags.sodomFell = true;
+    return '새벽에 두 천사가 머뭇거리는 롯과 그 아내와 두 딸의 손을 잡아 성 밖으로 인도했다. "도망하여 생명을 보존하라. 뒤를 돌아보지 말라"(19:16-17). 여호와께서 하늘에서 유황과 불을 소돔과 고모라에 비같이 내리사 그 성들과 온 들을 엎어 멸하셨고, 롯의 아내는 뒤를 돌아보아 소금 기둥이 되었다(19:24-26).' + t;
+  },
+  // 사라와 아브라함의 장례, 리브가 (23–25장)
+  bury: G => {
+    G.flags.machpelah = true;
+    G.kill('사라'); G.kill('아브라함');
+    const reb = PATRI_KIT.raise(G, '리브가', 'hebron');
+    return (reb ? '리브가가 "가겠나이다" 하고 따라와 이삭의 아내가 되었다(24:58, 67; 리브가 합류). ' : '') + '사라가 막벨라 굴에 장사되었고, 아브라함은 나이가 높고 늙어 기운이 다하여 죽어 열조에게로 돌아갔다. 그의 아들 이삭과 이스마엘이 그를 막벨라 굴에 장사했다(25:8-9).';
+  },
+  // 르호봇과 브엘세바 언약 (26:22-33)
+  wellsPeace: G => {
+    G.eachCity('abraham', c => { c.agri += 10; }); G.fac('abraham').food += 3000;
+    let t = '이삭이 거기서 옮겨 다른 우물을 팠더니 다투지 아니하였으므로 그 이름을 르호봇이라 하였다. "이제는 여호와께서 우리를 위하여 넓게 하셨으니 이 땅에서 우리가 번성하리로다"(26:22). 식량 +3000, 모든 성의 농업 +10.';
+    const b = G.city('beersheba');
+    if (G.exists('gerar')) {
+      G.rel('abraham', 'gerar', 40);
+      t += ' 아비멜렉이 친구 아훗삿과 군대 장관 비골과 함께 와서 "여호와께서 너와 함께 계심을 우리가 분명히 보았으므로" 언약하자 하였다(26:28). 그랄과의 관계 +40.';
+      if (b.owner === 'gerar' && G.cityCount('gerar') > 1 && G.fac('gerar').capital !== 'beersheba') {
+        const cap = G.fac('gerar').capital;
+        ['비골', '아비멜렉'].forEach(n => { const o = G.o(n); if (o && o.alive && o.fac === 'gerar' && o.city === 'beersheba') o.city = cap; });
+        b.owner = 'abraham'; b.soldiers = Math.max(1000, Math.floor(b.soldiers * 0.5)); b.loy = 70; b.faith += 10;
+        t += ' 맹세의 우물 브엘세바가 아브라함의 장막에 속했다(26:33).';
+      }
+    }
+    if (PATRI_KIT.settle(G, 'beersheba', 1000, 70)) t += ' 이삭이 브엘세바에 장막을 치고 우물을 팠다(26:23-25).';
+    G.flags.beershebaOath = true;
+    return t;
+  },
+  // 하란에서 돌아오는 야곱의 집 (31–33장)
+  homecoming: G => {
+    const settled = PATRI_KIT.settle(G, 'mahanaim', 1200, 80);
+    const home = G.ownerOf('mahanaim') === 'abraham' ? 'mahanaim' : null;
+    const came = ['레아', '라헬'].concat(PATRI_KIT.SONS).filter(n => PATRI_KIT.raise(G, n, home));
+    const j = G.o('야곱'); if (j && j.alive) { j.fai = Math.min(100, j.fai + 10); j.war = Math.max(0, j.war - 5); }
+    if (G.exists('abraham')) G.fac('abraham').name = '이스라엘 족속';
+    G.flags.israel = true;
+    return (settled ? '야곱이 마하나임에 장막을 쳤다. ' : '') + `열한 아들과 레아·라헬이 합류했다 (${came.length}명). 야곱이 환도뼈가 위골되어 절게 되었으나(32:25, 31) 이스라엘이라는 이름을 받았다 — 장막이 "이스라엘 족속"이 되었다. 야곱 신앙 +10, 무력 -5.`;
+  },
+  // 세겜의 일 (34:25-31)
+  shechem: (G, keep) => {
+    ['하몰', '세겜'].forEach(n => G.kill(n));
+    const c = G.city('shechem');
+    if (G.exists('hamor')) { G.eachCity('hamor', x => { x.owner = null; x.soldiers = 200; x.loy = 20; }); G.fac('hamor').alive = false; }
+    if (keep) { c.owner = 'abraham'; c.soldiers = 1500; c.loy = 20; }
+    ['시므온', '레위'].forEach(n => PATRI_KIT.stat(G, n, 'fai', -10));
+    ['gerar', 'salem', 'sodom', 'east', 'edom'].forEach(f => { if (G.exists(f)) G.rel('abraham', f, keep ? -20 : -10); });
+    G.flags.shechemSword = true;
+  },
+  // 베냐민의 출생, 라헬과 이삭의 죽음 (35:16-29)
+  bethlehem: G => {
+    const settled = PATRI_KIT.settle(G, 'bethlehem', 800, 70);
+    const ben = PATRI_KIT.raise(G, '베냐민', G.ownerOf('bethlehem') === 'abraham' ? 'bethlehem' : null);
+    G.kill('라헬'); G.kill('이삭');
+    if (G.exists('edom')) G.rel('abraham', 'edom', 10);
+    G.flags.twelve = true;
+    return '벧엘을 떠나 에브랏에 이르기 전, 라헬이 난산 끝에 아들을 낳고 숨을 거두며 그 이름을 베노니라 했으나 야곱은 베냐민이라 불렀다(35:16-18). ' + (ben ? '베냐민이 합류해 열두 아들이 찼다. ' : '') + '야곱이 베들레헴 길에 라헬의 묘비를 세웠다(35:19-20)' + (settled ? ' — 베들레헴에 장막을 쳤다' : '') + '. 이삭은 백팔십 세에 죽어 에서와 야곱이 함께 그를 장사했다(35:28-29; 세일과의 관계 +10).';
+  },
+};
+
 // 역사 이벤트. who: 선택권을 갖는 세력. 플레이어가 아니면 auto 번째 선택이 자동 적용되고 소식으로 전해진다.
 const EVENTS = {
+  patriarchs: [
+    { id: 'call', who: 'abraham', auto: 0,
+      cond: G => G.turn >= 1 && G.exists('abraham'),
+      title: '떠나라, 복이 될지라', ref: '창 12:1-20',
+      text: '"너는 너의 고향과 친척과 아버지의 집을 떠나 내가 네게 보여 줄 땅으로 가라. 내가 너로 큰 민족을 이루고 네게 복을 주어 네 이름을 창대하게 하리니 너는 복이 될지라… 땅의 모든 족속이 너로 말미암아 복을 얻을 것이라"(12:1-3). 아브람이 세겜 땅 모레 상수리나무에 이르러 제단을 쌓고, 벧엘 동쪽 산에 장막을 치고 또 제단을 쌓아 여호와의 이름을 불렀다. 그런데 그 땅에 기근이 심하게 들었다.',
+      choices: [
+        { label: '약속의 땅에 머물며 제단 곁에서 여호와의 이름을 부른다', run: G => {
+          PATRI_KIT.pay(G, 60, 0); PATRI_KIT.faithAll(G, 10); PATRI_KIT.stat(G, '아브라함', 'fai', 5);
+          G.flags.altars = true; PATRI_KIT.next(G, 2); G.kingdom(5, '여호와의 이름을 부르다');
+          return '금 -60. 아브라함의 장막 모든 성의 신앙 +10. "여호와께서 아브람에게 나타나 이르시되 내가 이 땅을 네 자손에게 주리라 하신지라"(12:7). 기근 속에서도 제단의 불은 꺼지지 않았다.'; } },
+        { label: '기근을 피해 애굽으로 내려가고, 사래를 누이라 한다', run: G => {
+          const F = G.fac('abraham'); F.food += 3000; F.gold += 300; PATRI_KIT.faithAll(G, -8);
+          G.flags.egypt = true; PATRI_KIT.next(G, 2); G.kingdom(-4, '두려움의 거짓말');
+          return '식량 +3000, 금 +300 — 바로가 사래 때문에 아브람에게 양과 소와 나귀와 노비를 후대했다(12:16). 그러나 여호와께서 바로의 집에 큰 재앙을 내리셨고, 바로가 "네가 어찌하여 그를 누이라 하였느냐" 꾸짖어 내보냈다(12:17-20). 신앙 -8.'; } },
+      ] },
+    { id: 'lotParts', who: 'abraham', auto: 0,
+      cond: G => PATRI_KIT.after(G, 'call'),
+      title: '롯과 갈라서다', ref: '창 13장',
+      text: '아브람과 롯의 소유가 많아 그 땅이 그들의 동거함을 용납하지 못했다. 두 사람의 목자들이 서로 다투었고, 그 때에 가나안 사람과 브리스 사람도 그 땅에 거주하였다(13:6-7). 롯이 눈을 들어 요단 온 들을 바라보니 소알까지 물이 넉넉하여 여호와의 동산 같고 애굽 땅과 같았다.',
+      choices: [
+        { label: '"네가 좌하면 나는 우하고 네가 우하면 나는 좌하리라" — 롯에게 먼저 고르게 한다', run: G => {
+          PATRI_KIT.part(G); if (G.exists('sodom')) G.rel('abraham', 'sodom', 15);
+          PATRI_KIT.faithAll(G, 5, 5); G.flags.generous = true; PATRI_KIT.next(G, 3); G.kingdom(6, '먼저 양보하다');
+          return '롯이 요단 온 들을 택하여 소돔 가까이 장막을 옮겼다(롯은 소돔으로). 소돔과의 관계 +15, 신앙·민심 +5. 여호와께서 말씀하셨다. "너는 눈을 들어 너 있는 곳에서 동서남북을 바라보라. 보이는 땅을 내가 너와 네 자손에게 주리니 영원히 이르리라"(13:14-15).'; } },
+        { label: '물 넉넉한 요단 들은 어른인 내가 차지하겠다고 다툰다', run: G => {
+          PATRI_KIT.part(G); if (G.exists('sodom')) G.rel('abraham', 'sodom', -10);
+          PATRI_KIT.faithAll(G, 0, -8); PATRI_KIT.next(G, 3); G.kingdom(-5, '친족의 다툼');
+          return '목자들의 다툼이 친족의 원한이 되었다. 롯은 끝내 장막을 거두어 소돔으로 떠났다(롯은 소돔으로). 소돔과의 관계 -10, 민심 -8. 요단 들은 여전히 소돔 왕의 것이다.'; } },
+      ] },
+    { id: 'fourKings', who: 'abraham', auto: 0,
+      cond: G => PATRI_KIT.after(G, 'lotParts'),
+      title: '네 왕의 전쟁과 롯 구출', ref: '창 14:1-16',
+      text: '엘람 왕 그돌라오멜이 시날 왕 아므라벨, 엘라살 왕 아리옥, 고임 왕 디달과 함께 요단 들의 다섯 왕을 쳤다. 열두 해 동안 그를 섬기다가 제십삼년에 배반한 소돔과 고모라였다. 네 왕이 소돔과 고모라의 재물과 양식을 빼앗고, 소돔에 거주하는 아브람의 조카 롯과 그 재물도 노략하여 떠났다. 도망한 자가 와서 히브리 사람 아브람에게 알렸다.',
+      choices: [
+        { label: '집에서 길리고 훈련된 자 318명을 거느리고 단까지 쫓아간다', run: G => {
+          const s = PATRI_KIT.sack(G); PATRI_KIT.rescue(G);
+          if (G.exists('east')) PATRI_KIT.cut(G, 'east', 0.6);
+          G.buff('abraham', 'atk', 4, 0.3); G.item('abraham', 'torch', 1);
+          PATRI_KIT.next(G, 2); G.kingdom(5, '형제를 위하여');
+          return s + ' 아브람이 가신들을 나누어 밤에 그들을 쳐부수고 다메섹 왼편 호바까지 쫓아가 모든 빼앗겼던 재물과 롯과 부녀와 인민을 다 찾아왔다(14:14-16). 아모리 동맹 마므레·에스골·아넬이 합류했다. 동방 연합 모든 성의 병력 40% 궤멸, 4턴 동안 공격력 +30%, 횃불과 항아리 1을 얻었다.'; } },
+        { label: '롯이 스스로 택한 길이니 관여하지 않는다', run: G => {
+          const s = PATRI_KIT.sack(G); if (G.exists('sodom')) G.rel('abraham', 'sodom', -15);
+          PATRI_KIT.faithAll(G, -5); G.flags.lotCaptive = true;
+          G.done.melchizedek = true; // 돌아오는 길의 축복은 없다
+          PATRI_KIT.next(G, 3); G.kingdom(-4, '형제를 버려 둠');
+          return s + ' 롯은 동방으로 끌려갔다. 소돔과의 관계 -15, 신앙 -5. "친구는 사랑이 끊어지지 아니하고 형제는 위급한 때를 위하여 났느니라"(잠 17:17).'; } },
+      ],
+      altWho: 'east', altText: '단에 진을 친 밤, 히브리 사람 아브람이 가신 318명과 아모리 동맹을 이끌고 뒤쫓아 왔다.',
+      altChoices: [
+        { label: '노략물을 지키며 맞서 싸운다', run: G => {
+          const s = PATRI_KIT.sack(G); PATRI_KIT.rescue(G); PATRI_KIT.cut(G, 'east', 0.7);
+          G.buff('abraham', 'atk', 3, 0.2); PATRI_KIT.next(G, 2);
+          return s + ' 그러나 밤에 나뉘어 달려든 아브람의 가신들에게 진이 무너졌다. 호바까지 쫓기며 모든 성의 병력 30%를 잃고 롯과 노략물을 빼앗겼다.'; } },
+        { label: '포로와 재물을 돌려주고 다메섹으로 물러난다', run: G => {
+          const s = PATRI_KIT.sack(G); PATRI_KIT.rescue(G); if (G.exists('abraham')) G.rel('east', 'abraham', 20);
+          const E = G.fac('east'); E.gold = Math.max(0, E.gold - 400); PATRI_KIT.next(G, 2);
+          return s + ' 싸우지 않고 롯과 노략물을 돌려주었다. 금 -400, 아브라함의 장막과의 관계 +20.'; } },
+      ] },
+    { id: 'melchizedek', who: 'abraham', auto: 0,
+      cond: G => PATRI_KIT.after(G, 'fourKings'),
+      title: '살렘 왕 멜기세덱의 축복', ref: '창 14:17-24; 히 7:1-4',
+      text: '아브람이 그돌라오멜과 그와 함께 한 왕들을 쳐부수고 돌아올 때에 소돔 왕이 사웨 골짜기 곧 왕의 골짜기로 나와 그를 영접했다. 살렘 왕 멜기세덱이 떡과 포도주를 가지고 나왔으니 그는 지극히 높으신 하나님의 제사장이었다. "천지의 주재시요 지극히 높으신 하나님이여 아브람에게 복을 주옵소서." 소돔 왕이 말했다. "사람은 내게 보내고 물품은 네가 가지라."',
+      choices: [
+        { label: '모든 것의 십분의 일을 멜기세덱에게 드리고, 소돔의 물품은 실 한 오라기도 취하지 않는다', run: G => {
+          const tithe = Math.max(50, Math.floor(G.fac('abraham').gold / 10)); PATRI_KIT.pay(G, tithe, 0);
+          if (G.exists('salem')) G.rel('abraham', 'salem', 30); if (G.exists('sodom')) G.rel('abraham', 'sodom', 10);
+          PATRI_KIT.faithAll(G, 10); PATRI_KIT.stat(G, '아브라함', 'cha', 5);
+          G.flags.tithe = true; PATRI_KIT.next(G, 3); G.kingdom(8, '십분의 일');
+          return `"너희 대적을 네 손에 붙이신 지극히 높으신 하나님을 찬송할지로다"(14:20). 금 -${tithe} (십분의 일). 살렘과의 관계 +30, 소돔 +10, 신앙 +10, 아브라함 매력 +5. "네가 말하기를 내가 아브람으로 치부하게 하였다 할까 하여 네게 속한 것은 실 한 오라기나 들메끈 한 가닥도 내가 가지지 아니하리라"(14:23). 함께 간 마므레·에스골·아넬은 자기 몫을 받았다(14:24).`; } },
+        { label: '소돔 왕이 내미는 물품을 받는다', run: G => {
+          const F = G.fac('abraham'); F.gold += 500; F.food += 2000;
+          if (G.exists('salem')) G.rel('abraham', 'salem', -10); PATRI_KIT.faithAll(G, -6);
+          PATRI_KIT.next(G, 3); G.kingdom(-5, '소돔의 재물');
+          return '금 +500, 식량 +2000. 소돔 왕이 "내가 아브람을 치부하게 하였다" 하고 자랑한다. 살렘과의 관계 -10, 신앙 -6.'; } },
+      ] },
+    { id: 'torchCovenant', who: 'abraham', auto: 0,
+      cond: G => PATRI_KIT.after(G, 'melchizedek'),
+      title: '하늘의 뭇별과 횃불 언약', ref: '창 15장',
+      text: '그 후에 여호와의 말씀이 환상 중에 임했다. "아브람아 두려워하지 말라 나는 너의 방패요 너의 지극히 큰 상급이니라." 아브람이 "나는 자식이 없사오니 나의 상속자는 이 다메섹 사람 엘리에셀이니이다" 하자, 여호와께서 그를 밖으로 이끌고 말씀하셨다. "하늘을 우러러 뭇별을 셀 수 있나 보라. 네 자손이 이와 같으리라." 해가 져서 어두울 때에 연기 나는 화로가 보이며 타는 횃불이 쪼갠 고기 사이로 지나갔다(15:17).',
+      choices: [
+        { label: '약속을 믿는다 — "여호와께서 이를 그의 의로 여기시고"', run: G => {
+          PATRI_KIT.faithAll(G, 10); const a = G.o('아브라함'); if (a && a.alive) a.fai = 100;
+          G.item('abraham', 'torch', 1); G.flags.covenant = true; PATRI_KIT.next(G, 3); G.kingdom(8, '믿음이 의로 여겨지다');
+          return '"아브람이 여호와를 믿으니 여호와께서 이를 그의 의로 여기시고"(15:6). "내가 이 땅을 애굽 강에서부터 그 큰 강 유브라데까지 네 자손에게 주노니"(15:18). 약속은 늦어도 반드시 이루어진다. 신앙 +10, 아브라함 신앙 100, 횃불과 항아리 1을 얻었다.'; } },
+        { label: '"주 여호와여 내가 이 땅을 소유로 받을 것을 무엇으로 알리이까" — 엘리에셀을 상속자로 굳힌다', run: G => {
+          PATRI_KIT.faithAll(G, -4); PATRI_KIT.stat(G, '엘리에셀', 'pol', 5);
+          PATRI_KIT.next(G, 3); G.kingdom(-2, '사람의 계산');
+          return '엘리에셀이 집안 살림을 맡았다(정치 +5). 그러나 여호와께서 말씀하셨다. "그 사람이 네 상속자가 아니라 네 몸에서 날 자가 네 상속자가 되리라"(15:4). 약속은 사람의 계산을 기다리지 않는다. 신앙 -4.'; } },
+      ] },
+    { id: 'sodom', who: 'abraham', auto: 0,
+      cond: G => PATRI_KIT.after(G, 'torchCovenant') && !G.isPlayer('sodom'),
+      title: '아브라함의 중보와 소돔의 멸망', ref: '창 18–19장',
+      text: '마므레 상수리나무 곁 장막 문에 앉은 아브라함에게 세 사람이 찾아왔다. 아브라함이 달려가 영접하고 떡과 송아지를 대접하니 그들이 말했다. "내년 이맘때 사라에게 아들이 있으리라." 떠나며 여호와께서 말씀하셨다. "소돔과 고모라에 대한 부르짖음이 크고 그들의 죄악이 심히 무거우니." 아브라함이 여호와 앞에 그대로 섰다.',
+      choices: [
+        { label: '"온 세상을 심판하시는 이가 정의를 행하실 것이 아니니이까" — 의인들을 위해 중보한다', run: G => {
+          const r = PATRI_KIT.overturn(G); PATRI_KIT.stat(G, '아브라함', 'cha', 5); PATRI_KIT.faithAll(G, 8);
+          G.flags.intercede = true; PATRI_KIT.next(G, 4); G.kingdom(8, '의인을 위한 중보');
+          return '아브라함이 오십 명에서 열 명까지 여섯 번 구했고, 여호와께서 "열 명으로 말미암아 멸하지 아니하리라" 하셨다(18:23-32). 그러나 그 성에는 의인 열 명이 없었다. ' + r + ' "하나님이 아브라함을 생각하사 롯을 그 엎으시는 중에서 내보내셨더라"(19:29). 신앙 +8, 아브라함 매력 +5.'; } },
+        { label: '심판은 여호와께 맡기고 잠잠히 장막으로 돌아간다', run: G => {
+          const r = PATRI_KIT.overturn(G); PATRI_KIT.faithAll(G, 2); PATRI_KIT.next(G, 4); G.kingdom(1);
+          return r + ' 이튿날 아침 아브라함이 소돔과 고모라를 바라보니 그 땅의 연기가 옹기 가마의 연기 같이 치솟았다(19:27-28). 신앙 +2.'; } },
+      ] },
+    { id: 'isaac', who: 'abraham', auto: 0,
+      cond: G => (G.done.sodom || G.isPlayer('sodom')) && G.done.torchCovenant && G.turn >= (G.flags.pNext || 0) && G.exists('abraham'),
+      title: '이삭의 출생과 모리아 산', ref: '창 21:1-21; 22:1-19; 히 11:17-19',
+      text: '여호와께서 말씀하신 대로 사라를 돌보셨다. 아브라함이 백 세에 아들을 낳아 이름을 이삭이라 하니, 사라가 "하나님이 나를 웃게 하시니 듣는 자가 다 나와 함께 웃으리로다" 하였다(21:6). 하갈과 이스마엘은 브엘세바 광야로 떠났으나 하나님이 샘물을 보이시고 그 아이와 함께 계셨다(21:14-20). 그 일 후에 하나님이 아브라함을 시험하셨다. "네 아들 네 사랑하는 독자 이삭을 데리고 모리아 땅으로 가라." 산을 오르며 이삭이 물었다. "불과 나무는 있거니와 번제할 어린 양은 어디 있나이까?" 아브라함이 대답했다. "하나님이 자기를 위하여 친히 준비하시리라"(22:7-8).',
+      choices: [
+        { label: '"여호와 이레" — 하나님이 준비하심을 믿고 산에 오른다', run: G => {
+          const led = PATRI_KIT.raise(G, '이삭', 'hebron', true);
+          ['하갈', '이스마엘'].forEach(n => { const o = G.o(n); if (o && o.alive && o.fac === 'abraham') { o.fac = null; o.city = 'bozrah'; } });
+          PATRI_KIT.faithAll(G, 12); PATRI_KIT.stat(G, '이삭', 'fai', 5);
+          G.flags.moriah = true; PATRI_KIT.next(G, 3); G.kingdom(10, '여호와 이레');
+          return '아브라함이 손을 내밀어 칼을 잡으려 할 때 여호와의 사자가 하늘에서 불렀다. "그 아이에게 네 손을 대지 말라. 네가 네 아들 네 독자까지도 내게 아끼지 아니하였으니 내가 이제야 네가 하나님을 경외하는 줄을 아노라." 수풀에 뿔이 걸린 숫양이 있었다. 아브라함이 그 땅 이름을 여호와 이레라 하였다(22:12-14). "네 씨로 말미암아 천하 만민이 복을 받으리니"(22:18). ' + (led ? '이삭이 장막을 잇는 족장이 되었다. ' : '') + '하갈과 이스마엘은 광야로 떠났다(재야, 보스라). 신앙 +12, 이삭 신앙 +5.'; } },
+      ] },
+    { id: 'machpelah', who: 'abraham', auto: 0,
+      cond: G => PATRI_KIT.after(G, 'isaac'),
+      title: '막벨라 굴과 리브가', ref: '창 23장; 24장; 25:7-10',
+      text: '사라가 백이십칠 세에 헤브론에서 죽으니 아브라함이 슬퍼하며 애통했다. 그가 헷 족속에게 말했다. "나는 당신들 중에 나그네요 거류하는 자니 당신들 중에서 내게 매장할 소유지를 주어 나로 내 죽은 자를 장사하게 하시오"(23:4). 헷 사람 에브론이 "그 밭을 당신에게 드리고 그 속의 굴도 내가 당신에게 드리나이다" 하였다. 한편 아브라함의 늙은 종이 나홀의 성 우물가에서 기도하니, 리브가가 나와 약대들에게까지 물을 길어 주었다(24:12-20).',
+      choices: [
+        { label: '"그 밭 값을 당신에게 주리니" — 은 사백 세겔을 달아 값을 온전히 치른다', run: G => {
+          PATRI_KIT.pay(G, 400, 0);
+          if (G.ownerOf('hebron') === 'abraham') { const h = G.city('hebron'); h.loy += 15; h.faith += 5; }
+          G.flags.paidFull = true; const t = PATRI_KIT.bury(G); PATRI_KIT.next(G, 3); G.kingdom(6, '나그네의 값');
+          return '아브라함이 상인이 통용하는 은 사백 세겔을 달아 에브론에게 주었다(23:16). 금 -400, 헤브론 민심 +15. 막벨라 밭과 굴이 헷 족속 앞에서 아브라함의 매장할 소유로 확정되었다 — 약속의 땅에서 그가 가진 첫 땅이다(23:17-20). ' + t; } },
+        { label: '에브론이 거저 주겠다는 말을 받아들인다', run: G => {
+          const t = PATRI_KIT.bury(G); PATRI_KIT.next(G, 3); G.kingdom(1);
+          return '밭과 굴을 선물로 받았다. 값을 치르지 않은 땅은 훗날 "헷 사람이 준 땅"이라 불릴 것이다. ' + t; } },
+      ] },
+    { id: 'wells', who: 'abraham', auto: 0,
+      cond: G => PATRI_KIT.after(G, 'machpelah'),
+      title: '르호봇 — 그랄의 우물과 브엘세바 언약', ref: '창 26:12-33; 21:22-34',
+      text: '이삭이 그 땅에서 농사하여 그 해에 백 배나 얻었다. 그랄 사람들이 그를 시기하여 아브라함 때에 판 우물들을 다 흙으로 메웠고, 그랄 목자들이 "이 물은 우리의 것이라" 하며 새로 판 우물마다 다투었다. 이삭이 그 우물들의 이름을 에섹(다툼), 싯나(대적함)라 하였다(26:12-21).',
+      choices: [
+        { label: '다투지 않고 옮겨 가서 또 우물을 판다', run: G => {
+          const t = PATRI_KIT.wellsPeace(G); PATRI_KIT.stat(G, '이삭', 'cha', 5);
+          PATRI_KIT.next(G, 4); G.kingdom(8, '르호봇');
+          return t + ' 이삭 매력 +5.'; } },
+        { label: '"이 물은 우리의 것이라" — 목자들을 무장시켜 우물을 지킨다', run: G => {
+          G.buff('abraham', 'atk', 3, 0.15); if (G.exists('gerar')) G.rel('abraham', 'gerar', -20);
+          PATRI_KIT.faithAll(G, 0, -5); PATRI_KIT.next(G, 4); G.kingdom(-5, '우물 다툼');
+          return '우물마다 칼이 섰다. 그랄과의 관계 -20, 3턴 동안 공격력 +15%, 민심 -5. 브엘세바는 여전히 다툼의 우물이다.'; } },
+      ],
+      altWho: 'gerar', altText: '이삭의 목자들이 그랄 골짜기에 장막을 치고 아브라함 때의 옛 우물들을 다시 팠다. 그의 양과 소가 떼를 이루니 백성이 시기한다.',
+      altChoices: [
+        { label: '"우리를 떠나라" 한 뒤, 브엘세바로 찾아가 언약을 맺는다', run: G => { const t = PATRI_KIT.wellsPeace(G); PATRI_KIT.next(G, 4); return t; } },
+        { label: '우물을 메우고 목자들을 내쫓는다', run: G => {
+          if (G.exists('abraham')) G.rel('gerar', 'abraham', -20); G.buff('gerar', 'atk', 2, 0.1); PATRI_KIT.next(G, 4);
+          return '그랄 목자들이 우물을 흙으로 메웠다. 아브라함의 장막과의 관계 -20, 2턴 동안 공격력 +10%.'; } },
+      ] },
+    { id: 'ladder', who: 'abraham', auto: 0,
+      cond: G => PATRI_KIT.after(G, 'wells'),
+      title: '벧엘의 사닥다리', ref: '창 25:27-34; 27장; 28:10-22',
+      text: '이삭이 늙어 눈이 어두웠다. 어머니 리브가의 계략으로 둘째 야곱이 형 에서의 옷을 입고 장자의 축복을 받자, 에서가 마음에 이르기를 "아버지를 곡할 때가 가까웠은즉 내가 내 아우 야곱을 죽이리라" 하였다(27:41). 야곱이 브엘세바를 떠나 하란으로 가다가 한 곳에서 돌 하나를 베개로 삼고 잤다. 꿈에 사닥다리가 땅 위에 서 있는데 그 꼭대기가 하늘에 닿았고 하나님의 사자들이 오르락내리락하였다. "내가 너와 함께 있어 네가 어디로 가든지 너를 지키며 너를 이끌어 이 땅으로 돌아오게 할지라"(28:15).',
+      choices: [
+        { label: '"여호와께서 과연 여기 계시거늘" — 돌베개를 기둥으로 세우고 십분의 일을 서원한다', run: G => {
+          const led = PATRI_KIT.raise(G, '야곱', 'bethel', true); PATRI_KIT.stat(G, '야곱', 'fai', 10);
+          PATRI_KIT.faithAll(G, 8); if (G.exists('edom')) G.rel('abraham', 'edom', -10);
+          G.flags.bethelVow = true; PATRI_KIT.next(G, 4); G.kingdom(8, '벧엘의 서원');
+          return '야곱이 그 곳 이름을 벧엘(하나님의 집)이라 하고 서원했다. "하나님이 나와 함께 계셔서… 하나님께서 내게 주신 모든 것에서 십분의 일을 내가 반드시 하나님께 드리겠나이다"(28:20-22). ' + (led ? '야곱이 족장이 되었다(이삭은 늙어 장막에 머문다). ' : '') + '신앙 +8, 야곱 신앙 +10, 세일(에서)과의 관계 -10.'; } },
+        { label: '형의 칼이 두려워 서원도 없이 하란으로 서둘러 달아난다', run: G => {
+          const led = PATRI_KIT.raise(G, '야곱', 'bethel', true); if (G.exists('edom')) G.rel('abraham', 'edom', -20);
+          PATRI_KIT.faithAll(G, -3); PATRI_KIT.next(G, 4); G.kingdom(-2);
+          return (led ? '야곱이 족장이 되었다. ' : '') + '그러나 벧엘의 돌베개는 그대로 버려졌다. 세일(에서)과의 관계 -20, 신앙 -3.'; } },
+      ] },
+    { id: 'jabbok', who: 'abraham', auto: 0,
+      cond: G => PATRI_KIT.after(G, 'ladder'),
+      title: '마하나임과 얍복 강 — 에서와의 화해', ref: '창 31–33장',
+      text: '하란에서 이십 년, 야곱은 라반의 두 딸 레아와 라헬을 위해 십사 년, 양 떼를 위해 육 년을 섬겼고 라반은 그의 품삯을 열 번이나 바꾸었다(31:41). 여호와께서 "네 조상의 땅, 네 족속에게로 돌아가라" 하셨다. 길르앗 산에서 라반과 돌무더기를 쌓고 언약했다. "우리가 서로 떠나 있을 때에 여호와께서 나와 너 사이를 살피시옵소서"(31:49). 하나님의 군대를 만난 곳을 마하나임이라 불렀다. 그러나 형 에서가 사백 명을 거느리고 온다. 그 밤 얍복 나루에서 어떤 사람이 날이 새도록 야곱과 씨름하다가 말했다. "네 이름을 다시는 야곱이라 부를 것이 아니요 이스라엘이라 부를 것이니 이는 네가 하나님과 및 사람들과 겨루어 이겼음이니라"(32:28).',
+      choices: [
+        { label: '"주의 종 야곱" — 일곱 번 땅에 굽히고 예물을 앞서 보낸다', run: G => {
+          const t = PATRI_KIT.homecoming(G); PATRI_KIT.pay(G, 200, 2000);
+          if (G.exists('edom')) { G.rel('abraham', 'edom', 45); G.fac('edom').food += 2000; }
+          PATRI_KIT.faithAll(G, 5); G.flags.reconciled = true; PATRI_KIT.next(G, 3); G.kingdom(10, '형제의 화해');
+          return t + ' 야곱이 암염소 이백과 숫양 이십, 약대 삼십과 소 사십과 나귀 이십을 예물로 앞서 보냈다(32:13-15). 금 -200, 식량 -2000. 에서가 달려와서 그를 맞이하여 안고 목을 어긋맞추어 그와 입맞추고 서로 울었다(33:4). "내가 형님의 얼굴을 뵈온즉 하나님의 얼굴을 본 것 같사오며"(33:10). 세일과의 관계 +45, 신앙 +5.'; } },
+        { label: '떼를 두 떼로 나누고 칼을 들고 형을 맞선다', run: G => {
+          const t = PATRI_KIT.homecoming(G); G.city(G.fac('abraham').capital).soldiers += 1500;
+          if (G.exists('edom')) { G.rel('abraham', 'edom', -25); G.buff('edom', 'atk', 3, 0.2); }
+          PATRI_KIT.next(G, 3); G.kingdom(-6, '형제의 칼');
+          return t + ' 그러나 칼을 든 형제 사이에 긴장이 흐른다. 도읍 병력 +1500, 세일과의 관계 -25, 에서의 사백 명이 3턴 동안 공격력 +20%.'; } },
+      ],
+      altWho: 'edom', altText: '아우 야곱이 하란에서 돌아온다. 그가 사자를 앞서 보내 "주의 종 야곱"이라 부르고 예물 떼를 끝없이 보내 왔다.',
+      altChoices: [
+        { label: '달려가 아우를 안고 입맞춘다', run: G => {
+          const t = PATRI_KIT.homecoming(G); if (G.exists('abraham')) G.rel('edom', 'abraham', 45); G.fac('edom').food += 2000; PATRI_KIT.next(G, 3);
+          return t + ' 에서가 아우를 안고 울었다. 식량 +2000, 이스라엘 족속과의 관계 +45. "내게 있는 것이 족하니 네 소유는 네가 가지라"(33:9).'; } },
+        { label: '사백 명을 이끌고 친다', run: G => {
+          const t = PATRI_KIT.homecoming(G); const cap = G.exists('abraham') ? G.fac('abraham').capital : null;
+          const r = cap ? G.raid('edom', cap, 3000) : ''; if (G.exists('abraham')) G.rel('edom', 'abraham', -30); PATRI_KIT.next(G, 3);
+          return t + ' ' + r + ' 이스라엘 족속과의 관계 -30.'; } },
+      ] },
+    { id: 'shechem', who: 'abraham', auto: 0,
+      cond: G => PATRI_KIT.after(G, 'jabbok') && G.exists('hamor') && G.ownerOf('shechem') === 'hamor' && !G.isPlayer('hamor'),
+      title: '세겜의 일', ref: '창 33:18–34:31; 49:5-7',
+      text: '야곱이 밧단아람에서부터 평안히 세겜 성에 이르러 그 성 앞에 장막을 치고, 하몰의 아들들에게서 밭을 사고 제단을 쌓아 엘엘로헤이스라엘이라 불렀다(33:18-20). 그런데 그 땅의 추장 세겜이 야곱의 딸 디나에게 부끄러운 일을 행했다. 야곱의 아들들이 근심하고 심히 노하여 속임수로 할례를 조건 삼았고, 성 사람들이 고통할 때에 시므온과 레위가 칼을 들고 성을 기습하여 남자들을 죽이고 성을 노략했다(34:25-29). 야곱이 말했다. "너희가 내게 화를 끼쳐 나로 이 땅 주민 곧 가나안 족속과 브리스 족속에게 악취를 내게 하였도다"(34:30).',
+      choices: [
+        { label: '시므온과 레위를 꾸짖고, 노략물과 사로잡은 자들을 돌려보낸다', run: G => {
+          PATRI_KIT.shechem(G, false); PATRI_KIT.next(G, 3); G.kingdom(-2, '세겜의 칼');
+          return '하몰과 세겜이 죽고 세겜 성은 폐허가 되어 주인 없는 성이 되었다. 야곱이 노략물을 돌려보내고 그 성을 떠났다. 주변 세력과의 관계 -10, 시므온·레위 신앙 -10. 훗날 야곱은 임종 때에 말했다. "시므온과 레위는 형제요 그들의 칼은 폭력의 도구로다… 그 노여움이 혹독하니 저주를 받을 것이요"(49:5-7). 속임과 보복은 약속의 길이 아니다.'; } },
+        { label: '빼앗은 성과 재물을 그대로 차지한다', run: G => {
+          PATRI_KIT.shechem(G, true); const F = G.fac('abraham'); F.food += 2000; F.gold += 300;
+          PATRI_KIT.faithAll(G, -12, -5); ['시므온', '레위'].forEach(n => PATRI_KIT.stat(G, n, 'war', 3));
+          PATRI_KIT.next(G, 3); G.kingdom(-10, '속임과 칼로 얻은 성');
+          return '하몰과 세겜이 죽고 세겜이 이스라엘 족속의 성이 되었다. 그러나 그 성은 속임과 칼로 얻은 것이다. 식량 +2000, 금 +300, 신앙 -12, 민심 -5, 주변 세력과의 관계 -20. "나는 수가 적은즉 그들이 나를 치면 나와 내 집이 멸망하리라"(34:30).'; } },
+      ] },
+    { id: 'bethelAgain', who: 'abraham', auto: 0,
+      cond: G => PATRI_KIT.after(G, 'jabbok') && (G.done.shechem || G.isPlayer('hamor') || !(G.exists('hamor') && G.ownerOf('shechem') === 'hamor')),
+      title: '벧엘로 올라가라 — 베냐민의 출생', ref: '창 35장',
+      text: '하나님이 야곱에게 이르셨다. "일어나 벧엘로 올라가서 거기 거주하며 네가 네 형 에서의 낯을 피하여 도망하던 때에 네게 나타났던 하나님께 거기서 제단을 쌓으라." 야곱이 자기 집안 사람과 자기와 함께 한 모든 자에게 말했다. "너희 중에 있는 이방 신상들을 버리고 자신을 정결하게 하고 너희들의 의복을 바꾸어 입으라. 우리가 일어나 벧엘로 올라가자"(35:1-3).',
+      choices: [
+        { label: '이방 신상들과 귀고리를 세겜 상수리나무 아래 묻고 벧엘에 제단을 쌓는다', run: G => {
+          PATRI_KIT.faithAll(G, 15, 5); PATRI_KIT.stat(G, '야곱', 'fai', 5); const t = PATRI_KIT.bethlehem(G);
+          G.flags.godsBuried = true; PATRI_KIT.next(G, 3); G.kingdom(10, '벧엘의 하나님');
+          return '야곱이 그것들을 세겜 근처 상수리나무 아래 묻었다(35:4). 하나님께서 다시 나타나 말씀하셨다. "나는 전능한 하나님이라 생육하며 번성하라. 한 백성과 백성들의 총회가 네게서 나오고 왕들이 네 허리에서 나오리라. 내가 아브라함과 이삭에게 준 땅을 네게 주고"(35:11-12). 신앙 +15, 민심 +5. ' + t; } },
+        { label: '라헬의 드라빔을 그대로 둔 채 길을 떠난다', run: G => {
+          PATRI_KIT.faithAll(G, -8); const t = PATRI_KIT.bethlehem(G);
+          PATRI_KIT.next(G, 3); G.kingdom(-4, '남겨 둔 이방 신상');
+          return '장막 안에 라헬이 아버지 집에서 가져온 드라빔이 남았다(31:19, 34). 신앙 -8. ' + t; } },
+      ] },
+  ],
   conquest: [
     { id: 'rahab', who: 'israel', auto: 0,
       cond: G => G.turn >= 1 && G.ownerOf('jericho') === 'jericho',
