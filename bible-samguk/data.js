@@ -62,8 +62,8 @@ const SCENARIOS = [
     factions: [
       { id: 'abraham', name: '아브라함의 장막', ruler: '아브라함', color: '#e2b04a', capital: 'hebron', gold: 800, food: 9000, aggr: 0.15,
         desc: '성을 쌓지 않고 장막에 거하는 유목 족속. 가축과 은과 금이 풍부하나(13:2) 약속의 땅은 아직 한 뼘도 제 것이 아니다. 헤브론 마므레 상수리나무 숲과 벧엘 동쪽 제단 곁에 장막을 쳤다. 이삭과 야곱은 사건을 따라 차례로 족장이 되고, 열두 아들은 야곱의 귀향 때 합류한다. 야곱이 이스라엘이라는 이름을 받으면 "이스라엘 족속"이 된다.',
-        cities: { hebron: 3000, bethel: 2000 } },
-      { id: 'gerar', name: '그랄', ruler: '아비멜렉', color: '#c9573f', capital: 'gaza', gold: 1200, food: 7000, aggr: 0.2,
+        cities: { hebron: 4500, bethel: 3000 } },
+      { id: 'gerar', name: '그랄', ruler: '아비멜렉', color: '#c9573f', capital: 'gaza', gold: 1200, food: 7000, aggr: 0.1,
         desc: '네겝 서쪽 그랄의 왕 아비멜렉. 지도에 그랄이 없어 가까운 해안 성 가사로 대신한다. 브엘세바의 우물들을 두고 아브라함·이삭의 목자들과 다투었다 (21:25; 26:15-22). 훗날 블레셋 땅이 되는 곳이다.',
         cities: { gaza: 3500, beersheba: 1800 } },
       { id: 'salem', name: '살렘', ruler: '멜기세덱', color: '#8f86a8', capital: 'jerusalem', gold: 800, food: 5000, aggr: 0.02,
@@ -72,13 +72,13 @@ const SCENARIOS = [
       { id: 'sodom', name: '소돔 (요단 온 들)', ruler: '소돔 왕 베라', color: '#9a6fbf', capital: 'jericho', gold: 1500, food: 9000, aggr: 0.1,
         desc: '"여호와의 동산 같고 애굽 땅과 같이" 물이 넉넉한 요단 온 들의 다섯 성읍 (13:10). 지도에 소돔이 없어 요단 들의 성 여리고로 대신한다. 소돔 사람은 악하여 여호와 앞에 큰 죄인이었다 (13:13). 소돔의 멸망 사건 때 사라진다.',
         cities: { jericho: 3000 } },
-      { id: 'east', name: '동방 연합 (엘람)', ruler: '그돌라오멜', color: '#6f8fd8', capital: 'damascus', gold: 1400, food: 9000, aggr: 0.45,
+      { id: 'east', name: '동방 연합 (엘람)', ruler: '그돌라오멜', color: '#6f8fd8', capital: 'damascus', gold: 1200, food: 8000, aggr: 0.3,
         desc: '엘람 왕 그돌라오멜과 시날·엘라살·고임의 왕들. 요단 들의 왕들을 열두 해 동안 섬기게 했다 (14:1-4). 먼 동방의 연합군을 지도 북동쪽 다메섹과 단에 둔다 — 아브람은 그들을 단까지 쫓아가 다메섹 왼편 호바까지 쳤다 (14:14-15).',
-        cities: { damascus: 6000, dan: 3000 } },
-      { id: 'hamor', name: '세겜 (히위 족속)', ruler: '하몰', color: '#5ea67c', capital: 'shechem', gold: 700, food: 5000, aggr: 0.1,
+        cities: { damascus: 4500, dan: 2000 } },
+      { id: 'hamor', name: '세겜 (히위 족속)', ruler: '하몰', color: '#5ea67c', capital: 'shechem', gold: 700, food: 5000, aggr: 0.05,
         desc: '히위 족속 하몰과 그의 아들 세겜이 다스리는 성. 아브람이 처음 제단을 쌓은 모레 상수리나무가 이 곁에 있고(12:6-7), 훗날 야곱이 이 성 앞에서 밭을 산다 (33:18-20).',
         cities: { shechem: 2500 } },
-      { id: 'edom', name: '세일 (에서의 족속)', ruler: '에서', color: '#b5804f', capital: 'bozrah', gold: 700, food: 5000, aggr: 0.15,
+      { id: 'edom', name: '세일 (에서의 족속)', ruler: '에서', color: '#b5804f', capital: 'bozrah', gold: 700, food: 5000, aggr: 0.1,
         desc: '이삭의 맏아들 에서가 세일 땅 에돔 들에 이룬 족속 (32:3; 36:8). 시대를 압축해 처음부터 보스라에 있다. 장자의 명분과 축복을 빼앗긴 원한을 품고 사백 명을 거느린다 (27:41; 32:6).',
         cities: { bozrah: 2500 } },
     ],
@@ -128,7 +128,7 @@ const SCENARIOS = [
       ['하몰', 45, 60, 70, 60, 15, 'hamor', 'shechem', '히위 족속, 세겜 성의 추장. "이 땅이 너희 앞에 있으니 거주하며 매매하며 기업을 얻으라" 했다.', '창 33:19; 34:2, 8-10, 20-24'],
       ['세겜', 60, 45, 45, 55, 10, 'hamor', 'shechem', '하몰의 아들, 그 땅의 추장. 야곱의 딸 디나에게 큰 잘못을 저질렀다.', '창 34:2-3, 19'],
     ],
-    rel: [['abraham', 'salem', 60], ['abraham', 'gerar', 35], ['abraham', 'sodom', 40], ['abraham', 'east', 10], ['abraham', 'edom', 25], ['abraham', 'hamor', 35],
+    rel: [['abraham', 'salem', 75], ['abraham', 'gerar', 60], ['abraham', 'sodom', 55], ['abraham', 'east', 10], ['abraham', 'edom', 60], ['abraham', 'hamor', 60],
       ['east', 'sodom', 10], ['east', 'salem', 20], ['gerar', 'edom', 40]],
     goals: {
       abraham: ['hebron', 'beersheba', 'bethel', 'shechem', 'bethlehem', 'mahanaim'],
@@ -557,6 +557,7 @@ const PATRI_KIT = {
   sack: G => {
     const j = G.city('jericho'); if (j.owner && j.owner !== 'abraham') { j.soldiers = Math.floor(j.soldiers * 0.5); j.loy -= 15; }
     if (G.exists('sodom')) { const S = G.fac('sodom'), g = Math.min(S.gold, 600); S.gold -= g; S.food = Math.floor(S.food * 0.6); if (G.exists('east')) G.fac('east').gold += g; }
+    if (G.exists('east')) G.fac('east').aggr = Math.min(G.fac('east').aggr, 0.15); // 약탈을 마친 원정군은 동방으로 돌아간다
     let lot = false;
     if (G.exists('east') && G.alive('롯') && G.facOf('롯') !== 'abraham') { G.join('롯', 'east', G.fac('east').capital); lot = true; }
     return '싯딤 골짜기에서 요단 들의 왕들이 패하여 역청 구덩이에 빠졌다. 네 왕이 여리고(소돔)의 수비병 절반을 무너뜨리고 재물과 양식을 빼앗았다' + (lot ? ', 롯도 사로잡혀 다메섹으로 끌려갔다.' : '.');
@@ -565,7 +566,7 @@ const PATRI_KIT = {
   rescue: G => {
     ['마므레', '에스골', '아넬'].forEach(n => PATRI_KIT.raise(G, n, 'hebron'));
     if (G.alive('롯') && G.facOf('롯') === 'east') G.join('롯', G.exists('sodom') && G.cityCount('sodom') ? 'sodom' : 'abraham');
-    if (G.exists('east')) G.fac('east').aggr = Math.min(G.fac('east').aggr, 0.25); // 호바까지 쫓긴 동방 연합의 기세가 꺾인다
+    if (G.exists('east')) G.fac('east').aggr = Math.min(G.fac('east').aggr, 0.08); // 호바까지 쫓긴 동방 연합이 물러간다
     G.flags.lotRescued = true;
   },
   // 소돔과 고모라가 엎어진다 (19:24-29)
