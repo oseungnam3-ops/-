@@ -111,6 +111,8 @@
     buff: (f, k, turns, val) => { S.buffs[f] = S.buffs[f] || {}; S.buffs[f][k] = { turns, val }; },
     rel: (a, b, d) => setRel(a, b, getRel(a, b) + d),
     kingdom: (d, why) => { if (S.story) addKingdom(d, why); },
+    avgFaith: f => avgFaith(f),
+    setRuler: (f, n) => { const o = offByName(n); if (o && o.alive && exists(f) && o.fac === f) fac(f).ruler = o.id; },
     item: (f, id, n = 1) => { if (!exists(f) || !ITEMS[id]) return; const F = fac(f); F.items = F.items || {}; F.items[id] = (F.items[id] || 0) + n; },
     res: (f, add) => { if (!exists(f)) return; const F = fac(f); Object.entries(add).forEach(([k, v]) => { F[k] = Math.max(0, (F[k] || 0) + v); }); },
     kill: n => { const o = offByName(n); if (o && o.alive) killOfficer(o); },
