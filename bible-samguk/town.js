@@ -724,6 +724,7 @@
     cid = id; open = true; busy = false; focus = null;
     $('#town').hidden = false;
     document.body.classList.add('in-town');
+    if (window.SND) SND.bgm('land');
     resize();
     build();
     renderHud();

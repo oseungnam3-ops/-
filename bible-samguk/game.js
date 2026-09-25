@@ -13,6 +13,7 @@
   CITY_TABLE.forEach(([id, name, x, y, pop, agri, comm, def, desc]) => { CITY_INFO[id] = { id, name, x, y, pop, agri, comm, def, desc }; });
   const ADJ = {};
   ROADS.forEach(([a, b]) => { (ADJ[a] = ADJ[a] || []).push(b); (ADJ[b] = ADJ[b] || []).push(a); });
+  const snd = (f, ...a) => { try { if (window.SND) SND[f](...a); } catch (e) { /* 소리 오류는 게임을 멈추지 않는다 */ } };
   const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   let S = null; // 게임 상태 (JSON 저장 가능)
@@ -49,6 +50,7 @@
     const url = artOf(o);
     return url ? `<span class="pimg${big ? ' big' : ''}">${svg}<img src="${url}" alt="${esc(o.name)}" loading="lazy" onerror="this.remove()"></span>` : svg;
   };
+  const voiceOf = (o, kind) => { if (!o || !window.SND) return; snd('voice', SND.roleKey(o, !!(o.fac && S.facs[o.fac] && fac(o.fac).ruler === o.id), !!(S && o.fac && o.fac !== S.player)), kind); };
   const yearLabel = () => `BC ${S.year}년 ${SEASONS[S.season]}`;
 
   function log(msg, kind = '') {
@@ -212,7 +214,7 @@
       if (!c.build) return;
       if (--c.build.left > 0) return;
       const k = c.build.k; c.bld[k] = bl(c, k) + 1; c.build = null;
-      if (F.id === S.player) { log(`${CITY_INFO[c.id].name}의 ${BLD[k].name}이(가) Lv.${c.bld[k]}(으)로 올라갔다.`, 'gold'); S.story.counts['bld'] = (S.story.counts['bld'] || 0) + 1; }
+      if (F.id === S.player) { snd('sfx', 'level'); log(`${CITY_INFO[c.id].name}의 ${BLD[k].name}이(가) Lv.${c.bld[k]}(으)로 올라갔다.`, 'gold'); S.story.counts['bld'] = (S.story.counts['bld'] || 0) + 1; }
     });
   }
   // 전쟁 도구: 병영에서 만들고 출진할 때 두 가지까지 쓴다. 성물(relic)은 쓰고도 남는다.
@@ -494,6 +496,7 @@
   // ---------- 턴 진행 ----------
   function endTurn() {
     if (S.over) return;
+    snd('sfx', 'gong');
     S.pendingNews = [];
     Object.keys(S.facs).filter(f => f !== S.player).sort(() => Math.random() - 0.5).forEach(aiTurn);
     seasonUpkeep();
@@ -512,7 +515,7 @@
   function runQueue(q) { const next = q.shift(); if (next) next(() => runQueue(q)); else { checkEnd(); save(true); } }
 
   function showNews(title, lines) {
-    return done => openModal(`<h2>${esc(title)}</h2><div class="blog">${lines.map(l => `<p>${esc(l)}</p>`).join('')}</div>`, [{ label: '확인', primary: true, fn: done }]);
+    return done => (snd('sfx', 'march'), openModal(`<h2>${esc(title)}</h2><div class="blog">${lines.map(l => `<p>${esc(l)}</p>`).join('')}</div>`, [{ label: '확인', primary: true, fn: done }]));
   }
 
   function runEvents(done) {
@@ -528,6 +531,7 @@
   function safeCond(e) { try { return e.cond(G); } catch (err) { return false; } }
 
   function showEvent(e, next) {
+    snd('sfx', 'holy');
     const mine = S.player === e.who, alt = e.altWho && S.player === e.altWho;
     const choices = mine ? e.choices : alt ? e.altChoices : null;
     const finish = (ch) => {
@@ -827,8 +831,10 @@
     } else $('#questText').innerHTML = `<span class="qch">사명 완수</span><span class="qgoal">모든 사명을 이루었다. 나라를 계속 다스리자.</span>`;
   }
 
-  function render() { if (!S) return; drawHud(); drawMap(); drawLand(); if (hooks.onRender) hooks.onRender(); if (!$('#app').hidden) autosave(); }
+  function render() { if (!S) return; drawHud(); drawMap(); drawLand(); sceneBgm(); if (hooks.onRender) hooks.onRender(); if (!$('#app').hidden) autosave(); }
   const hooks = {};
+  let inBattle = false;
+  function sceneBgm() { if (inBattle || !$('#dialogue').hidden || $('#app').hidden) return; snd('bgm', (window.TOWN && TOWN.open) || mode === 'land' ? 'land' : 'map'); }
 
   // ---------- 성 선택 ----------
   function onCityTap(cid) {
@@ -902,7 +908,7 @@
     if (id === 'camp') body += craftHtml(c);
     if (id === 'port' || id === 'market') body += tradeHtml(c);
     const btns = [];
-    if (l < B.max && !(c.build && c.build.k === id)) btns.push({ label: why ? `업그레이드 (${why})` : `업그레이드 → Lv.${l + 1}`, primary: !why, fn: () => { const e = startUpgrade(c, id); if (e) toast(e); else { toast(`${nm} 공사를 시작했습니다. (${upTurns(l)}계절)`); landFx('bld:' + id, `🔨 Lv.${l + 1} 공사 시작`); } render(); } });
+    if (l < B.max && !(c.build && c.build.k === id)) btns.push({ label: why ? `업그레이드 (${why})` : `업그레이드 → Lv.${l + 1}`, primary: !why, fn: () => { const e = startUpgrade(c, id); if (e) toast(e); else { snd('sfx', 'build'); toast(`${nm} 공사를 시작했습니다. (${upTurns(l)}계절)`); landFx('bld:' + id, `🔨 Lv.${l + 1} 공사 시작`); } render(); } });
     s.cmds.forEach(k => btns.push({ label: CMDS[k] ? `${CMDS[k].label} — ${CMDS[k].hint}` : CMD_LABEL[k], fn: () => run(k) }));
     openModal(body, btns, { title: `${CITY_INFO[cid].name} ${nm} Lv.${l}` });
     if (id === 'camp') bindCraft(c);
@@ -921,7 +927,7 @@
       const k = b.dataset.trade, F = fac(S.player);
       if (!c.trade || c.trade.turn !== S.turn) c.trade = { turn: S.turn, n: 0 };
       if (c.trade.n >= 3 || (F[k] || 0) < 500) return;
-      c.trade.n++; F[k] -= 500; F.gold += tradeGold(c, k);
+      c.trade.n++; snd('sfx', 'coin'); F[k] -= 500; F.gold += tradeGold(c, k);
       toast(`${RES_NAME[k]} 500을 팔아 금 ${tradeGold(c, k)}을 얻었습니다.`); render(); onSpot(id);
     }));
   }
@@ -935,7 +941,7 @@
       const k = b.dataset.craft, it = ITEMS[k], F = fac(S.player);
       if (bl(c, 'camp') < it.camp || !canPay(F, it.cost)) return;
       pay(F, it.cost); F.items[k] = (F.items[k] || 0) + 1; S.story.counts.craft = (S.story.counts.craft || 0) + 1;
-      log(`${CITY_INFO[c.id].name} 병영에서 ${it.name}을(를) 만들었다.`); toast(`${it.name} 제작 완료`);
+      log(`${CITY_INFO[c.id].name} 병영에서 ${it.name}을(를) 만들었다.`); toast(`${it.name} 제작 완료`); snd('sfx', 'craft');
       render(); onSpot('camp');
     }));
   }
@@ -1074,9 +1080,12 @@
     const box = $('#dialogue');
     if (!lines || !lines.length) return done && done();
     let i = 0, typing = null;
-    box.hidden = false;
+    box.hidden = false; snd('bgm', 'story');
+    let lastSp = null;
     const show = () => {
       const [who, text] = lines[i]; const sp = speaker(who);
+      if (sp.o && sp.o !== lastSp) voiceOf(sp.o, /[!！]/.test(text) ? 'excl' : 'neutral'); else snd('sfx', 'page');
+      lastSp = sp.o || null;
       box.className = 'dialogue' + (sp.narr ? ' narr' : '') + (sp.word ? ' word' : '');
       $('#dlgBust').innerHTML = sp.o ? portraitOf(sp.o, true) : '';
       $('#dlgName').textContent = sp.narr ? (ch ? `${ch.title} · ${ch.ref}` : '') : sp.name;
@@ -1089,7 +1098,7 @@
       if (typing) { clearInterval(typing); typing = null; $('#dlgText').textContent = lines[i][1]; return; }
       i++; if (i >= lines.length) { close(); return; } show();
     };
-    const close = () => { clearInterval(typing); box.hidden = true; box.onclick = null; $('#dlgSkip').onclick = null; done && done(); };
+    const close = () => { clearInterval(typing); box.hidden = true; box.onclick = null; $('#dlgSkip').onclick = null; sceneBgm(); done && done(); };
     box.onclick = e => { if (e.target.closest('#dlgSkip')) return; next(); };
     $('#dlgSkip').onclick = e => { e.stopPropagation(); close(); };
     show();
@@ -1156,7 +1165,7 @@
       <p class="mute">사명을 이루고, 구휼을 베풀고, 포로를 너그럽게 풀어주면 나라가 자랍니다. 처형과 우상은 나라를 무너뜨립니다.</p></div>
       <p><b>시나리오 목표</b> — ${esc((sc.goalText && sc.goalText[P]) || '가나안의 열여덟 성을 차지한다.')}</p>
       <div class="tablewrap"><table class="roster"><thead><tr><th>세력</th><th>성</th><th>병력</th><th>전투력</th><th>관계</th></tr></thead><tbody>${facsRows}</tbody></table></div>`,
-      [{ label: '외교', fn: () => diploDialog(fac(P).capital) }, { label: `그림체: ${artStyle() === 'real' ? '실사' : '웹툰'}`, keep: true, fn: () => { setArtStyle(artStyle() === 'real' ? 'webtoon' : 'real'); render(); nationScreen(); toast(`그림체를 ${artStyle() === 'real' ? '실사' : '웹툰'}로 바꿨습니다.`); } }, { label: '도움말', fn: showHelp }, { label: '저장·불러오기', primary: true, fn: () => saveDialog('save') }, { label: '처음으로', danger: true, fn: showTitle }], { title: `${fac(P).name} · 국가`, wide: true });
+      [{ label: '외교', fn: () => diploDialog(fac(P).capital) }, { label: `그림체: ${artStyle() === 'real' ? '실사' : '웹툰'}`, keep: true, fn: () => { setArtStyle(artStyle() === 'real' ? 'webtoon' : 'real'); render(); nationScreen(); toast(`그림체를 ${artStyle() === 'real' ? '실사' : '웹툰'}로 바꿨습니다.`); } }, { label: '소리 설정', fn: soundDialog }, { label: '도움말', fn: showHelp }, { label: '저장·불러오기', primary: true, fn: () => saveDialog('save') }, { label: '처음으로', danger: true, fn: showTitle }], { title: `${fac(P).name} · 국가`, wide: true });
   }
   function showHelp() {
     openModal(`<ul class="help">
@@ -1166,6 +1175,7 @@
       <li>장수 한 명은 한 계절에 명령 하나. 모두 마쳤으면 <b>턴 종료</b>.</li>
       <li>가을에 농업만큼 식량을 거두고, 계절마다 상업만큼 금이 들어옵니다. 병사는 계절마다 식량을 먹습니다.</li>
       <li><b>신앙</b>이 높으면 전투 사기가 오르고 민심이 따라옵니다. 계절마다 식으니 <b>제사</b>로 지키세요.</li>
+      <li>화면을 한 번 누르면 <b>배경음악</b>이 시작됩니다. 국가 화면의 <b>소리 설정</b>에서 음악·효과음·인물 목소리를 조절하세요.</li>
       <li>하단의 <b>사명</b>을 따라가면 인물들의 대화와 함께 하나님 나라가 자랍니다.</li>
       <li>지도는 끌어서 옮기고, 휠이나 두 손가락으로 확대합니다. 미니맵을 누르면 전체 지도로 돌아갑니다.</li></ul>`, [], { title: '도움말' });
   }
@@ -1216,7 +1226,7 @@
           if (key === 'relief') addKingdom(1); if (key === 'worship') addKingdom(0.5);
         }
         if (r.ok && hooks.onCommand && hooks.onCommand(o, cid, key, r)) { render(); return; }
-        if (r.ok) landFx(key, r.msg);
+        if (r.ok) { landFx(key, r.msg); voiceOf(o, 'obey'); snd('sfx', { comm: 'coin', relief: 'coin', wall: 'build', worship: 'holy', recruit: 'march', train: 'clash', agri: 'page', search: 'page' }[key] || 'click'); }
         toast(r.ok ? `${o.name}: ${r.msg}` : r.msg);
         render(); if (r.ok) checkStory();
       });
@@ -1294,6 +1304,7 @@
         items.forEach(k => { if (!ITEMS[k].relic) F.items[k]--; });
         F.gold -= chariotGold;
         c.soldiers -= n;
+        voiceOf(gs[0], 'battle'); snd('sfx', 'horn');
         const r = battle(P, gs, n, to, c.train, { unit, prophet, items });
         if (!r.win) { c.soldiers += r.attLeft; }
         sel = r.win ? to : cid;
@@ -1314,11 +1325,13 @@
   }
 
   function playBattle(r, then) {
-    openModal(`<h2>${r.win ? '승전' : '전투'}</h2><div class="blog" id="blog"></div>`, [{ label: '확인', primary: true, fn: () => { render(); then(); } }]);
+    inBattle = true; snd('bgm', 'war'); snd('sfx', 'march');
+    openModal(`<h2>${r.win ? '승전' : '전투'}</h2><div class="blog" id="blog"></div>`, [{ label: '확인', primary: true, fn: () => { inBattle = false; render(); then(); } }]);
     const box = $('#blog');
+    const fx = l => { if (/함락|멸망/.test(l)) snd('sfx', 'victory'); else if (/버텨냈다|퇴각/.test(l)) snd('sfx', 'defeat'); else if (l.startsWith('🗡')) snd('sfx', 'clash'); else if (l.startsWith('🔥')) snd('sfx', 'fire'); else if (l.startsWith('📯')) snd('sfx', 'horn'); else if (l.startsWith('⚡')) snd('sfx', 'thunder'); else if (l.startsWith('🙏')) snd('sfx', 'holy'); else if (/합 —/.test(l)) snd('sfx', Math.random() < 0.5 ? 'clash' : 'hit'); };
     const add = l => { const p = document.createElement('p'); p.textContent = l; box.appendChild(p); box.scrollTop = box.scrollHeight; };
-    if (reduceMotion) r.lines.forEach(add);
-    else r.lines.forEach((l, i) => setTimeout(() => add(l), i * 180));
+    if (reduceMotion) { r.lines.forEach(add); snd('sfx', r.win ? 'victory' : 'defeat'); }
+    else r.lines.forEach((l, i) => setTimeout(() => { add(l); fx(l); }, i * 180));
   }
 
   function captiveDialog(caps) {
@@ -1385,6 +1398,59 @@
       [{ label: '능력치 표', fn: showRoster }], { title: '성경도감', wide: true });
   }
 
+  // ---------- 소리 설정 ----------
+  function soundDialog() {
+    if (!window.SND) { toast('이 브라우저에서는 소리를 낼 수 없습니다.'); return; }
+    SND.unlock(); const p = SND.pref;
+    const row = (k, lb) => `<label class="snd-row"><span>${lb}</span><input type="range" min="0" max="100" step="5" value="${Math.round(p[k] * 100)}" data-snd="${k}"><b>${Math.round(p[k] * 100)}</b></label>`;
+    openModal(`<label class="snd-row"><span>소리 켜기</span><input type="checkbox" id="sndOn" ${p.on ? 'checked' : ''}></label>
+      ${row('bgm', '배경음악')}${row('sfx', '효과음')}${row('voice', '인물 목소리')}
+      <p class="mute">배경음악은 장면마다 바뀝니다 — 타이틀 · 지도 · 영지(내정) · 전쟁 · 대화. 리라·목동 피리·틀북·양각 나팔 소리를 브라우저에서 직접 합성합니다.</p>
+      <div class="code-btns"><button class="btn" data-try="bgm:title">타이틀</button><button class="btn" data-try="bgm:map">지도</button><button class="btn" data-try="bgm:land">영지</button><button class="btn" data-try="bgm:war">전쟁</button><button class="btn" data-try="bgm:story">대화</button>
+        <button class="btn" data-try="voice:king">군주 목소리</button><button class="btn" data-try="voice:warrior">무장</button><button class="btn" data-try="voice:sage">선지자·책사</button><button class="btn" data-try="voice:woman">여성</button><button class="btn" data-try="voice:enemy">적장</button></div>`,
+      [], { title: '소리 설정' });
+    const body = $('#modalBody');
+    $('#sndOn').addEventListener('change', e => SND.set('on', e.target.checked));
+    body.querySelectorAll('[data-snd]').forEach(r => r.addEventListener('input', () => { SND.set(r.dataset.snd, r.value / 100); r.nextElementSibling.textContent = r.value; }));
+    body.querySelectorAll('[data-try]').forEach(b => b.addEventListener('click', () => { const [k, v] = b.dataset.try.split(':'); if (k === 'bgm') SND.bgm(v); else SND.voice(v, ['neutral', 'excl', 'obey', 'battle'][Math.floor(Math.random() * 4)]); }));
+  }
+
+  // ---------- 인물 갤러리 (타이틀에서 바로) ----------
+  function personInfo(name) {
+    const out = [];
+    SCENARIOS.forEach(sc => sc.officers.forEach(r => { if (r[0] === name) out.push({ sc, r }); }));
+    return out;
+  }
+  function fallbackFace(n) {
+    const i = personInfo(n)[0]; if (!window.PORTRAIT) return '';
+    const r = i ? i.r : [n, 50, 50, 50, 50, 50, null, '', ''];
+    const f = i && r[6] ? i.sc.factions.find(x => x.id === r[6]) : null;
+    return PORTRAIT.portrait({ name: n, war: r[1], int: r[2], pol: r[3], cha: r[4], fai: r[5], fac: r[6], origin: r[6], desc: r[8] }, { color: f ? f.color : '#6b6250' });
+  }
+  function galleryScreen() {
+    const [a, b] = artSets(); const all = Object.assign({}, b, a);
+    const names = [...new Set(Object.keys(all).filter(k => k[0] !== '@').map(k => k.replace(/^[a-z]+:/, '')))];
+    const order = SCENARIOS.map(s => s.id);
+    const firstScn = n => { const i = personInfo(n)[0]; return i ? order.indexOf(i.sc.id) : 99; };
+    names.sort((x, y) => firstScn(x) - firstScn(y) || x.localeCompare(y, 'ko'));
+    const url = n => artKey(n) || Object.keys(all).filter(k => k.endsWith(':' + n)).map(k => all[k])[0];
+    const groups = {};
+    names.forEach(n => { const i = personInfo(n)[0]; const k = i ? i.sc.title : '그 밖의 인물'; (groups[k] = groups[k] || []).push(n); });
+    openModal(`<p class="mute">그림이 있는 인물 ${names.length}명 — 누르면 크게 보고 성경 기록을 읽을 수 있습니다. (${artStyle() === 'real' ? '실사' : '웹툰'} 그림체)</p>` +
+      Object.entries(groups).map(([g, ns]) => `<h3 class="codex-h">${esc(g)} <small>${ns.length}명</small></h3><div class="hero-grid sm">${ns.map(n => `<button class="hcard" data-gal="${esc(n)}"><span class="hc-img"><span class="pimg">${fallbackFace(n)}<img src="${url(n)}" alt="${esc(n)}" loading="lazy" onerror="this.remove()"></span></span><b>${esc(n)}</b></button>`).join('')}</div>`).join(''),
+      [{ label: `그림체: ${artStyle() === 'real' ? '실사' : '웹툰'}`, keep: true, fn: () => { setArtStyle(artStyle() === 'real' ? 'webtoon' : 'real'); galleryScreen(); } }], { title: '인물 갤러리', wide: true });
+    $('#modalBody').querySelectorAll('[data-gal]').forEach(btn => btn.addEventListener('click', () => {
+      const n = btn.dataset.gal, info = personInfo(n);
+      const r = info[0] && info[0].r;
+      $('#heroView').innerHTML = `<div class="hv-art"><span class="pimg big">${fallbackFace(n)}<img src="${url(n)}" alt="${esc(n)}" onerror="this.remove()"></span></div>
+        <div class="hv-panel"><div class="hv-head"><h2>${esc(n)}</h2><span class="hv-fac">${info.map(i => esc(i.sc.title)).filter((v, i2, s) => s.indexOf(v) === i2).join(' · ')}</span></div>
+        ${r ? `<div class="sbar"><span>무력</span><div><i style="width:${r[1]}%"></i></div><b>${r[1]}</b></div><div class="sbar"><span>지력</span><div><i style="width:${r[2]}%"></i></div><b>${r[2]}</b></div><div class="sbar"><span>신앙</span><div><i style="width:${r[5]}%"></i></div><b>${r[5]}</b></div><p class="hv-desc">${esc(r[8] || '')} <span class="mute">${esc(r[9] || '')}</span></p>` : ''}
+        <p class="hv-close">화면을 누르면 닫힙니다</p></div>`;
+      $('#heroView').hidden = false;
+      if (r && window.SND) SND.voice(SND.roleKey({ name: n, war: r[1], int: r[2], desc: r[8], fac: r[6], origin: r[6] }, false, false), 'neutral');
+    }));
+  }
+
   // ---------- 타이틀 ----------
   function showTitle() {
     closeModal();
@@ -1401,7 +1467,7 @@
       <h1>성경 삼국지</h1>
       <p class="lede">아브라함의 장막에서 여호수아의 정복, 사사 시대, 사울의 왕국, 다윗의 통일, 왕국의 분열까지. 인물들과 대화하며 성을 다스리고, 칼이 아닌 언약 위에 하나님 나라를 세워 간다.</p>
       <div class="title-btns">${saved ? `<button class="gbtn" id="contBtn"><span>이어하기</span><small>${esc(SCENARIOS.find(x => x.id === saved.scn).title)} · ${esc(saved.facName)} · BC ${saved.year}년 ${SEASONS[saved.season] || ''} · ${saved.turn}턴</small></button>` : ''}
-      <button class="btn" id="loadBtn">불러오기</button></div>
+      <button class="btn" id="loadBtn">불러오기</button><button class="btn" id="galBtn">인물 갤러리</button><button class="btn" id="sndBtn">소리 설정</button></div>
       <h2 class="sec">시나리오</h2><div class="scns">`;
     SCENARIOS.forEach(sc => {
       const main = sc.factions.filter(f => STORY[sc.id] && STORY[sc.id][f.id]), rest = sc.factions.filter(f => !main.includes(f));
@@ -1416,6 +1482,9 @@
     t.querySelectorAll('.facbtn').forEach(b => b.addEventListener('click', () => confirmStart(b.dataset.scn, b.dataset.fac)));
     const cb = $('#contBtn'); if (cb) cb.addEventListener('click', () => loadData(saved.data));
     $('#loadBtn').addEventListener('click', () => saveDialog('load'));
+    $('#galBtn').addEventListener('click', galleryScreen);
+    $('#sndBtn').addEventListener('click', soundDialog);
+    snd('bgm', 'title');
   }
   function migrate() {
     if (!S.story) { S.story = { ch: 0, counts: {}, base: citiesOf(S.player).length, done: [], kingdom: 10 }; }
@@ -1449,6 +1518,7 @@
 
   // ---------- 입력 ----------
   function bind() {
+    document.addEventListener('click', e => { if (e.target.closest('button, .spot, .city')) snd('sfx', 'click'); }, true);
     bindPanZoom();
     bindLand();
     $('#map').addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { const g = e.target.closest('.city'); if (g) { e.preventDefault(); onCityTap(g.dataset.id); } } });
