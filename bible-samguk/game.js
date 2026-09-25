@@ -36,6 +36,7 @@
   const buffVal = (f, k) => { const b = S.buffs[f] && S.buffs[f][k]; return b && b.turns > 0 ? b.val : 0; };
   const peaceBlocks = (a, b) => S.flags.peaceUntil && S.turn < S.flags.peaceUntil && [a, b].sort().join() === 'israel,judah';
   const facName = f => f ? fac(f).name : '재야';
+  const portraitOf = o => window.PORTRAIT ? PORTRAIT.portrait(o, { color: o.fac && S.facs[o.fac] ? fac(o.fac).color : '#6b6250', ruler: !!(o.fac && S.facs[o.fac] && fac(o.fac).ruler === o.id) }) : '';
   const yearLabel = () => `BC ${S.year}년 ${SEASONS[S.season]}`;
 
   function log(msg, kind = '') {
@@ -73,7 +74,7 @@
 
   function addOfficer(row, i) {
     const [name, war, int, pol, cha, fai, f, cid, desc, ref] = row;
-    const o = { id: 'o' + (i ?? S.offs.length) + '_' + name, name, war, int, pol, cha, fai, fac: f, city: cid, desc, ref, alive: true, done: false };
+    const o = { id: 'o' + (i ?? S.offs.length) + '_' + name, name, war, int, pol, cha, fai, fac: f, origin: f, city: cid, desc, ref, alive: true, done: false };
     S.offs.push(o);
     return o;
   }
@@ -153,7 +154,7 @@
     if (C.cost.food && F.food < C.cost.food) return { ok: false, msg: '식량이 부족하다.' };
     if (C.cost.gold) F.gold -= C.cost.gold;
     if (C.cost.food) F.food -= C.cost.food;
-    const s = o[C.stat]; let msg = '';
+    const s = o[C.stat]; let msg = '', found = null;
     const gain = (base) => Math.max(1, Math.round(base * s / 100 + rnd(0, 3)));
     switch (key) {
       case 'agri': { const g = gain(8); c.agri += g; msg = `농업 +${g}`; break; }
@@ -175,7 +176,7 @@
       case 'search': {
         const free = freeIn(cid);
         if (free.length && Math.random() < 0.35 + s / 150) {
-          const t = free[0]; t.fac = f; t.city = cid;
+          const t = free[0]; t.fac = f; t.city = cid; found = t.id;
           msg = `${t.name}을(를) 찾아 등용했다! — ${t.desc}`;
         } else if (Math.random() < 0.3) { const g = Math.round(rnd(50, 150)); F.gold += g; msg = `인재는 없었지만 금 ${g}을 얻었다.`; }
         else msg = '쓸 만한 인재를 찾지 못했다.';
@@ -183,7 +184,7 @@
       }
     }
     fixCity(c); o.done = true;
-    return { ok: true, msg };
+    return { ok: true, msg, found };
   }
 
   // ---------- 전투 ----------
@@ -526,11 +527,12 @@
       ${meter('농업', c.agri)}${meter('상업', c.comm)}${meter('성벽', c.def)}
       ${meter('훈련', c.train)}${meter('민심', c.loy, c.loy < 30 ? 'warn' : '')}${meter('신앙', c.faith, 'faith')}
     </div>`;
+    h += `<button class="btn primary enter" id="enterTown">성 안으로 들어가기</button>`;
     h += `<h3>장수 <small>${offs.length}명</small></h3><ul class="offs">`;
     if (!offs.length) h += '<li class="mute">머무는 장수가 없다.</li>';
     offs.forEach(o => {
       const isRuler = fac(o.fac).ruler === o.id;
-      h += `<li class="${o.done ? 'done' : ''}"><button class="oname" data-bio="${o.id}">${isRuler ? '<span class="crown">王</span>' : ''}${esc(o.name)}</button>
+      h += `<li class="${o.done ? 'done' : ''}"><span class="thumb">${portraitOf(o)}</span><button class="oname" data-bio="${o.id}">${isRuler ? '<span class="crown">王</span>' : ''}${esc(o.name)}</button>
         <span class="st">무${o.war} 지${o.int} 정${o.pol} 매${o.cha} 신${o.fai}</span>${mine ? `<span class="tag">${o.done ? '완료' : '대기'}</span>` : ''}</li>`;
     });
     h += '</ul>';
@@ -551,7 +553,8 @@
     $('#log').innerHTML = S.log.slice(0, 40).map(l => `<li class="${l.kind}"><time>${l.t}</time>${esc(l.msg)}</li>`).join('');
   }
 
-  function render() { if (!S) return; drawBar(); drawMap(); drawSide(); drawLog(); }
+  function render() { if (!S) return; drawBar(); drawMap(); drawSide(); drawLog(); if (hooks.onRender) hooks.onRender(); }
+  const hooks = {};
 
   // ---------- 모달 ----------
   function openModal(html, buttons = [], opts = {}) {
@@ -580,7 +583,7 @@
     const list = idleOffs(cid).sort((a, b) => b[stat] - a[stat]);
     if (!list.length) { toast('이번 계절에 명령을 받을 수 있는 장수가 없습니다.'); return; }
     openModal(`<h2>${title}</h2><p class="mute">누구에게 맡길까요? (${STAT_NAME[stat]} 순)</p><div class="picklist">${list.map(o =>
-      `<button class="pick" data-o="${o.id}"><b>${esc(o.name)}</b><span>${STAT_NAME[stat]} ${o[stat]}</span></button>`).join('')}</div>`, [], { cancel: true });
+      `<button class="pick" data-o="${o.id}"><span class="thumb">${portraitOf(o)}</span><b>${esc(o.name)}</b><span>${STAT_NAME[stat]} ${o[stat]}</span></button>`).join('')}</div>`, [], { cancel: true });
     $('#modalBody').querySelectorAll('.pick').forEach(b => b.addEventListener('click', () => { closeModal(); then(offById(b.dataset.o)); }));
   }
 
@@ -591,6 +594,7 @@
       pickOfficer(cid, C.stat, `${C.label} — ${CITY_INFO[cid].name}`, o => {
         const r = doCmd(S.player, o, cid, key);
         if (r.ok) log(`${CITY_INFO[cid].name}: ${o.name}의 ${C.label} — ${r.msg}`);
+        if (r.ok && hooks.onCommand && hooks.onCommand(o, cid, key, r)) { render(); return; }
         toast(r.ok ? `${o.name}: ${r.msg}` : r.msg);
         render();
       });
@@ -672,7 +676,7 @@
     const chance = clamp(35 + ((ruler ? ruler.cha : 60) - 60) / 2 - (wasRuler ? 30 : 0) + (o.fai > 80 && avgFaith(P) > 60 ? 15 : 0), 5, 90);
     const from = o.fac;
     const after = () => { if (wasRuler && o.fac !== from) succession(from); render(); captiveDialog(caps); };
-    openModal(`<p class="eyebrow">포로</p><h2>${esc(o.name)}</h2><p>${esc(o.desc)} <span class="mute">${esc(o.ref)}</span></p>
+    openModal(`<div class="bio-portrait">${portraitOf(o)}</div><p class="eyebrow">포로</p><h2>${esc(o.name)}</h2><p>${esc(o.desc)} <span class="mute">${esc(o.ref)}</span></p>
       <p class="st">무${o.war} 지${o.int} 정${o.pol} 매${o.cha} 신${o.fai} · ${esc(facName(o.fac))}${wasRuler ? ' 군주' : ''}</p><p class="mute">등용 성공 가능성 약 ${Math.round(chance)}%</p>`, [
       { label: '등용한다', primary: true, fn: () => {
         if (Math.random() * 100 < chance) { o.fac = P; o.city = sel; o.done = true; log(`${o.name}이(가) 우리 편이 되었다.`, 'gold'); toast(`${o.name} 등용 성공!`); }
@@ -710,7 +714,7 @@
 
   function showBio(id) {
     const o = offById(id);
-    openModal(`<p class="eyebrow">${esc(facName(o.fac))}${o.alive ? '' : ' · 사망'}</p><h2>${esc(o.name)}</h2><p>${esc(o.desc)}</p><p class="mute">${esc(o.ref)}</p>
+    openModal(`<div class="bio-portrait">${portraitOf(o)}</div><p class="eyebrow">${esc(facName(o.fac))}${o.alive ? '' : ' · 사망'}</p><h2>${esc(o.name)}</h2><p>${esc(o.desc)}</p><p class="mute">${esc(o.ref)}</p>
       <div class="meters">${meter('무력', o.war)}${meter('지력', o.int)}${meter('정치', o.pol)}${meter('매력', o.cha)}${meter('신앙', o.fai, 'faith')}</div>`, []);
   }
 
@@ -742,6 +746,7 @@
     closeModal();
     const saved = loadSave();
     const t = $('#title');
+    if (window.TOWN) TOWN.exit(true);
     t.hidden = false;
     $('#app').hidden = true;
     let h = `<div class="title-inner">
@@ -784,23 +789,34 @@
 
   // ---------- 입력 ----------
   function bind() {
-    $('#map').addEventListener('click', e => { const g = e.target.closest('.city'); if (g) { sel = g.dataset.id; render(); if (window.innerWidth < 860) $('#side').scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' }); } });
-    $('#map').addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { const g = e.target.closest('.city'); if (g) { e.preventDefault(); sel = g.dataset.id; render(); } } });
+    const enterCity = id => { sel = id; render(); if (window.TOWN) TOWN.enter(id); };
+    $('#map').addEventListener('click', e => { const g = e.target.closest('.city'); if (g) enterCity(g.dataset.id); });
+    $('#map').addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { const g = e.target.closest('.city'); if (g) { e.preventDefault(); enterCity(g.dataset.id); } } });
     $('#side').addEventListener('click', e => {
+      if (e.target.closest('#enterTown')) { if (window.TOWN) TOWN.enter(sel); return; }
       const b = e.target.closest('[data-cmd]'); if (b) return onCmd(b.dataset.cmd);
       const bio = e.target.closest('[data-bio]'); if (bio) showBio(bio.dataset.bio);
     });
     $('#modalBody').addEventListener('click', e => { const bio = e.target.closest('[data-bio]'); if (bio) showBio(bio.dataset.bio); });
-    $('#endTurn').addEventListener('click', () => {
-      const idle = S.offs.filter(o => o.alive && o.fac === S.player && !o.done).length;
-      if (idle) openModal(`<h2>턴을 마칠까요?</h2><p>아직 명령을 받지 않은 장수가 ${idle}명 있습니다.</p>`, [{ label: '턴 종료', primary: true, fn: endTurn }], { cancel: true });
-      else endTurn();
-    });
+    $('#endTurn').addEventListener('click', askEndTurn);
     $('#rosterBtn').addEventListener('click', showRoster);
     $('#menuBtn').addEventListener('click', showMenu);
     document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#modal').hidden && $('#modalBtns').lastChild && $('#modalBtns').lastChild.textContent === '닫기') closeModal(); });
   }
+  function askEndTurn() {
+    {
+      const idle = S.offs.filter(o => o.alive && o.fac === S.player && !o.done).length;
+      if (idle) openModal(`<h2>턴을 마칠까요?</h2><p>아직 명령을 받지 않은 장수가 ${idle}명 있습니다.</p>`, [{ label: '턴 종료', primary: true, fn: endTurn }], { cancel: true });
+      else endTurn();
+    }
+  }
 
+  window.GAME = {
+    get S() { return S; }, get sel() { return sel; }, set sel(v) { sel = v; },
+    hooks, city, fac, offById, offsIn, freeIn, citiesOf, CITY_INFO, ADJ, CMDS, STAT_NAME,
+    onCmd, askEndTurn, render, showBio, toast, portraitOf, avgFaith, facName, yearLabel, fmt, esc, idleOffs,
+    SEASONS,
+  };
   bind();
   showTitle();
 })();

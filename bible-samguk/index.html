@@ -162,7 +162,66 @@
   .roster tr.dead { opacity: .45; }
   #toast { position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--gold); color: var(--gold-ink); padding: 9px 16px; border-radius: 4px; font-weight: 700; z-index: 30; max-width: calc(100% - 32px); }
 
+  /* ---------- 초상화 ---------- */
+  .thumb { display: inline-block; width: 34px; height: 41px; border-radius: 3px; overflow: hidden; flex: none; background: var(--panel-2); }
+  .thumb svg, .bio-portrait svg { display: block; width: 100%; height: 100%; }
+  .offs li { grid-template-columns: auto auto 1fr auto; }
+  .pick { align-items: center; gap: 10px; }
+  .pick b { flex: 1; text-align: left; }
+  .bio-portrait { width: 120px; height: 144px; border-radius: 4px; overflow: hidden; align-self: flex-start; box-shadow: 0 0 0 1px var(--gold); }
+  .enter { width: 100%; }
+
+  /* ---------- 3D 성 안 ---------- */
+  #town { position: fixed; inset: 0; z-index: 15; background: #d8c49c; overflow: hidden; }
+  #townStage { position: absolute; inset: 0; }
+  #townStage canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+  #townLabels { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+  #townLabels > * { position: absolute; left: 0; top: 0; white-space: nowrap; will-change: transform; }
+  .tl-off { font: 700 12px var(--body); color: #fff; background: rgba(13, 20, 36, .78); padding: 2px 8px; border-radius: 3px; border: 1px solid rgba(222, 170, 69, .7); }
+  .tl-off i { font-style: normal; font-family: var(--display); color: var(--gold); margin-right: 4px; }
+  .tl-off.done { opacity: .55; }
+  .tl-bld { display: grid; justify-items: center; gap: 0; font: 12px var(--body); color: var(--ink); background: rgba(13, 20, 36, .72); border: 1px solid var(--line); border-radius: 4px; padding: 3px 9px; }
+  .tl-bld b { font-family: var(--display); font-weight: 400; font-size: 14px; }
+  .tl-bld span { font-size: 10.5px; color: var(--gold); }
+  .tl-bld.act { pointer-events: auto; cursor: pointer; }
+  .tl-bld.act:hover { border-color: var(--gold); background: rgba(13, 20, 36, .9); }
+  .tl-bld:disabled { opacity: .45; cursor: default; }
+  .tl-float { font: 700 14px var(--body); color: #fff; background: rgba(27, 20, 6, .8); border: 1px solid var(--gold); padding: 4px 10px; border-radius: 4px; }
+  .tl-float.good { color: #ffe39a; }
+  .town-top { position: absolute; top: env(safe-area-inset-top, 0px); left: 16px; right: 16px; margin-top: 12px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 8px 12px; background: rgba(13, 20, 36, .86); border: 1px solid var(--line); border-radius: 6px; }
+  #townTitle { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
+  #townTitle h2 { font-size: 26px; color: var(--gold); line-height: 1.1; }
+  #townRes { display: flex; gap: 12px; flex-wrap: wrap; }
+  #townStats { position: absolute; left: 0; top: calc(100% + 8px); display: grid; gap: 3px; padding: 10px 12px; background: rgba(13, 20, 36, .8); border: 1px solid var(--line); border-radius: 6px; font: 500 12.5px var(--mono); font-variant-numeric: tabular-nums; min-width: 128px; }
+  #townStats span { display: flex; justify-content: space-between; gap: 14px; }
+  #townStats b { font: 400 11.5px var(--body); color: var(--mute); }
+  #townDock { position: absolute; left: 16px; right: 16px; bottom: calc(env(safe-area-inset-bottom, 0px) + 12px); display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: flex-end; padding: 10px 12px; background: rgba(13, 20, 36, .88); border: 1px solid var(--line); border-radius: 6px; max-height: 46%; overflow-y: auto; }
+  #townDock.busy .cmd, #townDock.busy .t-card { opacity: .45; pointer-events: none; }
+  .t-offs { display: flex; gap: 8px; overflow-x: auto; max-width: 100%; padding-bottom: 2px; }
+  .t-card { display: grid; justify-items: center; gap: 2px; padding: 4px; width: 70px; flex: none; background: var(--panel-2); border: 1px solid var(--line); border-radius: 4px; }
+  .t-card .thumb { width: 60px; height: 72px; }
+  .t-card b { font-size: 12px; line-height: 1.2; text-align: center; }
+  .t-card small { font-size: 10.5px; }
+  .t-card.done { opacity: .5; }
+  .t-card:hover { border-color: var(--gold); }
+  .t-cmds { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px; flex: 1; min-width: min(100%, 560px); }
+  body.in-town { overflow: hidden; }
+
   @media (max-width: 860px) {
+    .town-top { gap: 6px 8px; padding: 8px 10px; }
+    .town-top .btn { padding: 6px 10px; }
+    #townReset { display: none; }
+    #townTitle { order: 0; }
+    #townTitle h2 { white-space: nowrap; }
+    #townTitle .chip { font-size: 11.5px; padding: 2px 8px; }
+    #townRes { order: 5; flex-basis: 100%; gap: 10px; }
+    #townRes .stat { font-size: 12px; }
+    #townStats { order: 6; position: static; flex-basis: 100%; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 2px 10px; font-size: 11px; padding: 6px 0 0; background: none; border: 0; border-top: 1px solid var(--line); border-radius: 0; min-width: 0; }
+    #townStats span { gap: 4px; }
+    .t-cmds { grid-template-columns: repeat(4, minmax(0, 1fr)); min-width: 100%; }
+    .t-cmds .cmd small { display: none; }
+    #townTitle h2 { font-size: 21px; }
+    .t-card { width: 60px; } .t-card .thumb { width: 50px; height: 60px; }
     #app { height: auto; }
     main { grid-template-columns: 1fr; }
     #mapWrap { height: 62vh; }
@@ -193,8 +252,26 @@
   </main>
 </div>
 
+<section id="town" hidden aria-label="성 안">
+  <div id="townStage"></div>
+  <div id="townLabels"></div>
+  <header class="town-top">
+    <button class="btn" id="townBack">← 지도</button>
+    <div id="townTitle"></div>
+    <div id="townRes"></div>
+    <button class="btn" id="townReset" title="시점 초기화">시점</button>
+    <button class="btn primary" id="townEnd">턴 종료</button>
+    <div id="townStats"></div>
+  </header>
+  <div id="townDock"></div>
+</section>
+
 <div id="modal" hidden><div class="dlg" role="dialog" aria-modal="true"><div id="modalBody"></div><div id="modalBtns"></div></div></div>
 <div id="toast" hidden></div>
 
 <script src="data.js"></script>
+<script src="portrait.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 <script src="game.js"></script>
+<script src="town.js"></script>
