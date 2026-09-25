@@ -75,6 +75,7 @@ const ART_REAL = {
   "@divided": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_123215_d913547f-4461-42f3-b0e9-a430d66a0262.png",
   "@judges": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_212222_3eb545cc-dfab-472a-83fd-1a988e190f3a.png",
   "@saul": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_212221_2ee15fd4-4629-47a8-a689-3e8dee34eb80.png",
+  "@patriarchs": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_215154_dcc8dfe3-2752-49aa-9bd9-3b0bae197d37.png",
   "사울": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_130650_b2ad1d3f-5c16-4c99-96f4-eabebefb5613.png",
   "요나단": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_130908_286a8d83-91ee-497c-a555-b0e0e27337ad.png",
   "기드온": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_131644_ef4ba8ea-41a6-43e7-8a37-5b7e28519ca8.png",

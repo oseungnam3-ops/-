@@ -1397,7 +1397,7 @@
       <div class="title-inner">
       <p class="eyebrow">성경 역사 전략 시뮬레이션</p>
       <h1>성경 삼국지</h1>
-      <p class="lede">여호수아의 정복과 사사 시대에서 사울의 왕국, 다윗의 통일, 왕국의 분열까지. 인물들과 대화하며 성을 다스리고, 칼이 아닌 언약 위에 하나님 나라를 세워 간다.</p>
+      <p class="lede">아브라함의 장막에서 여호수아의 정복, 사사 시대, 사울의 왕국, 다윗의 통일, 왕국의 분열까지. 인물들과 대화하며 성을 다스리고, 칼이 아닌 언약 위에 하나님 나라를 세워 간다.</p>
       <div class="title-btns">${saved ? `<button class="gbtn" id="contBtn"><span>이어하기</span><small>${esc(SCENARIOS.find(x => x.id === saved.scn).title)} · ${esc(saved.facName)} · BC ${saved.year}년 ${SEASONS[saved.season] || ''} · ${saved.turn}턴</small></button>` : ''}
       <button class="btn" id="loadBtn">불러오기</button></div>
       <h2 class="sec">시나리오</h2><div class="scns">`;
