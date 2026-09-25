@@ -36,7 +36,12 @@
   const buffVal = (f, k) => { const b = S.buffs[f] && S.buffs[f][k]; return b && b.turns > 0 ? b.val : 0; };
   const peaceBlocks = (a, b) => S.flags.peaceUntil && S.turn < S.flags.peaceUntil && [a, b].sort().join() === 'israel,judah';
   const facName = f => f ? fac(f).name : '재야';
-  const artOf = o => { const A = window.ART || {}; return A[S.scn + ':' + o.name] || A[o.name] || null; };
+  // 그림체: 웹툰(기본) / 실사. 보는 사람 브라우저에 기억한다.
+  const ART_STYLE_KEY = 'bible-samguk-artstyle';
+  const artStyle = () => { try { return localStorage.getItem(ART_STYLE_KEY) || 'webtoon'; } catch (e) { return 'webtoon'; } };
+  const setArtStyle = v => { try { localStorage.setItem(ART_STYLE_KEY, v); } catch (e) { /* 저장소 없음 */ } };
+  const artKey = k => { const a = (artStyle() === 'real' ? window.ART_REAL : window.ART) || {}, b = (artStyle() === 'real' ? window.ART : window.ART_REAL) || {}; return a[k] || b[k] || null; };
+  const artOf = o => artKey(S.scn + ':' + o.name) || artKey(o.name);
   const portraitOf = (o, big) => {
     const svg = window.PORTRAIT ? PORTRAIT.portrait(o, { color: o.fac && S.facs[o.fac] ? fac(o.fac).color : '#6b6250', ruler: !!(o.fac && S.facs[o.fac] && fac(o.fac).ruler === o.id) }) : '';
     const url = artOf(o);
@@ -897,7 +902,7 @@
       <p class="mute">사명을 이루고, 구휼을 베풀고, 포로를 너그럽게 풀어주면 나라가 자랍니다. 처형과 우상은 나라를 무너뜨립니다.</p></div>
       <p><b>시나리오 목표</b> — ${esc((sc.goalText && sc.goalText[P]) || '가나안의 열여덟 성을 차지한다.')}</p>
       <div class="tablewrap"><table class="roster"><thead><tr><th>세력</th><th>성</th><th>병력</th><th>전투력</th><th>관계</th></tr></thead><tbody>${facsRows}</tbody></table></div>`,
-      [{ label: '외교', fn: () => diploDialog(fac(P).capital) }, { label: '도움말', fn: showHelp }, { label: '저장·불러오기', primary: true, fn: () => saveDialog('save') }, { label: '처음으로', danger: true, fn: showTitle }], { title: `${fac(P).name} · 국가`, wide: true });
+      [{ label: '외교', fn: () => diploDialog(fac(P).capital) }, { label: `그림체: ${artStyle() === 'real' ? '실사' : '웹툰'}`, keep: true, fn: () => { setArtStyle(artStyle() === 'real' ? 'webtoon' : 'real'); render(); nationScreen(); toast(`그림체를 ${artStyle() === 'real' ? '실사' : '웹툰'}로 바꿨습니다.`); } }, { label: '도움말', fn: showHelp }, { label: '저장·불러오기', primary: true, fn: () => saveDialog('save') }, { label: '처음으로', danger: true, fn: showTitle }], { title: `${fac(P).name} · 국가`, wide: true });
   }
   function showHelp() {
     openModal(`<ul class="help">
@@ -1087,7 +1092,7 @@
     if (window.TOWN) TOWN.exit(true);
     t.hidden = false;
     $('#app').hidden = true;
-    const A = window.ART || {};
+    const A = { '@title': artKey('@title'), '@conquest': artKey('@conquest'), '@david': artKey('@david'), '@divided': artKey('@divided') };
     let h = `<div class="title-art" style="${A['@title'] ? `background-image:url('${A['@title']}')` : ''}"></div>
       <div class="title-inner">
       <p class="eyebrow">성경 역사 전략 시뮬레이션</p>
@@ -1119,7 +1124,7 @@
     const sc = SCENARIOS.find(x => x.id === scnId), f = sc.factions.find(x => x.id === facId);
     const ruler = sc.officers.find(r => r[0] === f.ruler);
     const fakeO = ruler ? { name: ruler[0], war: ruler[1], int: ruler[2], pol: ruler[3], cha: ruler[4], fai: ruler[5], fac: null, origin: facId, desc: ruler[8] } : null;
-    const A = window.ART || {}, url = fakeO && (A[scnId + ':' + fakeO.name] || A[fakeO.name]);
+    const url = fakeO && (artKey(scnId + ':' + fakeO.name) || artKey(fakeO.name));
     const art = fakeO ? `<div class="cs-art">${window.PORTRAIT ? PORTRAIT.portrait(fakeO, { color: f.color, ruler: true }) : ''}${url ? `<img src="${url}" alt="" onerror="this.remove()">` : ''}</div>` : '';
     openModal(`<div class="confirm-start">${art}<div><p class="eyebrow">BC ${sc.year} · ${esc(sc.title)}</p><h2 style="color:${f.color}">${esc(f.name)}</h2><p>${esc(f.desc)}</p>
       <p class="mute">군주 ${esc(f.ruler)} · 도읍 ${CITY_INFO[f.capital].name} · 금 ${fmt(f.gold)} · 식량 ${fmt(f.food)}</p>
