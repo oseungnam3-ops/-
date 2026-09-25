@@ -448,8 +448,89 @@
   }
 
   // ---------- 저장 ----------
-  function save(quiet) { try { localStorage.setItem(SAVE_KEY, JSON.stringify(S)); if (!quiet) toast('저장했습니다.'); } catch (e) { if (!quiet) toast('이 브라우저에서는 저장할 수 없습니다.'); } }
-  function loadSave() { try { const t = localStorage.getItem(SAVE_KEY); return t ? JSON.parse(t) : null; } catch (e) { return null; } }
+  // 슬롯: auto(자동 저장) + 1~3(수동). 각 슬롯에 요약 정보와 게임 상태를 함께 담는다.
+  const SLOT_KEY = k => 'bible-samguk-slot-' + k;
+  const SLOTS = ['auto', '1', '2', '3'];
+  let storageOk = true, lastAuto = null;
+  function snapshot() {
+    const F = fac(S.player), r = offById(F.ruler);
+    return { v: 2, savedAt: Date.now(), scn: S.scn, player: S.player, facName: F.name, color: F.color, ruler: r ? r.name : '', year: S.year, season: S.season, turn: S.turn, cities: citiesOf(S.player).length, kingdom: S.story ? S.story.kingdom : 0, chapter: S.story ? S.story.ch : 0, data: S };
+  }
+  function writeSlot(k) {
+    if (!S) return false;
+    try { localStorage.setItem(SLOT_KEY(k), JSON.stringify(snapshot())); storageOk = true; return true; }
+    catch (e) { storageOk = false; return false; }
+  }
+  function readSlot(k) {
+    try {
+      const t = localStorage.getItem(SLOT_KEY(k));
+      if (t) { const d = JSON.parse(t); return d && d.data ? d : null; }
+      if (k === 'auto') { const old = localStorage.getItem(SAVE_KEY); if (old) { const data = JSON.parse(old); return { v: 1, savedAt: 0, scn: data.scn, player: data.player, facName: data.facs[data.player].name, color: data.facs[data.player].color, ruler: '', year: data.year, season: data.season, turn: data.turn, cities: 0, kingdom: data.story ? data.story.kingdom : 0, data }; } }
+    } catch (e) { storageOk = false; }
+    return null;
+  }
+  function deleteSlot(k) { try { localStorage.removeItem(SLOT_KEY(k)); if (k === 'auto') localStorage.removeItem(SAVE_KEY); } catch (e) { /* 저장소 없음 */ } }
+  function latestSave() { return SLOTS.map(readSlot).filter(Boolean).sort((a, b) => b.savedAt - a.savedAt)[0] || null; }
+  // 자동 저장: 명령·전투·턴·사명마다 조용히 기록
+  let autoTimer = null;
+  function autosave() { clearTimeout(autoTimer); autoTimer = setTimeout(() => { if (S && writeSlot('auto')) lastAuto = Date.now(); }, 250); }
+  function save(quiet) { if (quiet) return autosave(); saveDialog(); }
+  const when = t => { if (!t) return '이전 버전 저장'; const d = new Date(t); const p = n => String(n).padStart(2, '0'); return `${d.getMonth() + 1}/${d.getDate()} ${p(d.getHours())}:${p(d.getMinutes())}`; };
+  function slotCard(k, d, mode) {
+    const name = k === 'auto' ? '자동 저장' : `슬롯 ${k}`;
+    if (!d) return `<li class="slot empty"><div><b>${name}</b><small>비어 있음</small></div>${mode === 'save' && k !== 'auto' ? `<button class="btn primary" data-save="${k}">여기에 저장</button>` : ''}</li>`;
+    const sc = SCENARIOS.find(x => x.id === d.scn);
+    return `<li class="slot"><span class="fbadge" style="--fc:${d.color || '#888'}">${esc((d.facName || '?')[0])}</span>
+      <div><b>${name} · ${esc(d.facName || '')}${d.ruler ? ' · ' + esc(d.ruler) : ''}</b><small>${esc(sc ? sc.title : '')} · BC ${d.year}년 ${SEASONS[d.season] || ''} · ${d.turn}턴 · 성 ${d.cities || '?'} · 나라 ${d.kingdom}</small><small>${when(d.savedAt)}</small></div>
+      <div class="slot-btns">${mode === 'save' && k !== 'auto' ? `<button class="btn primary" data-save="${k}">덮어쓰기</button>` : `<button class="btn primary" data-load="${k}">불러오기</button>`}<button class="btn" data-del="${k}" aria-label="${name} 삭제">삭제</button></div></li>`;
+  }
+  function saveDialog(mode = 'save') {
+    const html = `${!storageOk ? '<p class="warn">이 브라우저는 저장소를 쓸 수 없습니다(사생활 보호 모드 등). 아래 <b>저장 코드</b>로 보관하세요.</p>' : ''}
+      <ul class="slots">${SLOTS.map(k => slotCard(k, readSlot(k), mode)).join('')}</ul>
+      <p class="mute">자동 저장은 명령·전투·턴이 끝날 때마다 이 브라우저에 기록됩니다.${lastAuto ? ` 마지막 자동 저장 ${when(lastAuto)}.` : ''}</p>
+      <div class="codebox"><p class="rw-title">저장 코드</p><p class="mute">다른 기기나 브라우저로 옮기거나, 브라우저 데이터가 지워질 때를 대비해 보관하세요.</p>
+        <div class="code-btns">${S && mode === 'save' ? '<button class="btn" id="codeCopy">저장 코드 복사</button>' : ''}<button class="btn" id="codeLoad">저장 코드로 불러오기</button></div>
+        <textarea id="codeArea" rows="3" placeholder="여기에 저장 코드를 붙여 넣으세요" spellcheck="false" hidden></textarea></div>`;
+    openModal(html, [], { title: mode === 'save' ? '저장' : '불러오기', wide: true });
+    const body = $('#modalBody');
+    body.querySelectorAll('[data-save]').forEach(b => b.addEventListener('click', () => { if (writeSlot(b.dataset.save)) { toast(`슬롯 ${b.dataset.save}에 저장했습니다.`); saveDialog(mode); } else toast('저장하지 못했습니다. 저장 코드를 복사해 보관하세요.'); }));
+    body.querySelectorAll('[data-load]').forEach(b => b.addEventListener('click', () => { const d = readSlot(b.dataset.load); if (d) loadData(d.data); }));
+    body.querySelectorAll('[data-del]').forEach(b => b.addEventListener('click', () => {
+      if (b.dataset.armed) { deleteSlot(b.dataset.del); saveDialog(mode); return; }
+      b.dataset.armed = '1'; b.textContent = '정말 삭제'; b.classList.add('danger');
+    }));
+    const area = $('#codeArea');
+    const cc = $('#codeCopy');
+    if (cc) cc.addEventListener('click', () => {
+      const code = encodeSave();
+      area.hidden = false; area.value = code; area.select();
+      if (navigator.clipboard) navigator.clipboard.writeText(code).then(() => toast('저장 코드를 복사했습니다.'), () => toast('코드를 길게 눌러 직접 복사하세요.'));
+      else toast('코드를 길게 눌러 직접 복사하세요.');
+    });
+    $('#codeLoad').addEventListener('click', () => {
+      if (area.hidden || !area.value.trim()) { area.hidden = false; area.value = ''; area.focus(); toast('저장 코드를 붙여 넣은 뒤 다시 누르세요.'); return; }
+      const data = decodeSave(area.value.trim());
+      if (data) loadData(data); else toast('저장 코드를 읽을 수 없습니다. 코드 전체를 붙여 넣었는지 확인하세요.');
+    });
+  }
+  function encodeSave() { const bytes = new TextEncoder().encode(JSON.stringify(snapshot())); let bin = ''; bytes.forEach(b => { bin += String.fromCharCode(b); }); return 'BSG2:' + btoa(bin); }
+  function decodeSave(code) {
+    try {
+      const b64 = code.replace(/^BSG2:/, '').replace(/\s+/g, '');
+      const bin = atob(b64); const bytes = Uint8Array.from(bin, c => c.charCodeAt(0));
+      const d = JSON.parse(new TextDecoder().decode(bytes));
+      const data = d.data || d;
+      return data && data.scn && data.cities && data.offs ? data : null;
+    } catch (e) { return null; }
+  }
+  function loadData(data) {
+    closeModal();
+    if (window.TOWN) TOWN.exit(true);
+    S = data; migrate(); sel = null; VB = null;
+    startPlay();
+    autosave();
+    toast(`${fac(S.player).name} · BC ${S.year}년 ${SEASONS[S.season]}부터 이어갑니다.`);
+  }
 
   // ---------- 화면: 지도 (그림 지도 + 드래그/확대) ----------
   const VB_FULL = { x: -20, y: -20, w: 660, h: 840 };
@@ -608,7 +689,7 @@
     } else $('#questText').innerHTML = `<span class="qch">사명 완수</span><span class="qgoal">모든 사명을 이루었다. 나라를 계속 다스리자.</span>`;
   }
 
-  function render() { if (!S) return; drawHud(); drawMap(); if (hooks.onRender) hooks.onRender(); }
+  function render() { if (!S) return; drawHud(); drawMap(); if (hooks.onRender) hooks.onRender(); if (!$('#app').hidden) autosave(); }
   const hooks = {};
 
   // ---------- 성 선택 ----------
@@ -816,7 +897,7 @@
       <p class="mute">사명을 이루고, 구휼을 베풀고, 포로를 너그럽게 풀어주면 나라가 자랍니다. 처형과 우상은 나라를 무너뜨립니다.</p></div>
       <p><b>시나리오 목표</b> — ${esc((sc.goalText && sc.goalText[P]) || '가나안의 열여덟 성을 차지한다.')}</p>
       <div class="tablewrap"><table class="roster"><thead><tr><th>세력</th><th>성</th><th>병력</th><th>전투력</th><th>관계</th></tr></thead><tbody>${facsRows}</tbody></table></div>`,
-      [{ label: '외교', fn: () => diploDialog(fac(P).capital) }, { label: '도움말', fn: showHelp }, { label: '저장', fn: () => save(false) }, { label: '처음으로', danger: true, fn: showTitle }], { title: `${fac(P).name} · 국가`, wide: true });
+      [{ label: '외교', fn: () => diploDialog(fac(P).capital) }, { label: '도움말', fn: showHelp }, { label: '저장·불러오기', primary: true, fn: () => saveDialog('save') }, { label: '처음으로', danger: true, fn: showTitle }], { title: `${fac(P).name} · 국가`, wide: true });
   }
   function showHelp() {
     openModal(`<ul class="help">
@@ -1001,7 +1082,7 @@
   // ---------- 타이틀 ----------
   function showTitle() {
     closeModal();
-    const saved = loadSave();
+    const saved = latestSave();
     const t = $('#title');
     if (window.TOWN) TOWN.exit(true);
     t.hidden = false;
@@ -1012,7 +1093,8 @@
       <p class="eyebrow">성경 역사 전략 시뮬레이션</p>
       <h1>성경 삼국지</h1>
       <p class="lede">여호수아의 정복에서 다윗의 통일, 왕국의 분열까지. 인물들과 대화하며 성을 다스리고, 칼이 아닌 언약 위에 하나님 나라를 세워 간다.</p>
-      ${saved ? `<button class="gbtn" id="contBtn"><span>이어하기</span><small>${esc(SCENARIOS.find(x => x.id === saved.scn).title)} · ${esc(saved.facs[saved.player].name)} · BC ${saved.year}년</small></button>` : ''}
+      <div class="title-btns">${saved ? `<button class="gbtn" id="contBtn"><span>이어하기</span><small>${esc(SCENARIOS.find(x => x.id === saved.scn).title)} · ${esc(saved.facName)} · BC ${saved.year}년 ${SEASONS[saved.season] || ''} · ${saved.turn}턴</small></button>` : ''}
+      <button class="btn" id="loadBtn">불러오기</button></div>
       <h2 class="sec">시나리오</h2><div class="scns">`;
     SCENARIOS.forEach(sc => {
       const main = sc.factions.filter(f => STORY[sc.id] && STORY[sc.id][f.id]), rest = sc.factions.filter(f => !main.includes(f));
@@ -1025,7 +1107,8 @@
     h += `</div><p class="foot">인물과 사건은 성경 기록을 바탕으로 요약·각색했습니다. 능력치와 전투 결과, 인물 일러스트는 창작입니다.</p></div>`;
     t.innerHTML = h;
     t.querySelectorAll('.facbtn').forEach(b => b.addEventListener('click', () => confirmStart(b.dataset.scn, b.dataset.fac)));
-    const cb = $('#contBtn'); if (cb) cb.addEventListener('click', () => { S = saved; migrate(); sel = null; VB = null; startPlay(); });
+    const cb = $('#contBtn'); if (cb) cb.addEventListener('click', () => loadData(saved.data));
+    $('#loadBtn').addEventListener('click', () => saveDialog('load'));
   }
   function migrate() {
     if (!S.story) { S.story = { ch: 0, counts: {}, base: citiesOf(S.player).length, done: [], kingdom: 10 }; }
@@ -1042,7 +1125,7 @@
       <p class="mute">군주 ${esc(f.ruler)} · 도읍 ${CITY_INFO[f.capital].name} · 금 ${fmt(f.gold)} · 식량 ${fmt(f.food)}</p>
       <p><b>목표</b> — ${esc((sc.goalText && sc.goalText[facId]) || '가나안의 열여덟 성을 차지한다.')}</p>
       <p class="mute">${STORY[scnId] && STORY[scnId][facId] ? `스토리 사명 ${STORY[scnId][facId].length}장` : '일반 사명 4장'}</p></div></div>`,
-      [{ label: '이 세력으로 시작', primary: true, fn: () => { newGame(scnId, facId); VB = null; startPlay(true); } }], { title: '세력 선택' });
+      [{ label: '이 세력으로 시작', primary: true, fn: () => { newGame(scnId, facId); VB = null; startPlay(true); autosave(); } }], { title: '세력 선택' });
   }
 
   function startPlay(fresh) {
@@ -1086,5 +1169,8 @@
     SEASONS,
   };
   bind();
+  const flush = () => { if (S && !$('#app').hidden) { clearTimeout(autoTimer); writeSlot('auto'); } };
+  window.addEventListener('pagehide', flush);
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') flush(); });
   showTitle();
 })();
