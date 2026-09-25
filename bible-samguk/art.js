@@ -89,5 +89,7 @@ const ART = {
   "시삭": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_135501_fc467ac2-f6b9-4b2e-b57d-e9434b19c233.png",
   "애굽 병거대장": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_135552_964a4d15-bad3-4a05-8503-2b43f47613f4.png",
   "블레셋 방백": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_135555_02449625-56cf-4322-848c-453d64b95d27.png",
-  "헤시온": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_135552_c4e7d3f3-5e7f-44ff-b502-d2055fab2bf3.png"
+  "헤시온": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_135552_c4e7d3f3-5e7f-44ff-b502-d2055fab2bf3.png",
+  "@map": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_141756_a215b647-7ef9-4d79-a2fe-4899cec23f48.png",
+  "@land": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_141756_70efea6c-7196-4e85-961e-387219f82069.png"
 };

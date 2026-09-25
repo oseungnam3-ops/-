@@ -599,10 +599,11 @@
     <ellipse cx="367" cy="212" rx="12" ry="21" fill="#2b6f86" stroke="#d6c38f" stroke-width="2"/>
     <path d="M367 232 Q360 290 364 330 T352 400 Q346 440 350 478" fill="none" stroke="#3f86a8" stroke-width="3"/>
     <path d="M345 478 Q330 520 336 580 Q340 640 350 660 Q362 640 364 580 Q366 520 356 478 Z" fill="#2b6f86" stroke="#d6c38f" stroke-width="2"/>
-    <text class="geo" x="40" y="330">대 해</text><text class="geo sm" x="380" y="228">갈릴리 바다</text>
-    <text class="geo sm" x="372" y="560" transform="rotate(80 372 560)">염 해</text><text class="geo sm" x="160" y="760">네 게 브</text><text class="geo sm" x="520" y="300">길 르 앗</text>
     ${FORESTS.map(([x, y, n]) => trees(x, y, n)).join('')}${PALMCL.map(([x, y, n]) => trees(x, y, n, true)).join('')}
-    ${MOUNTAINS.map(([x, y, s, snow]) => mtn(x, y, s, snow)).join('')}`;
+    ${MOUNTAINS.map(([x, y, s, snow]) => mtn(x, y, s, snow)).join('')}
+    ${mapArt()}
+    <text class="geo" x="40" y="330">대 해</text><text class="geo sm" x="380" y="228">갈릴리 바다</text>
+    <text class="geo sm" x="372" y="560" transform="rotate(80 372 560)">염 해</text><text class="geo sm" x="160" y="760">네 게 브</text><text class="geo sm" x="520" y="300">길 르 앗</text>`;
     const hot = sel && city(sel) && city(sel).owner === P ? (ADJ[sel] || []) : [];
     ROADS.forEach(([a, b]) => {
       const A = CITY_INFO[a], B = CITY_INFO[b];
@@ -632,6 +633,9 @@
     drawMini();
   }
   const fmtK = n => n >= 1000 ? (n / 1000).toFixed(1) + 'k' : String(n);
+  // 그림 지도: Higgsfield로 벡터 지형을 참조해 그린 채색 지도. 불러오지 못하면 지워져 벡터 지형이 그대로 보인다.
+  const MAP_BOX = 'x="-160" y="-170" width="920" height="1150" preserveAspectRatio="none"';
+  const mapArt = () => { const u = artKey('@map'); return u ? `<image href="${u}" ${MAP_BOX} onerror="this.remove()"/>` : ''; };
   function resetView(full) {
     const wrap = $('#mapWrap'), ar = wrap.clientWidth / Math.max(1, wrap.clientHeight);
     if (full) { VB = Object.assign({}, VB_FULL); if (ar > VB.w / VB.h) { const w = VB.h * ar; VB.x -= (w - VB.w) / 2; VB.w = w; } else { const hh = VB.w / ar; VB.y -= (hh - VB.h) / 2; VB.h = hh; } return; }
@@ -641,7 +645,7 @@
   function clampView() { VB.x = clamp(VB.x, -160, 760 - VB.w); VB.y = clamp(VB.y, -120, 900 - VB.h); }
   function applyView() { $('#map').setAttribute('viewBox', `${VB.x} ${VB.y} ${VB.w} ${VB.h}`); const r = $('#miniView'); if (r) { r.setAttribute('x', VB.x); r.setAttribute('y', VB.y); r.setAttribute('width', VB.w); r.setAttribute('height', VB.h); } }
   function drawMini() {
-    let h = `<rect x="-20" y="-20" width="660" height="840" fill="#5d7440"/><polygon points="${SEA_PTS}" fill="#1f5a6e"/>`;
+    let h = `<rect x="-20" y="-20" width="660" height="840" fill="#5d7440"/><polygon points="${SEA_PTS}" fill="#1f5a6e"/>${mapArt()}`;
     Object.values(S.cities).forEach(c => { const ci = CITY_INFO[c.id]; h += `<circle cx="${ci.x}" cy="${ci.y}" r="${c.owner === S.player ? 16 : 12}" fill="${c.owner ? fac(c.owner).color : '#8d877a'}" stroke="${c.owner === S.player ? '#fff' : 'none'}" stroke-width="5"/>`; });
     h += `<rect id="miniView" fill="none" stroke="#ffd36a" stroke-width="8"/>`;
     $('#mini').innerHTML = h; applyView();
@@ -661,7 +665,7 @@
     svg.addEventListener('pointerup', up); svg.addEventListener('pointercancel', up);
     svg.addEventListener('wheel', e => { e.preventDefault(); zoom(e.deltaY > 0 ? 1.12 : 0.89, e.clientX, e.clientY); }, { passive: false });
     svg.addEventListener('click', e => { if (moved > 6) { e.stopPropagation(); return; } const g = e.target.closest('.city'); if (g) onCityTap(g.dataset.id); }, true);
-    $('#minimap').addEventListener('click', () => { resetView(true); applyView(); });
+    $('#minimap').addEventListener('click', () => { if (mode === 'land') { showMap(); return; } resetView(true); applyView(); });
     window.addEventListener('resize', () => { if (S && !$('#app').hidden) { resetView(); drawMap(); } });
   }
 
@@ -696,15 +700,87 @@
     } else $('#questText').innerHTML = `<span class="qch">사명 완수</span><span class="qgoal">모든 사명을 이루었다. 나라를 계속 다스리자.</span>`;
   }
 
-  function render() { if (!S) return; drawHud(); drawMap(); if (hooks.onRender) hooks.onRender(); if (!$('#app').hidden) autosave(); }
+  function render() { if (!S) return; drawHud(); drawMap(); drawLand(); if (hooks.onRender) hooks.onRender(); if (!$('#app').hidden) autosave(); }
   const hooks = {};
 
   // ---------- 성 선택 ----------
   function onCityTap(cid) {
     sel = cid;
     const c = city(cid);
-    if (c.owner === S.player) { render(); if (window.TOWN) TOWN.enter(cid); return; }
+    if (c.owner === S.player) { showLand(cid); return; }
     render(); cityPopup(cid);
+  }
+
+  // ---------- 영지 (그림 배경 위 건물을 눌러 내정) ----------
+  // 위치는 영지 그림 속 건물 자리(가로·세로 %). 건물마다 맡은 명령이 있다.
+  let mode = 'land', landCid = null;
+  const SPOTS = [
+    { id: 'palace', name: '왕궁', x: 29, y: 31, icon: 'king', stat: 'loy', cmds: ['search', 'relief', '3d'], desc: '왕이 인재를 부르고 백성을 돌보는 곳' },
+    { id: 'temple', name: '성전', x: 31, y: 21, icon: 'faith', stat: 'faith', cmds: ['worship'], desc: '하나님께 제사를 드리는 곳' },
+    { id: 'port', name: '항구', x: 84, y: 20, icon: 'port', stat: 'comm', cmds: ['diplo', 'move'], desc: '이웃 나라와 사신·배가 오가는 곳' },
+    { id: 'market', name: '마을', x: 46, y: 55, icon: 'gold', stat: 'comm', cmds: ['comm', 'relief'], desc: '장터와 백성의 집' },
+    { id: 'quarry', name: '채석장', x: 84, y: 53, icon: 'stone', stat: 'def', cmds: ['wall'], desc: '성벽을 쌓을 석회암을 캐는 곳' },
+    { id: 'farm', name: '농장', x: 80, y: 68, icon: 'food', stat: 'agri', cmds: ['agri'], desc: '밀과 보리를 거두는 들판' },
+    { id: 'camp', name: '병영', x: 20, y: 76, icon: 'troop', stat: 'train', cmds: ['recruit', 'train', 'attack'], desc: '군사를 모으고 훈련하는 진영' },
+    { id: 'lumber', name: '벌목장', x: 80, y: 90, icon: 'wood', stat: 'def', cmds: ['wall'], desc: '성문과 망대에 쓸 목재를 베는 곳' },
+  ];
+  const SPOT_ICON = {
+    port: '<svg viewBox="0 0 24 24"><path d="M12 3 V16 M12 4 L19 13 H12Z" stroke="#e8e2d0" stroke-width="1.6" fill="#e8e2d0"/><path d="M3 16 H21 L18 20 H6Z" fill="#b07a3c" stroke="#5c3c16"/></svg>',
+    stone: '<svg viewBox="0 0 24 24"><path d="M3 18 L6 10 L12 8 L18 10 L21 18Z" fill="#c9c6bf" stroke="#6e6a62"/><path d="M6 10 L12 13 L18 10 M12 13 V18" stroke="#8e8a82" fill="none"/></svg>',
+    wood: '<svg viewBox="0 0 24 24"><rect x="3" y="12" width="18" height="5" rx="2.5" fill="#b9853f" stroke="#5c3c16"/><rect x="5" y="7" width="15" height="5" rx="2.5" fill="#cf9a52" stroke="#5c3c16"/><circle cx="19" cy="14.5" r="2" fill="#f0d29a"/><circle cx="18" cy="9.5" r="2" fill="#f0d29a"/></svg>',
+  };
+  const CMD_LABEL = { '3d': '성 안 걷기 (3D)', attack: '출진', move: '이동', diplo: '외교' };
+  function showLand(cid) {
+    const c = cid && city(cid);
+    if (!c || c.owner !== S.player) cid = fac(S.player).capital;
+    if (!city(cid) || city(cid).owner !== S.player) cid = (citiesOf(S.player)[0] || {}).id;
+    if (!cid) { showMap(); return; }
+    const fresh = mode !== 'land' || landCid !== cid;
+    mode = 'land'; landCid = cid; sel = cid; render();
+    if (fresh) centerLand();
+  }
+  function showMap() { mode = 'map'; render(); }
+  function centerLand() {
+    const w = $('#landWrap'), l = $('#land');
+    requestAnimationFrame(() => { w.scrollLeft = l.offsetWidth * 0.36 - w.clientWidth / 2; w.scrollTop = l.offsetHeight * 0.34 - w.clientHeight / 2; });
+  }
+  function drawLand() {
+    const on = mode === 'land' && landCid && city(landCid) && city(landCid).owner === S.player;
+    if (mode === 'land' && !on) { const cs = citiesOf(S.player); if (cs.length) { landCid = cs.find(c => c.id === fac(S.player).capital) ? fac(S.player).capital : cs[0].id; } else mode = 'map'; }
+    const land = mode === 'land';
+    $('#landWrap').hidden = !land; $('#mapWrap').hidden = land;
+    document.querySelectorAll('[data-view]').forEach(b => b.classList.toggle('on', b.dataset.view === mode));
+    if (!land) return;
+    const c = city(landCid), ci = CITY_INFO[landCid], F = fac(S.player), idle = idleOffs(landCid).length;
+    const img = $('#landImg'), u = artKey('@land');
+    if (u && img.getAttribute('src') !== u) { img.src = u; $('#landBg').style.backgroundImage = `url('${u}')`; }
+    const lv = v => Math.max(1, Math.ceil(v / 10));
+    $('#landSpots').innerHTML = `<div class="l-banner" style="left:29%;top:26%"><span class="fbadge" style="--fc:${F.color}">${esc(F.name[0])}</span><b>${ci.name}</b></div>` +
+      SPOTS.map(s => `<button class="spot" data-spot="${s.id}" style="left:${s.x}%;top:${s.y}%"><i>${SPOT_ICON[s.icon] || ICON[s.icon]}</i><b>${s.name}</b><em>${lv(c[s.stat])}</em>${idle && s.cmds.some(k => CMDS[k]) ? '<u aria-label="명령 가능"></u>' : ''}</button>`).join('');
+    $('#landCity').innerHTML = `<b>${ci.name}</b><span>병력 ${fmt(c.soldiers)}</span><span>농업 ${c.agri}</span><span>상업 ${c.comm}</span><span>성벽 ${c.def}</span><span>신앙 ${c.faith}</span><span>민심 ${c.loy}</span><span>대기 장수 ${idle}</span>`;
+  }
+  function onSpot(id) {
+    const s = SPOTS.find(x => x.id === id), cid = landCid; sel = cid;
+    const run = k => { if (k === '3d') { if (window.TOWN) TOWN.enter(cid); } else { sel = cid; onCmd(k); } };
+    const btns = s.cmds.map((k, i) => ({ label: CMDS[k] ? `${CMDS[k].label} — ${CMDS[k].hint}` : CMD_LABEL[k], primary: i === 0, fn: () => run(k) }));
+    openModal(`<p class="mute">${esc(s.desc)}</p><p>대기 중인 장수 <b>${idleOffs(cid).length}명</b> · 금 ${fmt(fac(S.player).gold)} · 식량 ${fmt(fac(S.player).food)}</p>`, btns, { title: `${CITY_INFO[cid].name} ${s.name}` });
+  }
+  function landFx(key, text) {
+    if (mode !== 'land') return;
+    const s = SPOTS.find(x => x.cmds.includes(key)); if (!s) return;
+    const el = document.createElement('div'); el.className = 'l-fx'; el.textContent = text;
+    el.style.left = s.x + '%'; el.style.top = s.y + '%';
+    $('#land').appendChild(el); setTimeout(() => el.remove(), 1800);
+  }
+  function bindLand() {
+    const w = $('#landWrap'); let drag = null, moved = 0;
+    w.addEventListener('pointerdown', e => { if (e.pointerType !== 'mouse') return; drag = { x: e.clientX, y: e.clientY, l: w.scrollLeft, t: w.scrollTop }; moved = 0; });
+    window.addEventListener('pointermove', e => { if (!drag) return; moved = Math.max(moved, Math.hypot(e.clientX - drag.x, e.clientY - drag.y)); w.scrollLeft = drag.l - (e.clientX - drag.x); w.scrollTop = drag.t - (e.clientY - drag.y); });
+    window.addEventListener('pointerup', () => { drag = null; });
+    w.addEventListener('click', e => { if (moved > 6) { moved = 0; return; } const b = e.target.closest('[data-spot]'); if (b) onSpot(b.dataset.spot); });
+    $('#landImg').addEventListener('error', () => { $('#land').classList.add('noart'); });
+    document.querySelectorAll('[data-view]').forEach(b => b.addEventListener('click', () => { if (b.dataset.view === 'land') showLand(landCid); else if (b.dataset.view === 'map') showMap(); else nationScreen(); }));
+    window.addEventListener('resize', () => { if (mode === 'land') centerLand(); });
   }
   function bestSource(target) {
     const P = S.player;
@@ -962,6 +1038,7 @@
           if (key === 'relief') addKingdom(1); if (key === 'worship') addKingdom(0.5);
         }
         if (r.ok && hooks.onCommand && hooks.onCommand(o, cid, key, r)) { render(); return; }
+        if (r.ok) landFx(key, r.msg);
         toast(r.ok ? `${o.name}: ${r.msg}` : r.msg);
         render(); if (r.ok) checkStory();
       });
@@ -1138,7 +1215,8 @@
   function startPlay(fresh) {
     $('#title').hidden = true;
     $('#app').hidden = false;
-    render();
+    mode = 'land'; landCid = fac(S.player).capital;
+    render(); centerLand();
     if (fresh) {
       const sc = scn(), ch = curChapter();
       playDialogue([['narr', sc.intro]].concat(ch ? ch.intro : []), () => { render(); runEvents(() => checkStory()); }, ch ? { title: `제1장 ${ch.title}`, ref: ch.ref } : { title: sc.title, ref: sc.ref });
@@ -1148,6 +1226,7 @@
   // ---------- 입력 ----------
   function bind() {
     bindPanZoom();
+    bindLand();
     $('#map').addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { const g = e.target.closest('.city'); if (g) { e.preventDefault(); onCityTap(g.dataset.id); } } });
     $('#modalBody').addEventListener('click', e => { const bio = e.target.closest('[data-bio]'); if (bio) showBio(bio.dataset.bio); const hc = e.target.closest('[data-hero]'); if (hc) showBio(hc.dataset.hero); });
     $('#modalClose').addEventListener('click', closeModal);
@@ -1158,7 +1237,7 @@
     $('#questText').addEventListener('click', storyScreen);
     document.querySelectorAll('[data-nav]').forEach(b => b.addEventListener('click', () => {
       const n = b.dataset.nav;
-      if (n === 'land') { const cap = fac(S.player).capital; if (window.TOWN) { sel = cap; render(); TOWN.enter(cap); } }
+      if (n === 'land') showLand(fac(S.player).capital);
       else if (n === 'hero') heroScreen(); else if (n === 'war') warScreen(); else if (n === 'story') storyScreen(); else if (n === 'log') logScreen(); else if (n === 'nation') nationScreen();
     }));
     document.addEventListener('keydown', e => { if (e.key === 'Escape') { if (!$('#heroView').hidden) $('#heroView').hidden = true; else if (!$('#modal').hidden && !$('#modalHead').hidden) closeModal(); } });
@@ -1173,7 +1252,7 @@
     get S() { return S; }, get sel() { return sel; }, set sel(v) { sel = v; },
     hooks, city, fac, offById, offsIn, freeIn, citiesOf, CITY_INFO, ADJ, CMDS, STAT_NAME,
     onCmd, askEndTurn, render, showBio, toast, portraitOf, avgFaith, facName, yearLabel, fmt, esc, idleOffs, checkStory, playDialogue,
-    SEASONS,
+    SEASONS, showLand, showMap, get mode() { return mode; },
   };
   bind();
   const flush = () => { if (S && !$('#app').hidden) { clearTimeout(autoTimer); writeSlot('auto'); } };

@@ -355,10 +355,40 @@
   .hint { margin: 0; font-size: 12.5px; color: var(--blue-hi); }
   body.in-town .hud-top, body.in-town .hud-bottom { display: none; }
 
+  /* ---------- 영지 ---------- */
+  #landWrap { position: absolute; inset: 0; overflow: auto; background: #1c2616; scrollbar-width: none; overscroll-behavior: contain; cursor: grab; }
+  #landWrap::-webkit-scrollbar { display: none; }
+  #land { position: relative; margin: 0 auto; width: max(calc(100vh * 1744 / 2336), min(100%, calc(100vh * 1.15))); aspect-ratio: 1744 / 2336; background: radial-gradient(ellipse at 30% 30%, #c8b27c, #6f8a45 45%, #2f5a6e 100%); user-select: none; -webkit-user-select: none; }
+  .land-bg { position: fixed; inset: -40px; background: center / cover no-repeat; filter: blur(22px) brightness(.55); pointer-events: none; }
+  #landImg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; pointer-events: none; }
+  #land.noart #landImg { display: none; }
+  #landSpots { position: absolute; inset: 0; }
+  .l-banner { position: absolute; transform: translate(-50%, -50%); display: flex; align-items: center; gap: 4px; padding: 3px 14px 3px 4px; background: linear-gradient(90deg, rgba(10,14,23,.9), rgba(10,14,23,.55)); border: 1px solid rgba(230,182,74,.7); pointer-events: none; }
+  .l-banner b { font: 17px var(--display); color: #fff; text-shadow: 0 1px 3px #000; }
+  .spot { position: absolute; transform: translate(-24px, -50%); display: flex; align-items: center; gap: 0; padding: 0; background: none; border: 0; }
+  .spot i { position: relative; z-index: 1; width: 48px; height: 48px; flex: none; border-radius: 50%; display: grid; place-items: center; background: radial-gradient(circle at 40% 30%, #3b4560, #0e1320 75%); border: 2px solid #c9a24a; box-shadow: 0 0 0 1px #000, 0 3px 8px rgba(0,0,0,.6); }
+  .spot i svg { width: 28px; height: 28px; }
+  .spot b { margin-left: -8px; padding: 3px 16px 3px 16px; font: 700 14px var(--body); color: #fff; background: linear-gradient(90deg, rgba(10,14,23,.92), rgba(10,14,23,.5)); border: 1px solid #3a4666; border-left: 0; text-shadow: 0 1px 2px #000; white-space: nowrap; }
+  .spot em { position: absolute; left: 30px; top: 30px; z-index: 2; min-width: 20px; height: 20px; padding: 0 4px; border-radius: 10px; display: grid; place-items: center; background: #0b0e16; border: 1px solid #c8d0e6; font: 600 11px var(--mono); font-style: normal; color: #fff; }
+  .spot u { position: absolute; left: 44px; top: 26px; z-index: 2; width: 0; height: 0; border-left: 7px solid transparent; border-right: 7px solid transparent; border-bottom: 11px solid #4fd35a; filter: drop-shadow(0 1px 1px #000); animation: bob2 1.2s ease-in-out infinite; }
+  .spot:hover i, .spot:focus-visible i { border-color: var(--gold-hi); box-shadow: 0 0 0 1px #000, 0 0 14px rgba(255,210,110,.7); }
+  .l-fx { position: absolute; transform: translate(-50%, -100%); padding: 4px 10px; font: 700 14px var(--body); color: #3a2507; background: linear-gradient(#ffe08a, #d9a13a); border: 1px solid #ffeab0; box-shadow: 0 0 0 1px #4e3207; white-space: nowrap; pointer-events: none; animation: rise 1.8s ease-out forwards; }
+  @keyframes rise { from { opacity: 0; margin-top: 0; } 15% { opacity: 1; } to { opacity: 0; margin-top: -60px; } }
+  @keyframes bob2 { 50% { transform: translateY(-3px); } }
+  .land-city { position: fixed; left: 50%; transform: translateX(-50%); width: max-content; max-width: calc(100% - 32px); bottom: calc(env(safe-area-inset-bottom, 0px) + 150px); display: flex; flex-wrap: wrap; gap: 2px 12px; justify-content: center; padding: 4px 14px; background: rgba(10, 14, 23, .78); border: 1px solid #3a4666; font: 600 11.5px var(--mono); color: #e3e7f0; pointer-events: none; text-shadow: 0 1px 2px #000, 0 0 4px #000; }
+  .land-city b { font: 14px var(--display); color: var(--gold-hi); }
+  .mini-col { margin-left: auto; display: grid; gap: 4px; flex: none; }
+  .mini-col .minimap { margin-left: 0; }
+  .mini-btns { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; }
+  .mini-btns button { display: grid; justify-items: center; gap: 0; padding: 3px 0 2px; font: 11px var(--display); background: linear-gradient(#2c3753, #121827); border: 1px solid #56688f; box-shadow: 0 2px 6px rgba(0,0,0,.5); }
+  .mini-btns svg { width: 18px; height: 18px; }
+  .mini-btns button.on { border-color: var(--gold); color: var(--gold-hi); }
+
   @media (max-width: 860px) {
     .res { padding: 6px 7px; gap: 4px; } .res small { display: none; } .res b { font-size: 13px; } .res i { width: 18px; height: 18px; }
     .lord-img { width: 56px; height: 66px; }
-    .minimap { width: 86px; height: 108px; }
+    .minimap { width: 96px; height: 110px; }
+    .spot i { width: 42px; height: 42px; } .spot i svg { width: 24px; height: 24px; } .spot b { font-size: 12.5px; padding: 2px 12px 2px 14px; } .spot em { left: 26px; top: 26px; } .spot u { left: 38px; top: 22px; }
     .power { font-size: 14px; min-width: 110px; }
     .bnav .ic { width: 40px; height: 40px; } .bnav .ic svg { width: 22px; height: 22px; } .bnav span { font-size: 12px; }
     .qicon { width: 50px; height: 50px; font-size: 13px; } .endturn { width: 56px; height: 56px; font-size: 12px; }
@@ -383,13 +413,21 @@
 <section id="title"></section>
 
 <div id="app" hidden>
+  <div id="landWrap" hidden><div class="land-bg" id="landBg"></div><div id="land"><img id="landImg" alt="" draggable="false"><div id="landSpots"></div></div><div class="land-city" id="landCity"></div></div>
   <div id="mapWrap"><svg id="map" viewBox="-20 -20 660 840" aria-label="가나안 지도"></svg></div>
   <header class="hud-top">
     <div class="res-bar" id="resBar"></div>
     <div class="hud-row">
       <button class="lord" id="lordBtn" aria-label="군주 정보"></button>
       <div class="lord-meta" id="lordMeta"></div>
-      <button class="minimap" id="minimap" aria-label="전체 지도 보기"><svg id="mini" viewBox="-20 -20 660 840" preserveAspectRatio="xMidYMid slice"></svg></button>
+      <div class="mini-col">
+        <button class="minimap" id="minimap" aria-label="전체 지도 보기"><svg id="mini" viewBox="-20 -20 660 840" preserveAspectRatio="xMidYMid slice"></svg></button>
+        <div class="mini-btns">
+          <button data-view="land"><svg viewBox="0 0 24 24"><path d="M3 21 V10 L6 8 V5 H8 V7 L12 4 L16 7 V5 H18 V8 L21 10 V21 H14 V16 A2 2 0 0 0 10 16 V21Z" fill="#e3e7f0"/></svg>영지</button>
+          <button data-view="map"><svg viewBox="0 0 24 24"><path d="M3 6 L9 4 L15 6 L21 4 V18 L15 20 L9 18 L3 20Z M9 4 V18 M15 6 V20" fill="none" stroke="#e3e7f0" stroke-width="1.6"/></svg>지도</button>
+          <button data-view="menu"><svg viewBox="0 0 24 24"><path d="M4 6 H20 M4 12 H20 M4 18 H20" stroke="#e3e7f0" stroke-width="2.2"/></svg>메뉴</button>
+        </div>
+      </div>
     </div>
   </header>
   <footer class="hud-bottom">
@@ -413,7 +451,7 @@
   <div id="townStage"></div>
   <div id="townLabels"></div>
   <header class="town-top">
-    <button class="btn" id="townBack">← 지도</button>
+    <button class="btn" id="townBack">← 나가기</button>
     <div id="townTitle"></div>
     <div id="townRes"></div>
     <button class="btn" id="townReset" title="시점 초기화">시점</button>
