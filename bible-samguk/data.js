@@ -115,6 +115,92 @@ const SCENARIOS = [
     goalText: { israel: '요단 서편 가나안 12성(단~브엘세바)을 차지한다.' },
   },
   {
+    id: 'judges',
+    title: '사사 시대',
+    year: 1200,
+    ref: '사사기 3–16장',
+    intro: '여호수아와 그 세대가 다 조상들에게 돌아가고, 여호와를 알지 못하는 다른 세대가 일어났다. 이스라엘이 바알들을 섬기자 여호와께서 그들을 노략하는 자의 손에 넘기셨고, 그들이 부르짖을 때마다 사사들을 세워 구원하셨다 (삿 2:10-19). 수백 년에 걸친 옷니엘에서 삼손까지의 이야기를 한 시대로 압축했다. 사사들은 사건을 따라 차례로 일어난다. "그 때에는 이스라엘에 왕이 없으므로 사람이 각기 자기의 소견에 옳은 대로 행하였더라" (삿 21:25).',
+    factions: [
+      { id: 'israel', name: '이스라엘 지파 연합', ruler: '옷니엘', color: '#e2b04a', capital: 'shiloh', gold: 400, food: 7000, aggr: 0.35,
+        desc: '왕도 상비군도 없이 느슨하게 묶인 열두 지파. 실로의 회막이 유일한 중심이다. 구원할 때마다 여호와께서 사사를 세우시지만, 사사가 죽으면 백성은 다시 돌아선다 (삿 2:18-19). 사사들 대부분은 아직 재야에 있다.',
+        cities: { shiloh: 2500, shechem: 2000, bethel: 1500, hebron: 1500, bethlehem: 1000, mahanaim: 1200, ramoth: 1000 } },
+      { id: 'aram', name: '아람 나하라임', ruler: '구산 리사다임', color: '#6f8fd8', capital: 'damascus', gold: 1200, food: 8000, aggr: 0.45,
+        desc: '메소보다미아 왕 구산 리사다임. 이스라엘이 그를 팔 년 동안 섬겼다 (삿 3:8). 첫 번째 압제자.',
+        cities: { damascus: 6000 } },
+      { id: 'moab', name: '모압', ruler: '에글론', color: '#9a6fbf', capital: 'kirhareseth', gold: 800, food: 6000, aggr: 0.45,
+        desc: '에글론이 암몬과 아말렉을 모아 종려나무 성읍(여리고)을 점령하고 이스라엘을 열여덟 해 동안 섬기게 했다 (삿 3:12-14).',
+        cities: { kirhareseth: 3500, dibon: 2500, jericho: 4000 } },
+      { id: 'canaan', name: '가나안 (하솔)', ruler: '야빈', color: '#cf6d9c', capital: 'hazor', gold: 1200, food: 8000, aggr: 0.4,
+        desc: '하솔에서 다스리는 가나안 왕 야빈. 철 병거 구백 대로 이십 년 동안 이스라엘을 심히 학대했다 (삿 4:2-3).',
+        cities: { hazor: 6000, megiddo: 4500, bethshean: 3000 } },
+      { id: 'midian', name: '미디안', ruler: '세바', color: '#a0876a', capital: 'bozrah', gold: 900, food: 9000, aggr: 0.5,
+        desc: '미디안과 아말렉과 동방 사람들. 약대와 함께 메뚜기 떼처럼 올라와 가사에 이르기까지 토지 소산을 멸했다 (삿 6:3-5).',
+        cities: { bozrah: 4000, beersheba: 5000 } },
+      { id: 'ammon', name: '암몬', ruler: '암몬 왕', color: '#5ea67c', capital: 'rabbah', gold: 700, food: 6000, aggr: 0.4,
+        desc: '요단 저편 길르앗을 열여덟 해 동안 억압하고, 요단을 건너 유다와 베냐민과 에브라임과도 싸웠다 (삿 10:8-9).',
+        cities: { rabbah: 5000 } },
+      { id: 'philistia', name: '블레셋', ruler: '가사 방백', color: '#c9573f', capital: 'gaza', gold: 1400, food: 9000, aggr: 0.3,
+        desc: '해안의 다섯 방백. 시대의 끝에 사십 년 동안 이스라엘을 다스린다 (삿 13:1). 다곤 신전이 가사에 있다.',
+        cities: { gaza: 5000, gath: 5000, ekron: 4000, ashdod: 4000, ashkelon: 3000, joppa: 2000 } },
+      { id: 'jebus', name: '여부스', ruler: '여부스 왕', color: '#8f86a8', capital: 'jerusalem', gold: 600, food: 4000, aggr: 0.05,
+        desc: '베냐민 자손이 쫓아내지 못한 여부스 사람의 산성 (삿 1:21). "이방 사람의 성읍"이라 불렸다 (삿 19:12).',
+        cities: { jerusalem: 3000 } },
+      { id: 'tyre', name: '두로', ruler: '두로 왕', color: '#3fb3b5', capital: 'tyre', gold: 2000, food: 5000, aggr: 0.05,
+        desc: '시돈과 함께 해안의 상인 왕국. 싸움보다 장사를 좋아한다 (삿 10:12; 18:7).', cities: { tyre: 4000 } },
+    ],
+    // 단 = 아직 단 지파가 차지하지 못한 평온한 성 라이스 (삿 18:7, 27-29). 바락과 야엘이 이 근처(게데스·사아난님)에 있다.
+    neutral: { dan: 1000 },
+    officers: [
+      ['옷니엘', 82, 68, 62, 72, 90, 'israel', 'shiloh', '갈렙의 아우 그나스의 아들. 여호와의 영이 임하여 첫 사사가 되었다.', '삿 3:9-11'],
+      ['비느하스', 55, 72, 60, 65, 95, 'israel', 'shiloh', '엘르아살의 아들 대제사장. 그 때에 언약궤 앞에 모시고 섰다.', '삿 20:27-28'],
+      ['악사', 15, 75, 72, 80, 82, 'israel', 'hebron', '갈렙의 딸, 옷니엘의 아내. "윗샘과 아랫샘"을 구한 지혜로운 여인.', '삿 1:12-15'],
+      ['요아스', 40, 55, 60, 60, 35, 'israel', 'shechem', '므낫세 오브라의 아비에셀 사람, 기드온의 아버지. 그의 집에 바알 제단이 있었다.', '삿 6:11, 25-32'],
+      ['돌라', 60, 62, 72, 62, 78, 'israel', 'shechem', '잇사갈 사람 부아의 아들. 에브라임 산지 사밀에 살며 이십삼 년 동안 사사로 있었다.', '삿 10:1-2'],
+      ['엘론', 58, 58, 68, 60, 72, 'israel', 'shiloh', '스불론 사람. 십 년 동안 이스라엘의 사사로 있었다.', '삿 12:11-12'],
+      ['압돈', 52, 60, 74, 70, 70, 'israel', 'bethel', '비라돈 사람 힐렐의 아들. 아들 사십과 손자 삼십이 나귀 칠십을 탔다.', '삿 12:13-15'],
+      ['입산', 50, 60, 72, 75, 70, 'israel', 'bethlehem', '베들레헴 사람. 아들 삼십과 딸 삼십을 두었다.', '삿 12:8-10'],
+      ['야일', 62, 55, 70, 68, 70, 'israel', 'mahanaim', '길르앗 사람. 아들 삼십이 어린 나귀 삼십을 타고 성읍 삼십을 다스렸다.', '삿 10:3-5'],
+      ['에훗', 86, 80, 55, 70, 85, null, 'bethel', '베냐민 사람 게라의 아들, 왼손잡이. 모압 왕에게 조공을 바치러 가는 사자였다.', '삿 3:15'],
+      ['삼갈', 90, 35, 30, 55, 75, null, 'hebron', '아낫의 아들. 소 모는 막대기로 블레셋 사람 육백 명을 죽였다.', '삿 3:31'],
+      ['드보라', 20, 92, 90, 95, 98, null, 'bethel', '랍비돗의 아내, 여선지자. 라마와 벧엘 사이 종려나무 아래에서 이스라엘을 재판했다. "이스라엘의 어머니".', '삿 4:4-5; 5:7'],
+      ['바락', 84, 60, 55, 70, 75, null, 'dan', '납달리 게데스 사람 아비노암의 아들. 믿음의 사람들 가운데 이름이 올랐다.', '삿 4:6; 히 11:32'],
+      ['야엘', 45, 80, 40, 70, 80, null, 'dan', '겐 사람 헤벨의 아내. "장막에 거한 여인들보다 더욱 복을 받을 것이로다".', '삿 4:17-22; 5:24'],
+      ['기드온', 80, 75, 65, 82, 72, null, 'shechem', '요아스의 아들. 미디안을 피해 포도주 틀에서 밀을 타작하다가 "큰 용사여" 하는 부르심을 받았다.', '삿 6:11-12'],
+      ['부라', 60, 45, 30, 50, 70, null, 'shechem', '기드온의 부하. 밤에 기드온과 함께 미디안 진영으로 내려갔다.', '삿 7:10-11'],
+      ['입다', 90, 70, 55, 72, 70, null, 'ramoth', '길르앗 사람, 큰 용사. 기생의 아들이라 형제들에게 쫓겨나 돕 땅에 살았다.', '삿 11:1-3'],
+      ['마노아', 25, 55, 55, 60, 85, null, 'bethlehem', '소라 땅 단 지파 사람, 삼손의 아버지. 여호와의 사자에게 아이 기를 법을 물었다.', '삿 13:2, 8-12'],
+      ['삼손', 99, 40, 25, 65, 70, null, 'bethlehem', '나실인으로 구별된 소라 사람. 여호와의 영이 임하면 누구도 그를 막지 못했다.', '삿 13:24-25; 15:14-16'],
+      ['구산 리사다임', 78, 65, 62, 50, 10, 'aram', 'damascus', '메소보다미아(아람 나하라임) 왕. 이스라엘이 팔 년 동안 그를 섬겼다.', '삿 3:8-10'],
+      ['아람 왕', 70, 60, 60, 55, 10, 'aram', 'damascus', '구산 리사다임을 섬기는 다메섹의 아람 족장.', ''],
+      ['에글론', 55, 60, 68, 50, 10, 'moab', 'jericho', '모압 왕, 심히 비둔한 자. 종려나무 성읍의 서늘한 다락방에 앉아 조공을 받았다.', '삿 3:12-17, 20'],
+      ['모압 왕', 62, 55, 60, 50, 15, 'moab', 'kirhareseth', '에글론 뒤를 이을 모압의 왕족.', ''],
+      ['야빈', 75, 72, 72, 60, 10, 'canaan', 'hazor', '하솔에서 다스린 가나안 왕. 철 병거 구백 대를 가졌다.', '삿 4:2-3, 23-24'],
+      ['시스라', 90, 70, 50, 60, 8, 'canaan', 'megiddo', '하로셋학고임에 사는 야빈의 군대 장관. 병거를 기손 강으로 모았다.', '삿 4:2, 7, 13'],
+      ['세바', 78, 65, 62, 58, 8, 'midian', 'bozrah', '미디안의 두 왕 가운데 하나. 다볼에서 기드온의 형제들을 죽였다.', '삿 8:5, 18-21'],
+      ['살문나', 76, 60, 58, 55, 8, 'midian', 'bozrah', '미디안의 두 왕 가운데 하나. 갈골에 군대 만 오천과 함께 있었다.', '삿 8:10-12'],
+      ['오렙', 80, 50, 40, 40, 5, 'midian', 'beersheba', '미디안의 방백. 오렙 바위에서 죽었다.', '삿 7:25'],
+      ['스엡', 78, 50, 40, 40, 5, 'midian', 'beersheba', '미디안의 방백. 스엡 포도주 틀에서 죽었다.', '삿 7:25'],
+      ['아말렉 장수', 72, 40, 30, 30, 5, 'midian', 'beersheba', '미디안과 함께 올라온 아말렉 군의 장수.', '삿 6:3, 33'],
+      ['암몬 왕', 65, 58, 55, 45, 10, 'ammon', 'rabbah', '"이스라엘이 애굽에서 올라올 때에 내 땅을 점령했으니 돌려 달라" 한 왕.', '삿 11:12-28'],
+      ['암몬 장수', 74, 40, 30, 30, 5, 'ammon', 'rabbah', '길르앗에 진을 친 암몬 군의 장수.', '삿 10:17'],
+      ['가사 방백', 70, 60, 62, 50, 5, 'philistia', 'gaza', '블레셋 다섯 방백 가운데 하나. 다곤 신전의 큰 제사를 주관했다.', '삿 3:3; 16:23'],
+      ['가드 방백', 74, 50, 50, 45, 5, 'philistia', 'gath', '블레셋 다섯 방백 가운데 하나.', '삿 3:3'],
+      ['블레셋 방백', 68, 62, 60, 45, 5, 'philistia', 'gaza', '들릴라에게 은 천백 개씩을 약속한 블레셋 방백.', '삿 16:5, 18'],
+      ['들릴라', 10, 85, 50, 90, 5, 'philistia', 'ekron', '소렉 골짜기의 여인. 삼손의 힘이 어디에 있는지 캐물었다.', '삿 16:4-20'],
+      ['여부스 왕', 60, 60, 65, 50, 10, 'jebus', 'jerusalem', '베냐민 자손이 쫓아내지 못한 여부스 사람의 우두머리.', '삿 1:21; 19:10-12'],
+      ['두로 왕', 50, 75, 85, 75, 20, 'tyre', 'tyre', '바다의 상인 왕.', ''],
+    ],
+    rel: [['israel', 'tyre', 40], ['moab', 'ammon', 60], ['midian', 'ammon', 45], ['philistia', 'ammon', 50], ['israel', 'aram', 10], ['israel', 'moab', 15], ['israel', 'canaan', 10], ['israel', 'midian', 10], ['israel', 'ammon', 15], ['israel', 'philistia', 25]],
+    goals: {
+      israel: ['shiloh', 'bethel', 'shechem', 'jericho', 'hebron', 'bethlehem', 'beersheba', 'mahanaim', 'ramoth', 'megiddo', 'hazor', 'gath'],
+      philistia: ['gaza', 'gath', 'ekron', 'ashdod', 'ashkelon', 'joppa', 'bethlehem', 'hebron', 'bethel', 'shiloh'],
+    },
+    goalText: {
+      israel: '압제자마다 이스라엘을 건진다. 모압의 여리고, 가나안의 하솔·므깃도, 미디안의 브엘세바, 블레셋의 가드를 되찾아 실로에서 길르앗까지 약속의 땅 12성을 지킨다.',
+      philistia: '다섯 성읍과 욥바를 지키고, 베들레헴·헤브론에서 벧엘·실로까지 이스라엘 산지를 다스린다 (삿 13:1; 15:11).',
+    },
+  },
+  {
     id: 'saul',
     title: '사울의 왕국',
     year: 1050,
@@ -318,6 +404,45 @@ const SCENARIOS = [
   },
 ];
 
+// 사사 시대 이벤트 도우미. 사사들이 차례로 일어나고, 신앙이 식으면 압제자가 돌아온다.
+const JUDGE_KIT = {
+  // 사사를 이스라엘에 합류시키고, lead면 지파 연합의 지도자(군주)로 세운다
+  raise: (G, name, cid, lead) => {
+    if (!G.exists('israel') || !G.alive(name)) return false;
+    if (G.facOf(name) !== 'israel') G.join(name, 'israel', cid && G.ownerOf(cid) === 'israel' ? cid : undefined);
+    if (lead) G.fac('israel').ruler = G.o(name).id;
+    return true;
+  },
+  // 이스라엘 평균 신앙 (G에 평균 신앙 조회가 없어 성을 직접 센다)
+  faith: G => { const cs = CITY_TABLE.map(r => G.city(r[0])).filter(c => c && c.owner === 'israel'); return cs.length ? cs.reduce((s, c) => s + c.faith, 0) / cs.length : 50; },
+  faithAll: (G, d, loy) => G.eachCity('israel', c => { c.faith += d; if (loy) c.loy += loy; }),
+  cut: (G, f, k, only) => G.eachCity(f, c => { if (!only || only.includes(c.id)) c.soldiers = Math.floor(c.soldiers * k); }),
+  next: (G, n) => { G.flags.jNext = G.turn + n; },
+  // 지금 시대의 압제자: 아직 구원 사건이 일어나지 않은 첫 세력
+  oppressor: G => {
+    const seq = [['aram', 'cushan'], ['moab', 'ehud'], ['canaan', 'deborah'], ['midian', 'gideon300'], ['ammon', 'jephthah'], ['philistia', 'delilah']];
+    const live = seq.filter(([f]) => G.exists(f) && G.cityCount(f) > 0);
+    const cur = live.find(([, e]) => !G.done[e]) || live[live.length - 1];
+    return cur ? cur[0] : null;
+  },
+  // 압제자와 맞닿은 이스라엘 성 가운데 가장 약한 곳
+  target: (G, f) => {
+    if (!f) return null;
+    const mine = CITY_TABLE.map(r => G.city(r[0])).filter(c => c && c.owner === 'israel');
+    const near = mine.filter(c => ROADS.some(([a, b]) => (a === c.id && G.ownerOf(b) === f) || (b === c.id && G.ownerOf(a) === f)));
+    const pool = (near.length ? near : mine).sort((a, b) => a.soldiers - b.soldiers);
+    return pool.length ? pool[0].id : null;
+  },
+  // 다곤 신전 (삿 16:21-30)
+  dagon: G => {
+    G.kill('삼손'); G.kill('블레셋 방백'); G.kill('가사 방백');
+    JUDGE_KIT.cut(G, 'philistia', 0.6, ['gaza']); JUDGE_KIT.cut(G, 'philistia', 0.85);
+    G.buff('philistia', 'atk', 3, -0.2); JUDGE_KIT.faithAll(G, 5);
+    G.flags.dagon = true; G.kingdom(2, '삼손의 마지막 기도');
+    return '들릴라가 삼손의 머리털 일곱 가닥을 밀자 힘이 떠났고, 그는 여호와께서 떠나신 줄을 깨닫지 못했다(16:19-20). 블레셋 사람들이 그를 붙잡아 가사로 끌고 가 옥에서 맷돌을 돌리게 했다. 그러나 머리털이 다시 자라기 시작했다. 다곤의 큰 제사 날, 삼손이 두 기둥을 붙들고 기도했다. "주 여호와여 구하옵나니 나를 생각하옵소서, 이번만 나를 강하게 하사"(16:28). 신전이 무너져 방백들과 온 백성이 깔렸다. 삼손과 블레셋 방백·가사 방백이 죽었다. 가사의 블레셋 군 40%, 블레셋 모든 성 15% 궤멸, 블레셋 3턴 동안 공격력 -20%, 이스라엘 신앙 +5.';
+  },
+};
+
 // 역사 이벤트. who: 선택권을 갖는 세력. 플레이어가 아니면 auto 번째 선택이 자동 적용되고 소식으로 전해진다.
 const EVENTS = {
   conquest: [
@@ -371,6 +496,217 @@ const EVENTS = {
       text: '야빈이 북방 왕들을 불러 모으니 바닷가의 수많은 모래 같고 말과 병거가 심히 많았다. 여호와께서 여호수아에게 "그들로 말미암아 두려워하지 말라" 하셨다.',
       choices: [
         { label: '두려워하지 않고 기습한다', run: G => { G.city(G.fac('north').capital).soldiers += 4000; G.buff('israel', 'atk', 3, 0.25); return '북부 동맹 도읍에 병거대 4000 집결. 이스라엘은 3턴 동안 공격력 +25%.'; } },
+      ] },
+  ],
+  judges: [
+    { id: 'cushan', who: 'israel', auto: 0,
+      cond: G => G.turn >= 2 && G.exists('israel'),
+      title: '구산 리사다임과 옷니엘', ref: '삿 3:7-11',
+      text: '이스라엘 자손이 여호와 앞에 악을 행하여 바알들과 아세라들을 섬겼다. 여호와께서 그들을 메소보다미아 왕 구산 리사다임의 손에 파셨고, 이스라엘이 팔 년 동안 그를 섬겼다. 이스라엘 자손이 여호와께 부르짖자 여호와께서 갈렙의 조카 옷니엘을 구원자로 세우셨다.',
+      choices: [
+        { label: '여호와께 부르짖고, 영이 임한 옷니엘을 따라 출전한다', ok: G => G.alive('옷니엘') && G.facOf('옷니엘') === 'israel', run: G => {
+          G.buff('israel', 'atk', 4, 0.25); JUDGE_KIT.cut(G, 'aram', 0.7);
+          JUDGE_KIT.faithAll(G, 10);
+          const o = G.o('옷니엘'); o.fai = Math.min(100, o.fai + 5);
+          JUDGE_KIT.next(G, 3); G.kingdom(5, '부르짖음과 구원');
+          return '여호와의 영이 옷니엘에게 임하였다. 4턴 동안 공격력 +25%, 아람 병력 30% 궤멸, 이스라엘 신앙 +10. "그 땅이 평온한 지 사십 년에"(3:11).'; } },
+        { label: '구산 리사다임에게 조공을 바치고 평안을 산다', run: G => {
+          G.fac('israel').gold -= 200; G.rel('israel', 'aram', 25); JUDGE_KIT.faithAll(G, -10);
+          JUDGE_KIT.next(G, 3); G.kingdom(-3, '압제자를 섬김');
+          return '금 -200, 아람과의 관계 +25. 그러나 이스라엘 신앙 -10. 백성은 여전히 우상 곁에 있다.'; } },
+      ] },
+    { id: 'ehud', who: 'israel', auto: 0,
+      cond: G => G.done.cushan && G.turn >= 5 && G.turn >= (G.flags.jNext || 0) && G.exists('israel'),
+      title: '왼손잡이 에훗과 에글론', ref: '삿 3:12-30',
+      text: '그나스의 아들 옷니엘이 죽었다. 이스라엘이 다시 악을 행하자 모압 왕 에글론이 암몬과 아말렉을 모아 종려나무 성읍(여리고)을 점령했고, 이스라엘이 열여덟 해 동안 그를 섬겼다. 백성이 부르짖자 여호와께서 베냐민 사람 왼손잡이 에훗을 세우셨다. 그가 한 규빗 되는 양날 칼을 오른쪽 허벅지 옷 속에 차고 조공을 바치러 간다.',
+      choices: [
+        { label: '에훗이 "왕께 은밀한 일을 아뢰려 하나이다" 하고 홀로 들어간다', ok: G => G.alive('에훗') && G.facOf('에훗') !== 'moab', run: G => {
+          G.kill('옷니엘'); JUDGE_KIT.raise(G, '에훗', 'bethel', true); JUDGE_KIT.raise(G, '삼갈', 'hebron');
+          const eglon = G.alive('에글론'); G.kill('에글론');
+          G.buff('israel', 'atk', 4, 0.3); JUDGE_KIT.cut(G, 'moab', 0.7); JUDGE_KIT.cut(G, 'moab', 0.8, ['jericho']);
+          G.item('israel', 'trumpet', 1); JUDGE_KIT.faithAll(G, 8);
+          JUDGE_KIT.next(G, 4); G.kingdom(6, '에훗의 구원');
+          return (eglon ? '에훗이 에글론을 치고 다락문을 잠근 채 빠져나왔다. ' : '') + '에훗이 에브라임 산지에서 나팔을 불어 요단 나루를 막았다. 에훗이 사사로 서고 삼갈이 합류했다. 4턴 동안 공격력 +30%, 모압 병력 30% 궤멸(여리고는 더), 양각 나팔을 얻었다. 신앙 +8. "그 땅이 팔십 년 동안 평온하였더라"(3:30).'; } },
+        { label: '조공만 바치고 돌아온다', run: G => {
+          G.kill('옷니엘'); G.fac('israel').gold -= 200; G.rel('israel', 'moab', 20);
+          JUDGE_KIT.faithAll(G, -5, -5); JUDGE_KIT.raise(G, '에훗', 'bethel');
+          JUDGE_KIT.next(G, 4); G.kingdom(-3, '모압을 섬김');
+          return '옷니엘이 세상을 떠났다. 금 -200, 모압과의 관계 +20, 신앙·민심 -5. 에훗이 합류했지만 모압의 압제는 계속된다.'; } },
+      ],
+      altWho: 'moab', altText: '이스라엘의 사자 에훗이 조공을 바친 뒤 돌아와 "왕이여, 내가 은밀한 일을 왕에게 아뢰려 하나이다" 하였다.',
+      altChoices: [
+        { label: '신하들을 물리고 서늘한 다락방에서 홀로 듣는다', run: G => {
+          G.kill('옷니엘'); G.kill('에글론'); JUDGE_KIT.raise(G, '에훗', 'bethel', true);
+          G.buff('israel', 'atk', 4, 0.3); JUDGE_KIT.cut(G, 'moab', 0.7); JUDGE_KIT.next(G, 4);
+          return '에글론이 쓰러졌다. 모압 병력 30%가 요단 나루에서 흩어지고, 이스라엘은 4턴 동안 공격력 +30%.'; } },
+        { label: '호위병을 곁에 두고 듣는다', run: G => {
+          G.kill('옷니엘'); JUDGE_KIT.raise(G, '에훗', 'bethel', true); G.buff('israel', 'atk', 2, 0.1); JUDGE_KIT.next(G, 4);
+          return '에훗은 칼을 뽑지 못하고 돌아갔다. 에글론은 무사하지만 이스라엘이 사사를 세웠다 (이스라엘 2턴 동안 공격력 +10%).'; } },
+      ] },
+    { id: 'deborah', who: 'israel', auto: 0,
+      cond: G => G.done.ehud && G.turn >= (G.flags.jNext || 0) && G.exists('israel'),
+      title: '드보라와 바락, 다볼 산', ref: '삿 4–5장',
+      text: '에훗이 죽은 뒤 하솔 왕 야빈이 철 병거 구백 대로 이십 년 동안 이스라엘을 심히 학대했다. 그 때 랍비돗의 아내 여선지자 드보라가 종려나무 아래에서 이스라엘을 재판하고 있었다. 그가 바락을 불러 말했다. "너는 납달리와 스불론 자손 만 명을 거느리고 다볼 산으로 가라. 내가 시스라와 그의 병거들을 기손 강으로 이끌어 네 손에 넘겨 주리라."',
+      choices: [
+        { label: '"당신이 나와 함께 가면 나도 가려니와" — 드보라와 함께 다볼 산으로 오른다', run: G => {
+          G.kill('에훗'); JUDGE_KIT.raise(G, '드보라', 'bethel', true); JUDGE_KIT.raise(G, '바락'); JUDGE_KIT.raise(G, '야엘');
+          const sis = G.alive('시스라'); G.kill('시스라');
+          JUDGE_KIT.cut(G, 'canaan', 0.6, ['megiddo', 'hazor']); JUDGE_KIT.cut(G, 'canaan', 0.8, ['bethshean']);
+          G.buff('israel', 'atk', 4, 0.3); G.buff('canaan', 'atk', 3, -0.2); JUDGE_KIT.faithAll(G, 10);
+          G.flags.deborahSong = true; JUDGE_KIT.next(G, 5); G.kingdom(8, '드보라의 노래');
+          return '"별들이 하늘에서부터 싸우되 기손 강은 그 무리를 표류시켰으니"(5:20-21). 비에 불은 기손 강이 병거를 삼켜 므깃도·하솔의 가나안 군 40% 궤멸' + (sis ? ', 도망한 시스라는 겐 사람 헤벨의 아내 야엘의 장막에서 죽었다' : '') + '. 드보라가 사사로 서고 바락·야엘이 합류했다. 4턴 동안 공격력 +30%, 가나안 3턴 동안 -20%, 신앙 +10.'; } },
+        { label: '철 병거 구백 대가 두려워 산지에 머문다', run: G => {
+          G.kill('에훗'); JUDGE_KIT.raise(G, '드보라', 'bethel', true);
+          G.buff('canaan', 'atk', 3, 0.2); JUDGE_KIT.faithAll(G, -5, -5);
+          JUDGE_KIT.next(G, 5); G.kingdom(-3, '병거를 두려워함');
+          return '에훗이 세상을 떠났다. 드보라가 합류했지만 바락은 게데스에 남았다. 가나안 3턴 동안 공격력 +20%, 이스라엘 신앙·민심 -5. "마을 사람들이 그쳤으니"(5:7).'; } },
+      ],
+      altWho: 'canaan', altText: '시스라가 아비노암의 아들 바락이 다볼 산에 오른 것을 듣고 철 병거 구백 대를 기손 강으로 모았다.',
+      altChoices: [
+        { label: '기손 강가로 병거를 몬다', run: G => {
+          G.kill('에훗'); JUDGE_KIT.raise(G, '드보라', 'bethel', true); JUDGE_KIT.raise(G, '바락'); G.kill('시스라');
+          JUDGE_KIT.cut(G, 'canaan', 0.6, ['megiddo', 'hazor']); G.buff('israel', 'atk', 4, 0.3); JUDGE_KIT.next(G, 5);
+          return '큰 비에 기손 강이 불어 병거가 진창에 빠졌다. 므깃도·하솔의 병력 40% 궤멸, 시스라가 도망하다 죽었다.'; } },
+        { label: '평지에 머물러 이스라엘을 기다린다', run: G => {
+          G.kill('에훗'); JUDGE_KIT.raise(G, '드보라', 'bethel', true); JUDGE_KIT.raise(G, '바락'); G.buff('israel', 'atk', 3, 0.15); JUDGE_KIT.next(G, 5);
+          return '가나안 병거는 평지를 지켰다. 이스라엘에 드보라와 바락이 섰다 (이스라엘 3턴 동안 공격력 +15%).'; } },
+      ] },
+    { id: 'gideonCall', who: 'israel', auto: 0,
+      cond: G => G.done.deborah && G.turn >= (G.flags.jNext || 0) && G.exists('israel'),
+      title: '큰 용사여, 여호와께서 너와 함께 계시도다', ref: '삿 6장',
+      text: '이스라엘이 또 악을 행하자 미디안과 아말렉과 동방 사람들이 약대와 함께 메뚜기 떼처럼 올라와 토지 소산을 멸했다. 기드온이 미디안을 피해 포도주 틀에서 밀을 타작할 때 여호와의 사자가 나타났다. "큰 용사여, 여호와께서 너와 함께 계시도다." 그날 밤 말씀이 임했다. "네 아버지의 바알 제단을 헐며 그 곁의 아세라 상을 찍으라." 기드온은 양털 한 뭉치를 타작마당에 두고 두 번 표징을 구했다.',
+      choices: [
+        { label: '밤에 바알 제단을 헐고 여호와의 제단을 쌓는다', run: G => {
+          JUDGE_KIT.raise(G, '기드온', 'shechem');
+          const g = G.o('기드온'); if (g && g.alive) g.fai = Math.min(100, g.fai + 15);
+          const j = G.o('요아스'); if (j && j.alive) j.fai = Math.min(100, j.fai + 30);
+          JUDGE_KIT.faithAll(G, 15); if (G.ownerOf('shechem') === 'israel') G.city('shechem').loy -= 10;
+          G.flags.gideonCalled = true; G.flags.jerubbaal = true; JUDGE_KIT.next(G, 3); G.kingdom(6, '바알 제단을 헐다');
+          return '성읍 사람들이 기드온을 죽이려 하자 요아스가 말했다. "바알이 신일진대 그의 제단을 파괴하였은즉 그가 자신을 위해 다툴 것이니라." 기드온은 여룹바알이라 불렸다(6:31-32). 기드온 합류, 신앙 +15, 요아스 신앙 +30, 세겜 민심 -10. 양털이 젖고 또 말랐다.'; } },
+        { label: '제단은 그대로 두고 조용히 군사만 모은다', run: G => {
+          JUDGE_KIT.raise(G, '기드온', 'shechem');
+          if (G.ownerOf('shechem') === 'israel') G.city('shechem').soldiers += 1500;
+          JUDGE_KIT.faithAll(G, -5); G.flags.gideonCalled = true; JUDGE_KIT.next(G, 3); G.kingdom(-2, '우상을 남겨 둠');
+          return '기드온이 합류했다. 세겜 병력 +1500. 그러나 바알 제단이 그대로 서 있다 — 이스라엘 신앙 -5.'; } },
+      ] },
+    { id: 'gideon300', who: 'israel', auto: 0,
+      cond: G => G.done.gideonCall && G.turn >= (G.flags.jNext || 0) && G.exists('israel'),
+      title: '기드온의 삼백 용사', ref: '삿 7장',
+      text: '기드온을 따르는 백성이 삼만 이천 명이었다. 여호와께서 말씀하셨다. "너를 따르는 백성이 너무 많은즉 내가 그들의 손에 미디안 사람을 넘겨 주지 아니하리니, 이는 이스라엘이 나를 거슬러 스스로 자랑하기를 내 손이 나를 구원하였다 할까 함이니라." 두려워 떠는 자 이만 이천이 돌아가고, 물가에서 손으로 물을 움켜 입에 대고 핥은 자는 삼백 명이었다.',
+      choices: [
+        { label: '삼백 명만 남기고 나팔과 횃불과 항아리를 나눠 준다', run: G => {
+          JUDGE_KIT.raise(G, '기드온', 'shechem', true); JUDGE_KIT.raise(G, '부라', 'shechem');
+          if (G.ownerOf('shechem') === 'israel') { const s = G.city('shechem'); s.soldiers = Math.floor(s.soldiers * 0.8); }
+          G.item('israel', 'torch', 3); G.item('israel', 'trumpet', 3);
+          JUDGE_KIT.cut(G, 'midian', 0.4); G.kill('오렙'); G.kill('스엡');
+          G.buff('israel', 'atk', 4, 0.35); G.buff('midian', 'atk', 3, -0.2); JUDGE_KIT.faithAll(G, 15);
+          const g = G.o('기드온'); if (g && g.alive) { g.fai = Math.min(100, g.fai + 10); g.cha = Math.min(100, g.cha + 5); }
+          G.flags.three100 = true; JUDGE_KIT.next(G, 4); G.kingdom(10, '여호와의 칼, 기드온의 칼');
+          return '"여호와와 기드온의 칼이다!" 삼백 명이 항아리를 깨뜨리고 횃불을 들고 나팔을 불자 미디안 진영이 서로 칼로 쳤다. 세겜의 병력 20%는 집으로 돌아갔지만, 미디안 병력 60% 궤멸, 방백 오렙과 스엡이 죽었다. 기드온이 사사로 서고 부라가 합류했다. 횃불과 항아리·양각 나팔 각 3, 4턴 동안 공격력 +35%, 신앙 +15.'; } },
+        { label: '삼만 이천 명을 모두 데리고 싸운다', run: G => {
+          JUDGE_KIT.raise(G, '기드온', 'shechem', true);
+          JUDGE_KIT.cut(G, 'midian', 0.8); G.buff('israel', 'atk', 3, 0.15); JUDGE_KIT.faithAll(G, -10);
+          JUDGE_KIT.next(G, 4); G.kingdom(-5, '내 손이 나를 구원하였다');
+          return '기드온이 사사로 섰다. 미디안 병력 20%가 물러가고 3턴 동안 공격력 +15%. 그러나 백성은 "우리 손이 우리를 구원하였다" 하며 자랑한다 — 신앙 -10.'; } },
+      ],
+      altWho: 'midian', altText: '미디안 진영의 한 병사가 꿈을 꾸었다. 보리떡 한 덩어리가 진영으로 굴러 들어와 장막을 쳐서 무너뜨렸다. 동무가 말했다. "이는 기드온의 칼이라."',
+      altChoices: [
+        { label: '밤새 진영을 지킨다', run: G => {
+          JUDGE_KIT.raise(G, '기드온', 'shechem', true); JUDGE_KIT.cut(G, 'midian', 0.6); G.kill('오렙'); G.kill('스엡');
+          G.buff('israel', 'atk', 3, 0.25); JUDGE_KIT.next(G, 4);
+          return '이경 초에 나팔 소리와 횃불이 진영을 둘렀다. 미디안 병력 40%가 서로 칼로 치고 흩어졌고, 오렙과 스엡이 죽었다.'; } },
+      ] },
+    { id: 'abimelech', who: 'israel', auto: 0,
+      cond: G => G.done.gideon300 && G.turn >= (G.flags.jNext || 0) && G.exists('israel') && !G.exists('abimelech') && G.ownerOf('shechem') === 'israel' && G.fac('israel').capital !== 'shechem',
+      title: '아비멜렉의 반역', ref: '삿 8:22-23; 9장',
+      text: '이스라엘 사람들이 기드온에게 "당신과 당신의 아들과 손자가 우리를 다스리소서" 하였으나 기드온은 "여호와께서 너희를 다스리시리라" 하고 거절했다. 그러나 기드온이 죽자 이스라엘은 다시 바알브릿을 섬겼다. 세겜에 있던 첩의 아들 아비멜렉이 외가 사람들을 꾀어 은 칠십 개로 건달들을 사고 자기 형제들을 해친 뒤, 세겜 사람들에게 왕으로 추대되었다. 막내 요담만 살아남아 그리심 산 꼭대기에서 외쳤다.',
+      choices: [
+        { label: '요담의 가시나무 비유를 전하며 여호와의 다스림을 선포한다', run: G => {
+          G.kill('기드온');
+          G.rebel('abimelech', '아비멜렉', 'shechem', ['아비멜렉', 82, 60, 55, 50, 10, null, 'shechem', '기드온이 세겜에 둔 첩의 아들. 형제들을 해치고 세겜에서 스스로 왕이 되었다.', '삿 9:1-6']);
+          const c = G.city('shechem'); c.soldiers = 3000; c.loy = 30;
+          JUDGE_KIT.raise(G, '돌라', null, true); JUDGE_KIT.faithAll(G, 8);
+          G.flags.jotham = true; JUDGE_KIT.next(G, 4); G.kingdom(3, '여호와께서 다스리시리라');
+          return '"나무들이 가시나무에게 이르되 너는 와서 우리 위에 왕이 되라 하매…"(9:14-15). 아비멜렉이 세겜에서 일어났지만 하나님이 그와 세겜 사람들 사이에 악한 영을 보내셨다 — 세겜 병력 3000, 민심 30. 기드온이 세상을 떠나고 돌라가 사사로 섰다. 이스라엘 신앙 +8.'; } },
+        { label: '세겜 사람들의 선택을 인정하고 아비멜렉과 화친한다', run: G => {
+          G.kill('기드온');
+          G.rebel('abimelech', '아비멜렉', 'shechem', ['아비멜렉', 82, 60, 55, 50, 10, null, 'shechem', '기드온이 세겜에 둔 첩의 아들. 형제들을 해치고 세겜에서 스스로 왕이 되었다.', '삿 9:1-6']);
+          G.rel('israel', 'abimelech', 50); JUDGE_KIT.faithAll(G, -10, -5);
+          JUDGE_KIT.raise(G, '돌라', null, true); JUDGE_KIT.next(G, 4); G.kingdom(-6, '가시나무를 왕으로');
+          return '아비멜렉이 세겜의 왕이 되었다. 아비멜렉과의 관계 +50, 그러나 이스라엘 신앙 -10, 민심 -5. "사람이 각기 자기의 소견에 옳은 대로 행하였더라." 기드온이 세상을 떠나고 돌라가 사사로 섰다.'; } },
+      ] },
+    { id: 'jephthah', who: 'israel', auto: 0,
+      cond: G => G.done.gideon300 && G.turn >= (G.flags.jNext || 0) && G.exists('israel') && (G.done.abimelech || G.turn >= (G.flags.jNext || 0) + 3),
+      title: '입다의 서원', ref: '삿 10:6–11:40',
+      text: '이스라엘이 다시 바알들과 아스다롯과 아람·시돈·모압·암몬·블레셋의 신들을 섬겼다. 암몬 자손이 길르앗에 진을 치자 길르앗 장로들이 돕 땅의 입다에게 가서 "우리의 장관이 되라" 청했다. 입다가 암몬 왕에게 사자를 보내 삼백 년의 역사를 들어 항변했으나 왕은 듣지 않았다. 여호와의 영이 입다에게 임했다. 출전을 앞두고 입다가 여호와께 서원하려 한다.',
+      choices: [
+        { label: '서원을 하지 않고 "심판하시는 여호와께서 판결하시옵소서" 하며 여호와만 의지한다', run: G => {
+          JUDGE_KIT.raise(G, '입다', 'ramoth', true);
+          JUDGE_KIT.cut(G, 'ammon', 0.5); G.buff('israel', 'atk', 4, 0.3); JUDGE_KIT.faithAll(G, 10);
+          const j = G.o('입다'); if (j && j.alive) j.fai = Math.min(100, j.fai + 15);
+          G.flags.jephthahTrust = true; JUDGE_KIT.next(G, 4); G.kingdom(8, '여호와께서 판결하시리라');
+          return '"심판하시는 여호와께서 오늘 이스라엘 자손과 암몬 자손 사이에 판결하시옵소서"(11:27). 입다가 아로엘에서 민닛까지 암몬을 쳤다. 암몬 병력 50% 궤멸, 4턴 동안 공격력 +30%, 신앙 +10. 입다가 사사로 섰다. 구원은 거래가 아니라 은혜였다.'; } },
+        { label: '"누구든지 먼저 나와 나를 영접하는 자를 번제로 드리리라" 서원한다', run: G => {
+          JUDGE_KIT.raise(G, '입다', 'ramoth', true);
+          JUDGE_KIT.cut(G, 'ammon', 0.5); G.buff('israel', 'atk', 4, 0.3); JUDGE_KIT.faithAll(G, -10, -10);
+          const j = G.o('입다'); if (j && j.alive) { j.cha = Math.max(0, j.cha - 10); j.fai = Math.max(0, j.fai - 10); }
+          G.flags.rashVow = true; JUDGE_KIT.next(G, 4); G.kingdom(-8, '경솔한 서원');
+          return '암몬은 크게 패했다(병력 50% 궤멸, 4턴 동안 공격력 +30%). 그러나 미스바의 집에 돌아오자 소고를 잡고 춤추며 그를 맞으러 나온 이는 그의 무남독녀였다. 입다가 옷을 찢으며 슬퍼했고, 이스라엘 딸들은 해마다 나흘씩 그를 애곡했다(11:34-40). 여호와께서는 그런 제물을 구하신 적이 없다(신 12:31; 미 6:6-8). 신앙·민심 -10, 입다 매력·신앙 -10.'; } },
+      ],
+      altWho: 'ammon', altText: '입다의 사자가 와서 말했다. "이스라엘이 헤스본과 아로엘에 거주한 지 삼백 년인데 그 동안에 너희가 어찌하여 도로 찾지 아니하였느냐" (11:26).',
+      altChoices: [
+        { label: '입다의 말을 듣지 않고 싸운다', run: G => {
+          JUDGE_KIT.raise(G, '입다', 'ramoth', true); JUDGE_KIT.cut(G, 'ammon', 0.6); G.buff('israel', 'atk', 3, 0.25); JUDGE_KIT.next(G, 4);
+          return '여호와의 영이 입다에게 임하였다. 암몬 병력 40%가 아로엘에서 민닛까지 흩어졌다.'; } },
+        { label: '길르앗에서 물러난다', run: G => {
+          JUDGE_KIT.raise(G, '입다', 'ramoth', true); G.rel('ammon', 'israel', 30); JUDGE_KIT.next(G, 4);
+          return '암몬이 물러갔다. 이스라엘과의 관계 +30.'; } },
+      ] },
+    { id: 'samsonBirth', who: 'israel', auto: 0,
+      cond: G => G.done.jephthah && G.turn >= (G.flags.jNext || 0) && G.exists('israel'),
+      title: '나실인 삼손의 출생', ref: '삿 12:7-15; 13장',
+      text: '입다가 여섯 해 동안 사사로 있다가 죽었고, 입산과 엘론과 압돈이 차례로 이스라엘을 다스렸다. 이스라엘이 또 악을 행하자 여호와께서 그들을 사십 년 동안 블레셋 사람의 손에 넘기셨다. 소라 땅 마노아의 아내에게 여호와의 사자가 나타났다. "네가 임신하여 아들을 낳으리니 삭도를 그 머리에 대지 말라. 이 아이는 태에서 나옴으로부터 하나님께 바쳐진 나실인이 됨이라. 그가 블레셋 사람의 손에서 이스라엘을 구원하기 시작하리라."',
+      choices: [
+        { label: '마노아와 아내가 제물을 드리고 나실인의 규례를 지켜 아이를 기른다', run: G => {
+          G.kill('입다'); JUDGE_KIT.raise(G, '마노아', 'bethlehem'); JUDGE_KIT.raise(G, '삼손', 'bethlehem', true);
+          const s = G.o('삼손'); if (s && s.alive) s.fai = Math.min(100, s.fai + 10);
+          JUDGE_KIT.faithAll(G, 5); G.flags.nazirite = true; JUDGE_KIT.next(G, 4); G.kingdom(3, '나실인의 서원');
+          return '아이가 자라매 여호와께서 그에게 복을 주셨고, 여호와의 영이 소라와 에스다올 사이 마하네단에서 그를 움직이기 시작했다(13:24-25). 입다가 세상을 떠나고 삼손이 사사로 섰다. 마노아 합류, 삼손 신앙 +10, 이스라엘 신앙 +5.'; } },
+      ] },
+    { id: 'delilah', who: 'israel', auto: 1,
+      cond: G => G.done.samsonBirth && G.turn >= (G.flags.jNext || 0) && G.exists('israel') && G.exists('philistia') && G.alive('삼손') && G.facOf('삼손') === 'israel',
+      title: '삼손과 들릴라', ref: '삿 16장',
+      text: '삼손이 소렉 골짜기의 여인 들릴라를 사랑했다. 블레셋 방백들이 그에게 은 천백 개씩을 약속했다. 들릴라가 날마다 졸라 "당신의 큰 힘이 무엇으로 말미암아 생기나이까" 하고 물으니 삼손의 마음이 번뇌하여 죽을 지경이 되었다.',
+      choices: [
+        { label: '들릴라를 떠나 나실인의 서원을 지킨다', run: G => {
+          const s = G.o('삼손'); if (s && s.alive) s.fai = Math.min(100, s.fai + 15);
+          G.buff('israel', 'atk', 3, 0.25); JUDGE_KIT.cut(G, 'philistia', 0.75, ['gath', 'ekron', 'gaza']); JUDGE_KIT.faithAll(G, 10);
+          G.flags.vowKept = true; G.kingdom(8, '서원을 지킨 삼손');
+          return '삼손이 소렉 골짜기를 떠났다. 서원을 지킨 사사 곁에 여호와의 영이 머문다. 3턴 동안 공격력 +25%, 가드·에그론·가사의 블레셋 군 25% 궤멸, 이스라엘 신앙 +10.'; } },
+        { label: '마음을 다 털어놓는다', run: G => JUDGE_KIT.dagon(G) },
+      ],
+      altWho: 'philistia', altText: '방백들이 들릴라에게 은 천백 개씩을 약속하고 삼손의 비밀을 캐내게 한다.',
+      altChoices: [
+        { label: '은을 주고 비밀을 캐낸다 (금 -300)', run: G => { G.fac('philistia').gold -= 300; return JUDGE_KIT.dagon(G); } },
+        { label: '그만둔다', run: G => { G.buff('israel', 'atk', 3, 0.2); return '삼손은 여전히 블레셋의 두려움이다. 이스라엘 3턴 동안 공격력 +20%.'; } },
+      ] },
+    { id: 'apostasy', who: 'israel', auto: 0, repeat: true,
+      cond: G => G.turn >= 6 && G.exists('israel') && G.turn >= (G.flags.apostasyNext || 0) && JUDGE_KIT.faith(G) < 45 && !!JUDGE_KIT.oppressor(G),
+      title: '배교의 순환', ref: '삿 2:11-19; 10:10-16',
+      text: '이스라엘 자손이 여호와 앞에 악을 행하여 바알들을 섬기고 애굽 땅에서 인도하여 내신 조상들의 하나님 여호와를 버렸다. 여호와께서 진노하사 그들을 노략하는 자의 손에 넘기셨다. "그 때에는 이스라엘에 왕이 없으므로 사람이 각기 자기의 소견에 옳은 대로 행하였더라"(21:25).',
+      choices: [
+        { label: '"우리가 범죄하였사오니" 부르짖고 이방 신들을 제거한다', run: G => {
+          const f = JUDGE_KIT.oppressor(G), t = JUDGE_KIT.target(G, f);
+          const r = f && t ? G.raid(f, t, 2000) : '';
+          G.fac('israel').gold = Math.max(0, G.fac('israel').gold - 100); JUDGE_KIT.faithAll(G, 12);
+          G.buff('israel', 'atk', 2, 0.15); G.flags.apostasyNext = G.turn + 6; G.kingdom(3, '부르짖음');
+          return (r ? `압제: ${r} ` : '') + '백성이 이방 신들을 제하고 여호와를 섬기니 "여호와께서 이스라엘의 곤고로 말미암아 마음에 근심하시니라"(10:16). 금 -100, 신앙 +12, 2턴 동안 공격력 +15%.'; } },
+        { label: '각기 자기 소견에 옳은 대로 행한다', run: G => {
+          const f = JUDGE_KIT.oppressor(G), t = JUDGE_KIT.target(G, f);
+          const r = f && t ? G.raid(f, t, 4000) : '';
+          if (f) G.buff(f, 'atk', 3, 0.2); JUDGE_KIT.faithAll(G, -5, -5);
+          G.flags.apostasyNext = G.turn + 6; G.kingdom(-4, '각기 자기 소견대로');
+          return (r ? `압제: ${r} ` : '') + '압제자의 기세가 3턴 동안 +20%. 이스라엘 신앙·민심 -5.'; } },
       ] },
   ],
   david: [
