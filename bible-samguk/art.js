@@ -1,7 +1,7 @@
 // 성경 삼국지 — 일러스트 목록 (Higgsfield로 생성). 키: 인물 이름, '시나리오:이름', '@title'·'@시나리오' 장면.
 // 불러오지 못하면 portrait.js의 SVG 초상화로 대신한다.
 const ART = {
-  "다윗": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_122145_16d3e1ac-7ee6-47e7-9a68-a817d3c2680a.png",
+  "다윗": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_130218_718f3761-508f-4784-8e5e-b4f7fd1c7a54.png",
   "요압": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_122145_cdbfa45e-659a-4333-97c6-6882db5e9180.png",
   "여호수아": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_122424_e34d58d7-ab71-468a-b3c6-32d0e0dae4ed.png",
   "갈렙": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_122425_60d7f6dc-3e98-4393-a83f-4be0895c2cc2.png",
