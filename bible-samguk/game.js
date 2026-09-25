@@ -602,8 +602,11 @@
     ${FORESTS.map(([x, y, n]) => trees(x, y, n)).join('')}${PALMCL.map(([x, y, n]) => trees(x, y, n, true)).join('')}
     ${MOUNTAINS.map(([x, y, s, snow]) => mtn(x, y, s, snow)).join('')}
     ${mapArt()}
-    <text class="geo" x="40" y="330">대 해</text><text class="geo sm" x="380" y="228">갈릴리 바다</text>
-    <text class="geo sm" x="372" y="560" transform="rotate(80 372 560)">염 해</text><text class="geo sm" x="160" y="760">네 게 브</text><text class="geo sm" x="520" y="300">길 르 앗</text>`;
+    <text class="geo" x="10" y="300">지 중 해</text><text class="geo sm2" x="40" y="322">(대해)</text>
+    <text class="geo sm" x="420" y="28">헐몬산</text><text class="geo sm" x="382" y="218">갈릴리 호수</text>
+    <text class="geo sm" x="372" y="340">요단강</text><text class="geo sm" x="408" y="408">얍복강</text>
+    <text class="geo sm" x="344" y="585" transform="rotate(84 344 585)">사 해</text><text class="geo sm" x="262" y="612">유 다 산 지</text>
+    <text class="geo sm" x="120" y="720">네 게 브 광 야</text><text class="geo sm" x="300" y="790">아 라 바 광 야</text><text class="geo sm" x="520" y="330">길 르 앗</text>`;
     const hot = sel && city(sel) && city(sel).owner === P ? (ADJ[sel] || []) : [];
     ROADS.forEach(([a, b]) => {
       const A = CITY_INFO[a], B = CITY_INFO[b];
@@ -616,16 +619,20 @@
       const cap = c.owner && fac(c.owner).capital === c.id;
       const gov = governor(c.id);
       const badge = c.owner ? fac(c.owner).name[0] : '·';
-      h += `<g class="city${sel === c.id ? ' sel' : ''}" data-id="${c.id}" tabindex="0" role="button" aria-label="${ci.name}" transform="translate(${ci.x} ${ci.y})">
-        <circle r="24" fill="transparent"/>${cityIcon(c, color, cap)}
-        <g transform="translate(0 ${cap ? 20 : 16})">
-          <path d="M-30 -1 h12 v15 l-6 -4 l-6 4z" fill="${color}" stroke="#1d1a14" stroke-width=".8"/><text x="-24" y="9" class="cbadge">${esc(badge)}</text>
-          <text x="-15" y="7" class="cname">${ci.name}</text>
-          <text x="-15" y="16" class="cgov">${gov ? '태수 ' + esc(gov.name) : '태수 없음'}</text>
+      const fn = c.owner ? fac(c.owner).name : '무주지', nw = ci.name.length * 10.5 + 10, sw = fn.length * 6.8 + 10, pw = Math.max(nw, sw);
+      h += `<g class="city${sel === c.id ? ' sel' : ''}${c.owner === P ? ' mine' : ''}" data-id="${c.id}" tabindex="0" role="button" aria-label="${ci.name}" transform="translate(${ci.x} ${ci.y})">
+        <circle r="24" fill="transparent"/><g class="cicon">${cityIcon(c, color, cap)}</g>${townSprite(c.id, cap)}
+        <g class="cflag" transform="translate(0 -12)">
+          <path d="M0 0 V-22" stroke="#2a2014" stroke-width="1.4"/>
+          <path d="M-8 -34 h16 v14 l-8 6 l-8 -6z" fill="${color}" stroke="${cap ? '#ffd978' : '#e9dcb6'}" stroke-width="1.3"/>
+          <text x="0" y="-22.5" class="cbadge">${esc(badge)}</text>
+          ${cap ? '<path d="M-6 -36 l2 -5 l2 3 l2 -4 l2 4 l2 -3 l2 5z" fill="#ffd978" stroke="#6b4a0e" stroke-width=".5"/>' : ''}
+          <g transform="translate(10 -34)"><rect width="${pw}" height="${c.owner ? 22 : 13}" rx="2" class="cplate"/>
+            <text x="5" y="10" class="cname">${ci.name}</text>${c.owner ? `<text x="5" y="19" class="cfac">(${esc(fn)})</text>` : `<text x="5" y="10" class="cfac"></text>`}</g>
         </g>
-        <g transform="translate(14 -20)"><rect x="-2" y="-8" width="${String(fmtK(c.soldiers)).length * 5.6 + 10}" height="11" rx="2" fill="#141b2c" opacity=".82"/><text x="3" y="0" class="csold">${fmtK(c.soldiers)}</text></g>`;
+        <g transform="translate(-${String(fmtK(c.soldiers)).length * 2.8 + 5} 12)"><rect x="0" y="-8" width="${String(fmtK(c.soldiers)).length * 5.6 + 10}" height="11" rx="2" fill="#141b2c" opacity=".82"/><text x="5" y="0" class="csold">${fmtK(c.soldiers)}</text></g>`;
       if (sel === c.id) h += `<path class="bracket" d="M-26 -20 v-8 h8 M26 -20 v-8 h-8 M-26 14 v8 h8 M26 14 v8 h-8" fill="none" stroke="#ffd36a" stroke-width="2.4"/>`;
-      if (q && q === c.id) h += `<g class="qmark" transform="translate(0 -40)"><text y="-16" class="qlabel">사명</text><circle r="10" fill="#1b2233" stroke="#e6b64a" stroke-width="2.4"/><text y="5" class="qbang">!</text><path d="M-5 9 L0 16 L5 9Z" fill="#e6b64a"/></g>`;
+      if (q && q === c.id) h += `<g class="qmark" transform="translate(0 -62)"><text y="-16" class="qlabel">사명</text><circle r="10" fill="#1b2233" stroke="#e6b64a" stroke-width="2.4"/><text y="5" class="qbang">!</text><path d="M-5 9 L0 16 L5 9Z" fill="#e6b64a"/></g>`;
       h += `</g>`;
     });
     svg.innerHTML = h;
@@ -635,7 +642,13 @@
   const fmtK = n => n >= 1000 ? (n / 1000).toFixed(1) + 'k' : String(n);
   // 그림 지도: Higgsfield로 벡터 지형을 참조해 그린 채색 지도. 불러오지 못하면 지워져 벡터 지형이 그대로 보인다.
   const MAP_BOX = 'x="-160" y="-170" width="920" height="1150" preserveAspectRatio="none"';
-  const mapArt = () => { const u = artKey('@map'); return u ? `<image href="${u}" ${MAP_BOX} onerror="this.remove()"/>` : ''; };
+  // 성읍 그림: 지역 문화별 투명 PNG를 성 좌표에 그대로 올린다(예루살렘은 왕도 그림).
+  const townSprite = (cid, cap) => {
+    const u = artKey(cid === 'jerusalem' ? '@town-royal' : '@town-' + landKind(cid)); if (!u) return '';
+    const w = cap || cid === 'jerusalem' ? 54 : 42, h = w * 0.76;
+    return `<image class="ctown" href="${u}" x="${-w / 2}" y="${-h * 0.72}" width="${w}" height="${h}" onerror="if(this.parentNode)this.parentNode.classList.add('nospr');this.remove()"/>`;
+  };
+  const mapArt = () => { const u = artKey('@map'); return u ? `<image href="${u}" ${MAP_BOX} onload="var s=this.closest('svg');if(s)s.classList.add('art-on')" onerror="var s=this.closest('svg');if(s)s.classList.remove('art-on');this.remove()"/>` : ''; };
   function resetView(full) {
     const wrap = $('#mapWrap'), ar = wrap.clientWidth / Math.max(1, wrap.clientHeight);
     if (full) { VB = Object.assign({}, VB_FULL); if (ar > VB.w / VB.h) { const w = VB.h * ar; VB.x -= (w - VB.w) / 2; VB.w = w; } else { const hh = VB.w / ar; VB.y -= (hh - VB.h) / 2; VB.h = hh; } return; }
@@ -1168,6 +1181,18 @@
     }</tbody></table></div>`, []);
   }
 
+  // 성경도감: 이 시나리오의 모든 인물을 초상 카드로, 세력별로 모아 보여 준다.
+  function codexScreen() {
+    const groups = {};
+    S.offs.forEach(o => { const k = o.alive ? (o.fac || '_free') : '_dead'; (groups[k] = groups[k] || []).push(o); });
+    const order = [S.player].concat(Object.keys(S.facs).filter(id => id !== S.player), ['_free', '_dead']).filter(k => groups[k]);
+    const title = k => k === '_free' ? '재야' : k === '_dead' ? '세상을 떠난 인물' : facName(k);
+    const card = o => `<button class="hcard ${grade(o)[1]}" data-hero="${o.id}"><span class="hc-img">${portraitOf(o)}</span><b>${esc(o.name)}</b><small>${esc(o.ref || '')}</small></button>`;
+    openModal(`<p class="mute">${esc(scn().title)} · ${esc(scn().ref)} — 인물을 누르면 성경 속 기록과 능력치를 볼 수 있습니다.</p>` +
+      order.map(k => `<h3 class="codex-h">${esc(title(k))} <small>${groups[k].length}명</small></h3><div class="hero-grid sm">${groups[k].map(card).join('')}</div>`).join(''),
+      [{ label: '능력치 표', fn: showRoster }], { title: '성경도감', wide: true });
+  }
+
   // ---------- 타이틀 ----------
   function showTitle() {
     closeModal();
@@ -1240,6 +1265,7 @@
     $('#lordBtn').addEventListener('click', () => { const r = offById(fac(S.player).ruler); if (r) showBio(r.id); });
     $('#questBtn').addEventListener('click', storyScreen);
     $('#questText').addEventListener('click', storyScreen);
+    document.querySelectorAll('[data-side]').forEach(b => b.addEventListener('click', () => { const n = b.dataset.side; if (n === 'story') storyScreen(); else if (n === 'hero') heroScreen(); else if (n === 'roster') codexScreen(); else logScreen(); }));
     document.querySelectorAll('[data-nav]').forEach(b => b.addEventListener('click', () => {
       const n = b.dataset.nav;
       if (n === 'land') showLand(fac(S.player).capital);

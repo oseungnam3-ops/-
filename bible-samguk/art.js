@@ -1,4 +1,5 @@
 // 성경 삼국지 — 웹툰풍 일러스트 목록 (기본 그림체). 실사풍 원본을 참조 이미지로 Higgsfield에서 다시 그렸다.
+// '@'로 시작하는 항목은 지도·영지 배경과 성읍 그림(용량을 줄인 JPG/투명 PNG).
 // 없는 항목은 art-real.js(실사풍), 그것도 없으면 portrait.js의 SVG 초상화로 대신한다.
 const ART = {
   "다윗": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_133736_8464892b-b4c9-4b9d-bbde-9f475e32bcfe.png",
@@ -90,9 +91,14 @@ const ART = {
   "애굽 병거대장": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_135552_964a4d15-bad3-4a05-8503-2b43f47613f4.png",
   "블레셋 방백": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_135555_02449625-56cf-4322-848c-453d64b95d27.png",
   "헤시온": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_135552_c4e7d3f3-5e7f-44ff-b502-d2055fab2bf3.png",
-  "@map": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_141756_a215b647-7ef9-4d79-a2fe-4899cec23f48.png",
-  "@land": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_141756_70efea6c-7196-4e85-961e-387219f82069.png",
-  "@land-coast": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_142503_5d536a2d-491b-45cf-b4f3-696e287598e3.png",
-  "@land-canaan": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_142504_684536e8-3757-4373-8fbf-7cca545c9750.png",
-  "@land-desert": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260925_142504_92a827bc-d37e-442e-a621-c021d2757f66.png"
+  "@map": "https://d2ol7oe51mr4n9.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/5af74fe6-8b73-47cd-b0c2-93162909ded7.jpg",
+  "@land": "https://d2ol7oe51mr4n9.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/899d857d-ad16-485b-8d32-6a2c4f1b6d36.jpg",
+  "@land-coast": "https://d2ol7oe51mr4n9.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/8c18972b-32af-4ac0-a14f-cad9d80e6645.jpg",
+  "@land-canaan": "https://d2ol7oe51mr4n9.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/4accfd3c-9b8a-487a-a412-09f12a67acfb.jpg",
+  "@land-desert": "https://d2ol7oe51mr4n9.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/9088b91a-3b58-441b-8c48-eef7e2159d29.jpg",
+  "@town-royal": "https://d2ol7oe51mr4n9.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/8115bcbd-32b9-4df6-9614-673e6eda2c36.png",
+  "@town-hill": "https://d2ol7oe51mr4n9.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/9b5604e1-c220-4a5d-9823-7b002c615103.png",
+  "@town-coast": "https://d2ol7oe51mr4n9.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/b303f0b3-c107-46e9-97cd-46efbabd931b.png",
+  "@town-canaan": "https://d2ol7oe51mr4n9.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/b35d5f11-8191-4ba8-9428-839f3531d3b9.png",
+  "@town-desert": "https://d2ol7oe51mr4n9.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/bbf00924-4951-4fe6-baa4-f37f347b42a0.png"
 };
