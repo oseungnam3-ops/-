@@ -41,6 +41,7 @@ h4 { font-size: 11pt; color: var(--gold); margin: 3mm 0 1.5mm; }
 .shots { display: flex; gap: 6mm; justify-content: center; margin: 3mm 0; }
 .shot { margin: 0; break-inside: avoid; }
 .shot img { width: 100%; display: block; border-radius: 3mm; border: 1.5px solid #2b3552; box-shadow: 0 1.5mm 4mm rgba(0,0,0,.18); }
+.shot .sp { width: 100%; aspect-ratio: 480 / 983; border-radius: 3mm; border: 1.5px solid #2b3552; box-shadow: 0 1.5mm 4mm rgba(0,0,0,.18); background-repeat: no-repeat; }
 .shot figcaption { font-size: 8.6pt; color: var(--mute); text-align: center; margin-top: 1.5mm; }
 
 /* 표 */
@@ -96,3 +97,22 @@ table.small { font-size: 8.8pt; }
 .faq dt { font-weight: 700; color: var(--navy); margin-top: 3mm; } .faq dt::before { content: 'Q. '; color: var(--gold); }
 .faq dd { margin: 1mm 0 0 6mm; }
 .end { margin-top: 14mm; text-align: center; font: 600 11pt 'Noto Serif KR', serif; color: var(--gold); } .end .url { font: 500 10pt 'Noto Sans KR'; color: var(--blue); }
+
+/* 화면(웹)으로 볼 때 */
+.topbar { display: none; }
+@media screen {
+  body { background: #e7e2d6; }
+  .topbar { display: flex; position: sticky; top: 0; z-index: 5; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 16px; background: var(--navy); color: #ffd978; font-size: 14px; }
+  .topbar a { color: #fff; text-decoration: none; padding: 6px 12px; border: 1px solid rgba(255, 217, 120, .6); border-radius: 6px; background: rgba(255, 255, 255, .06); }
+  .page, .cover { max-width: 210mm; margin: 18px auto; box-shadow: 0 2px 14px rgba(0, 0, 0, .18); }
+  .page { background: #fff; padding: 14mm; }
+  .cover { width: auto; height: auto; min-height: min(297mm, 150vw); }
+}
+@media screen and (max-width: 720px) {
+  .page { padding: 18px 16px; margin: 10px 0; }
+  .cover { margin: 0; min-height: 150vw; } .cover-in { padding: 0 16px 28px; } .cover h1 { font-size: 40pt; } .cover-meta { width: auto; } .cover-meta b { font-size: 10pt; word-break: break-all; }
+  .two, .two.narrow-left, .cards { grid-template-columns: 1fr; }
+  .shots { flex-wrap: wrap; } .shot { width: min(62mm, 44vw) !important; } .two .shot { width: 70vw !important; margin: 0 auto; }
+  .faces { grid-template-columns: repeat(3, 1fr) !important; } .scn .evs { column-count: 1; }
+  table { display: block; overflow-x: auto; }
+}

@@ -14,8 +14,20 @@ def art(name):
     return ART.get(name) or REAL.get(name) or next((v for k, v in ART.items() if k.endswith(':' + name)), '')
 
 
+PDF = 'https://d2ol7oe51mr4n9.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/6f3caa27-612d-4a1b-b62b-8e3571e63e8b.pdf'
+# 웹 매뉴얼용: 캡처 18장을 가로로 이어 붙인 한 장(480×983씩). 인자가 없으면 shots/*.png를 쓴다.
+SPRITE = sys.argv[3] if len(sys.argv) > 3 else ''
+SHOTS = ['01_title', '02_scenarios', '03_gallery', '04_person', '05_confirm', '06_hero', '07_dialogue', '08_land', '09_building', '10_camp',
+         '11_map', '12_realm', '13_warlist', '14_citypop', '15_sortie', '16_sortie2', '18_battle_sel', '19_duel']
+
+
 def shot(n, cap, w='62mm'):
-    return f'<figure class="shot" style="width:{w}"><img src="shots/{n}.png" alt=""><figcaption>{cap}</figcaption></figure>'
+    if SPRITE:
+        x = SHOTS.index(n) * 100 / (len(SHOTS) - 1)
+        img = f'<div class="sp" style="background-image:url(\'{SPRITE}\');background-size:{len(SHOTS) * 100}% 100%;background-position:{x:.4f}% 0"></div>'
+    else:
+        img = f'<img src="shots/{n}.png" alt="">'
+    return f'<figure class="shot" style="width:{w}">{img}<figcaption>{cap}</figcaption></figure>'
 
 
 def tip(t, kind='tip'):
@@ -349,6 +361,6 @@ P(f'''<section class="page"><h2 class="ch-title"><span>부록</span>용어 사�
 </section>''')
 
 CSS = open(__file__.replace('build_manual.py', 'manual.css')).read()
-print(f'''<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>성경 삼국지 사용 설명서</title>
+print(f'''<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>성경 삼국지 사용 설명서</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=Noto+Serif+KR:wght@600;900&display=swap">
-<style>{CSS}</style></head><body>{''.join(parts)}</body></html>''')
+<style>{CSS}</style></head><body><nav class="topbar"><a href="../">◀ 게임으로</a><b>사용 설명서</b><a href="{PDF}" target="_blank" rel="noopener">PDF 받기</a></nav>{''.join(parts)}</body></html>''')

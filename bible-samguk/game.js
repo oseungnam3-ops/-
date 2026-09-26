@@ -1502,6 +1502,17 @@
     body.querySelectorAll('[data-try]').forEach(b => b.addEventListener('click', () => { const [k, v] = b.dataset.try.split(':'); if (k === 'bgm') SND.bgm(v); else SND.voice(v, ['neutral', 'excl', 'obey', 'battle'][Math.floor(Math.random() * 4)]); }));
   }
 
+  // ---------- 사용 설명서 ----------
+  const MANUAL_PDF = 'https://d2ol7oe51mr4n9.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/6f3caa27-612d-4a1b-b62b-8e3571e63e8b.pdf';
+  function manualDialog() {
+    const ch = [['1', '게임 소개'], ['2', '시작하기 — 세력 선택 · 주인공 · 저장'], ['3', '화면 구성 — 영지 · 지도 · 버튼'], ['4', '내정 — 명령 · 건물 레벨업 · 자원'],
+      ['5', '전쟁 — 출전 · 전술 전투 · 일기토'], ['6', '사명(미션) 수행하기'], ['7', '시대별 시나리오 이야기'], ['8', '인물도감'], ['9', '초보자 공략 · 자주 묻는 질문']];
+    openModal(`<p>처음이라면 <b>2장 시작하기</b>와 <b>9장 초보자 공략</b>부터 읽어 보세요. 화면 캡처와 그림으로 하나씩 설명합니다.</p>
+      <ol class="man-toc">${ch.map(([n, t]) => `<li><span>${n}</span>${esc(t)}</li>`).join('')}</ol>
+      <div class="code-btns"><a class="btn primary" href="manual/manual.html" target="_blank" rel="noopener">📖 화면으로 보기</a><a class="btn" href="${MANUAL_PDF}" target="_blank" rel="noopener">⬇ PDF 내려받기 (38쪽)</a></div>`,
+      [], { title: '사용 설명서' });
+  }
+
   // ---------- 인물 갤러리 (타이틀에서 바로) ----------
   function personInfo(name) {
     const out = [];
@@ -1624,7 +1635,7 @@
       <h1>성경 삼국지</h1>
       <p class="lede">아브라함의 장막에서 여호수아의 정복, 사사 시대, 사울의 왕국, 다윗의 통일, 왕국의 분열까지. 인물들과 대화하며 성을 다스리고, 칼이 아닌 언약 위에 하나님 나라를 세워 간다.</p>
       <div class="title-btns">${saved ? `<button class="gbtn" id="contBtn"><span>이어하기</span><small>${esc(SCENARIOS.find(x => x.id === saved.scn).title)} · ${esc(saved.facName)} · BC ${saved.year}년 ${SEASONS[saved.season] || ''} · ${saved.turn}턴</small></button>` : ''}
-      <button class="btn" id="loadBtn">불러오기</button><button class="btn" id="galBtn">인물 갤러리</button><button class="btn" id="sndBtn">소리 설정</button></div>
+      <button class="btn" id="loadBtn">불러오기</button><button class="btn" id="galBtn">인물 갤러리</button><button class="btn" id="sndBtn">소리 설정</button><button class="btn" id="manBtn">📖 사용 설명서</button></div>
       <h2 class="sec">시나리오</h2><div class="scns">`;
     SCENARIOS.forEach(sc => {
       const main = sc.factions.filter(f => STORY[sc.id] && STORY[sc.id][f.id]), rest = sc.factions.filter(f => !main.includes(f));
@@ -1641,6 +1652,7 @@
     $('#loadBtn').addEventListener('click', () => saveDialog('load'));
     $('#galBtn').addEventListener('click', galleryScreen);
     $('#sndBtn').addEventListener('click', soundDialog);
+    $('#manBtn').addEventListener('click', manualDialog);
     snd('bgm', 'title');
   }
   function migrate() {
