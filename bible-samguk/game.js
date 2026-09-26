@@ -351,8 +351,15 @@
       lines.push(`${r}합 — 공격 ${fmt(A)} / 수비 ${fmt(D)}`);
       if (A < soldiers * 0.25) { lines.push(`${aName}군의 사기가 꺾여 퇴각한다.`); break; }
     }
+    return applyBattleResult(af, aoffs, soldiers, cid, train, it, A, D, lines);
+  }
+
+  // 전투 결과 적용(자동 전투와 전술 전투가 함께 쓴다): 군량, 점령, 전리품, 포로, 멸망, 관계
+  function applyBattleResult(af, aoffs, soldiers, cid, train, it, A, D, lines, forceWin) {
+    const c = city(cid), df = c.owner, doffs = df ? offsIn(cid, df) : [];
+    const aName = facName(af);
     A = Math.max(0, Math.round(A)); D = Math.max(0, Math.round(D));
-    const win = D <= 0 || (A > D * 2.5 && A > 300);
+    const win = forceWin != null ? forceWin : D <= 0 || (A > D * 2.5 && A > 300);
     const res = { win, attLeft: A, lines, captives: [], summary: '', cid };
     fac(af).food = Math.max(0, fac(af).food - Math.round(soldiers * 0.3 * (it.has('rations') ? 0.5 : 1)));
     if (win) {
@@ -1192,6 +1199,7 @@
     openModal(`<ul class="help">
       <li>내 성을 누르면 <b>영지</b>로 들어갑니다. 건물을 눌러 명령을 내리거나 <b>업그레이드</b>합니다(왕궁 레벨이 다른 건물의 상한, 공사는 1~3계절). 적의 성을 누르면 <b>정벌</b> 창이 열립니다.</li>
       <li><b>벌목장·채석장</b>은 계절마다 목재·석재를 만듭니다. 목재·석재는 <b>성벽</b> 공사, 건물 업그레이드, 전쟁 도구 제작에 씁니다.</li>
+      <li>출진에서 <b>직접 지휘</b>를 고르면 들판·계곡·공성전 전장에서 부대를 움직이고, 장수끼리 맞닿으면 <b>일기토</b>를 벌입니다.</li>
       <li><b>출진</b>할 때 장군(3명까지)·군사(창병/물매병/전차병)·선지자(기도로 전력 상승)·아이템(병영에서 만든 전쟁 도구 2가지)을 고릅니다.</li>
       <li>장수 한 명은 한 계절에 명령 하나. 모두 마쳤으면 <b>턴 종료</b>.</li>
       <li>가을에 농업만큼 식량을 거두고, 계절마다 상업만큼 금이 들어옵니다. 병사는 계절마다 식량을 먹습니다.</li>
@@ -1304,6 +1312,9 @@
         ${pros.length ? `<div class="wf-cards"><label class="wf-card none"><input type="radio" name="pro" value="" checked><b>동행 없음</b></label>${pros.map(o => `<label class="wf-card"><input type="radio" name="pro" value="${o.id}"><span class="thumb">${portraitOf(o)}</span><b>${esc(o.name)}</b><small>신앙 ${o.fai} · 전력 +${Math.round(Math.max(0, o.fai - 60) / 2)}%</small></label>`).join('')}</div>` : '<p class="mute">이 성에 대기 중인 선지자·제사장(신앙 90 이상 포함)이 없습니다.</p>'}</section>
       <section class="wf-sec"><h3>④ 아이템 <small>두 가지까지 · 병영에서 제작</small></h3>
         ${own.length ? `<div class="wf-items">${own.map(k => `<label class="wf-item"><input type="checkbox" name="item" value="${k}"><b>${ITEMS[k].name}</b><em>×${F.items[k]}</em><small>${esc(ITEMS[k].desc)}</small></label>`).join('')}</div>` : '<p class="mute">가진 전쟁 도구가 없습니다. 영지의 병영에서 만들 수 있습니다.</p>'}</section>
+      <section class="wf-sec"><h3>지휘 방식</h3><div class="wf-units">
+        <label class="wf-unit"><input type="radio" name="mode" value="direct" checked><b>직접 지휘</b><small>들판·계곡·공성전 전장에서 부대를 움직이고 일기토를 벌인다</small></label>
+        <label class="wf-unit"><input type="radio" name="mode" value="auto"><b>자동 전투</b><small>전투 기록만 보고 빠르게 결과를 낸다</small></label></div></section>
       <p class="mute" id="atCost"></p></div>`,
       [{ label: '출진!', primary: true, danger: true, keep: true, fn: () => {
         const to = $('#atTo').value, n = +$('#atN').value;
@@ -1327,10 +1338,10 @@
         F.gold -= chariotGold;
         c.soldiers -= n;
         voiceOf(gs[0], 'battle'); snd('sfx', 'horn');
-        const r = battle(P, gs, n, to, c.train, { unit, prophet, items });
-        if (!r.win) { c.soldiers += r.attLeft; }
-        sel = r.win ? to : cid;
-        playBattle(r, () => captiveDialog(r.captives));
+        const direct = ((q('input[name=mode]:checked')[0] || {}).value || 'direct') === 'direct' && window.TACTICS;
+        const done = r => { if (!r.win) { c.soldiers += r.attLeft; } sel = r.win ? to : cid; playBattle(r, () => captiveDialog(r.captives)); };
+        if (direct) TACTICS.start({ af: P, gens: gs, soldiers: n, cid: to, src: cid, train: c.train, unit, prophet, items, done });
+        else done(battle(P, gs, n, to, c.train, { unit, prophet, items }));
       } }], { cancel: true, title: `출진 · ${CITY_INFO[cid].name}`, wide: true });
     const upd = () => {
       const n = +$('#atN').value, unit = (document.querySelector('#modalBody input[name=unit]:checked') || {}).value, rat = !!document.querySelector('#modalBody input[name=item][value=rations]:checked');
@@ -1665,6 +1676,8 @@
     hooks, city, fac, offById, offsIn, freeIn, citiesOf, CITY_INFO, ADJ, CMDS, STAT_NAME,
     onCmd, askEndTurn, render, showBio, toast, portraitOf, avgFaith, facName, yearLabel, fmt, esc, idleOffs, checkStory, playDialogue,
     SEASONS, showLand, showMap, get mode() { return mode; },
+    // 전술 전투(tactics.js)가 쓰는 엔진 함수
+    tac: { applyBattleResult, killOfficer, buffVal, ITEMS, UNITS, PLAINS, playBattle, captiveDialog, voiceOf, snd, clamp, rnd, log, isProphet, setInBattle: v => { inBattle = v; } },
   };
   bind();
   const flush = () => { if (S && !$('#app').hidden) { clearTimeout(autoTimer); writeSlot('auto'); } };
