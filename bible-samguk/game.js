@@ -318,6 +318,8 @@
     lines.push(`⚔ ${aName}군 ${fmt(A)}명이 ${CITY_INFO[cid].name}(${dName} ${fmt(D)}명)을 공격한다.`);
     if (aL) lines.push(`공격 대장: ${aoffs.map(o => o.name).join(', ')}`);
     if (dL) lines.push(`수비 대장: ${doffs.map(o => o.name).join(', ')}`);
+    const mh = opts.hops || 1;
+    if (mh > 1) { aP *= marchPow(mh); lines.push(`🐪 ${mh}칸 먼 길을 행군해 온 원정군 — 지친 병사들의 전력 ${Math.round(marchPow(mh) * 100)}%`); }
     if (unit !== 'spear') lines.push(`병종: ${UNITS[unit].name}`);
     if (unit === 'chariot') { const flat = PLAINS.includes(cid); aP *= flat ? 1.25 : 0.85; lines.push(flat ? '🐎 평지에서 전차가 거침없이 달린다!' : '⛰ 산지라 전차가 제 힘을 쓰지 못한다.'); }
     if (pr) { aP *= 1 + Math.max(0, pr.fai - 60) / 200; lines.push(`🙏 선지자 ${pr.name}이(가) 여호와께 기도하니 군사들의 마음이 굳세어진다.`); }
@@ -351,17 +353,17 @@
       lines.push(`${r}합 — 공격 ${fmt(A)} / 수비 ${fmt(D)}`);
       if (A < soldiers * 0.25) { lines.push(`${aName}군의 사기가 꺾여 퇴각한다.`); break; }
     }
-    return applyBattleResult(af, aoffs, soldiers, cid, train, it, A, D, lines);
+    return applyBattleResult(af, aoffs, soldiers, cid, train, it, A, D, lines, undefined, mh);
   }
 
   // 전투 결과 적용(자동 전투와 전술 전투가 함께 쓴다): 군량, 점령, 전리품, 포로, 멸망, 관계
-  function applyBattleResult(af, aoffs, soldiers, cid, train, it, A, D, lines, forceWin) {
+  function applyBattleResult(af, aoffs, soldiers, cid, train, it, A, D, lines, forceWin, mh = 1) {
     const c = city(cid), df = c.owner, doffs = df ? offsIn(cid, df) : [];
     const aName = facName(af);
     A = Math.max(0, Math.round(A)); D = Math.max(0, Math.round(D));
     const win = forceWin != null ? forceWin : D <= 0 || (A > D * 2.5 && A > 300);
     const res = { win, attLeft: A, lines, captives: [], summary: '', cid };
-    fac(af).food = Math.max(0, fac(af).food - Math.round(soldiers * 0.3 * (it.has('rations') ? 0.5 : 1)));
+    fac(af).food = Math.max(0, fac(af).food - Math.round(soldiers * 0.3 * marchFood(mh) * (it.has('rations') ? 0.5 : 1)));
     if (win) {
       lines.push(`🏳 ${CITY_INFO[cid].name} 함락! ${aName}의 깃발이 오른다.`);
       const lootG = c.comm * 8, lootF = c.agri * 40; fac(af).gold += lootG; fac(af).food += lootF;
@@ -978,15 +980,32 @@
     document.querySelectorAll('[data-view]').forEach(b => b.addEventListener('click', () => { if (b.dataset.view === 'land') showLand(landCid); else if (b.dataset.view === 'map') showMap(); else nationScreen(); }));
     window.addEventListener('resize', () => { if (mode === 'land') centerLand(); });
   }
+  // 길 거리(몇 칸): 도로망을 따라 너비 우선 탐색
+  function hops(a, b) {
+    if (a === b) return 0;
+    const seen = new Set([a]); let fr = [a], d = 0;
+    while (fr.length) { d++; const nx = []; for (const x of fr) for (const y of ADJ[x] || []) { if (y === b) return d; if (!seen.has(y)) { seen.add(y); nx.push(y); } } fr = nx; }
+    return 99;
+  }
+  // 원정 보정: 한 칸 멀어질 때마다 전력 −7%(최소 65%), 군량 +50%
+  const marchPow = h => Math.max(0.65, 1 - 0.07 * Math.max(0, h - 1));
+  const marchFood = h => 1 + 0.5 * Math.max(0, h - 1);
+  // 출진할 수 있는 내 성: 대기 장수와 병력 500 이상. 가깝고 병력 많은 순
+  function sources() { const P = S.player; return citiesOf(P).filter(c => idleOffs(c.id).length && c.soldiers >= 500); }
   function bestSource(target) {
-    const P = S.player;
-    return (ADJ[target] || []).map(city).filter(c => c.owner === P && idleOffs(c.id).length && c.soldiers >= 500).sort((a, b) => b.soldiers - a.soldiers)[0] || null;
+    return sources().map(c => ({ c, h: hops(c.id, target) })).sort((a, b) => a.h - b.h || b.c.soldiers - a.c.soldiers).map(x => x.c)[0] || null;
+  }
+  function whyNoSource() {
+    const cs = citiesOf(S.player);
+    if (!cs.some(c => idleOffs(c.id).length)) return '이번 계절에 명령을 받을 장수가 남아 있지 않습니다. 턴을 넘기면 다시 출진할 수 있습니다.';
+    return '장수가 있는 성에 병력이 500명 이상 있어야 출진할 수 있습니다. 징병하거나 병력을 이동하세요.';
   }
   function defPower(c) { return Math.round(c.soldiers * (0.6 + c.train / 250) * (1 + c.def / 180) / 10 + (c.owner ? offsIn(c.id, c.owner).reduce((s, o) => s + o.war * 3 + o.int, 0) : 0)); }
   function cityPopup(cid) {
     const c = city(cid), ci = CITY_INFO[cid], P = S.player, src = bestSource(cid);
     const dp = defPower(c);
-    const myP = src ? Math.round(src.soldiers * 0.7 * (0.6 + src.train / 250) / 10 + offsIn(src.id, P).sort((a, b) => b.war - a.war).slice(0, 3).reduce((s, o) => s + o.war * 3 + o.int, 0)) : 0;
+    const h = src ? hops(src.id, cid) : 0;
+    const myP = src ? Math.round((src.soldiers * 0.7 * (0.6 + src.train / 250) / 10 + offsIn(src.id, P).sort((a, b) => b.war - a.war).slice(0, 3).reduce((s, o) => s + o.war * 3 + o.int, 0)) * marchPow(h)) : 0;
     const ratio = myP / Math.max(1, dp);
     const diff = !src ? ['정찰', 'dim'] : ratio > 2 ? ['쉬움', 'easy'] : ratio > 1.2 ? ['보통', 'mid'] : ratio > 0.8 ? ['어려움', 'hard'] : ['매우 어려움', 'vhard'];
     const defs = c.owner ? offsIn(cid, c.owner) : [];
@@ -1007,7 +1026,7 @@
         <span class="rw"><i>${ICON.food}</i><b>${fmt(c.agri * 40)}</b><small>식량</small></span>
         ${defs.length ? `<span class="rw blue"><i>${portraitOf(defs[0])}</i><b>포로</b><small>등용 기회</small></span>` : ''}
       </div></div>
-      ${src ? `<p class="mute">출전 성: ${CITY_INFO[src.id].name} (병력 ${fmt(src.soldiers)})</p>` : `<p class="mute">맞닿은 내 성에서 대기 중인 장수와 병력 500 이상이 있어야 공격할 수 있습니다.</p>`}`,
+      ${src ? `<p class="mute">출전 성: ${CITY_INFO[src.id].name} (병력 ${fmt(src.soldiers)}) · ${h <= 1 ? '맞닿은 성' : `🐪 원정 ${h}칸 — 전력 ${Math.round(marchPow(h) * 100)}%, 군량 ×${marchFood(h)}`}</p>` : `<p class="mute">${whyNoSource()}</p>`}`,
       [{ label: '성 살펴보기', fn: () => { if (window.TOWN) TOWN.enter(cid); } }].concat(src ? [{ label: '공격', primary: true, fn: () => attackDialog(src.id, cid) }] : []),
       { title: `${ci.name} ${src ? '정벌' : '정찰'}`, cancel: false });
   }
@@ -1164,11 +1183,14 @@
   }
   function warScreen() {
     const P = S.player, rows = [];
-    Object.values(S.cities).forEach(c => { if (c.owner === P) return; if ((ADJ[c.id] || []).some(n => city(n).owner === P)) rows.push(c); });
-    rows.sort((a, b) => defPower(a) - defPower(b));
-    openModal(rows.length ? `<ul class="war-list">${rows.map(c => { const src = bestSource(c.id); return `<li><span class="fbadge" style="--fc:${c.owner ? fac(c.owner).color : '#8d877a'}">${c.owner ? esc(fac(c.owner).name[0]) : '·'}</span>
-      <div><b>${CITY_INFO[c.id].name}</b><small>${c.owner ? esc(fac(c.owner).name) : '주인 없음'} · 병력 ${fmt(c.soldiers)} · 성벽 ${c.def}</small></div>
-      <span class="pw">${fmt(Math.round(defPower(c) * 1.3))}</span><button class="btn ${src ? 'primary' : ''}" data-target="${c.id}">${src ? '정벌' : '정찰'}</button></li>`; }).join('')}</ul>` : '<p>맞닿은 적의 성이 없습니다.</p>', [], { title: '출전', wide: true });
+    const mine = citiesOf(P).map(c => c.id);
+    Object.values(S.cities).forEach(c => { if (c.owner === P) return; rows.push({ c, h: Math.min(...mine.map(m => hops(m, c.id))) }); });
+    rows.sort((a, b) => a.h - b.h || defPower(a.c) - defPower(b.c));
+    const srcs = sources();
+    openModal(`${srcs.length ? `<p class="mute">출진 가능한 성: ${srcs.map(c => CITY_INFO[c.id].name).join(', ')} · 멀리 떨어진 성도 원정할 수 있습니다(한 칸마다 전력 −7%, 군량 +50%).</p>` : `<p class="warn">${whyNoSource()}</p>`}
+      <ul class="war-list">${rows.map(({ c, h }) => { const src = bestSource(c.id), sh = src ? hops(src.id, c.id) : h; return `<li><span class="fbadge" style="--fc:${c.owner ? fac(c.owner).color : '#8d877a'}">${c.owner ? esc(fac(c.owner).name[0]) : '·'}</span>
+      <div><b>${CITY_INFO[c.id].name}</b><small>${c.owner ? esc(fac(c.owner).name) : '주인 없음'} · 병력 ${fmt(c.soldiers)} · 성벽 ${c.def}</small><small>${sh <= 1 ? '⚔ 맞닿은 성' : `🐪 원정 ${sh}칸`}${src ? ` · ${CITY_INFO[src.id].name}에서 출진` : ''}${c.owner && allied(P, c.owner) ? ' · 동맹' : ''}</small></div>
+      <span class="pw">${fmt(Math.round(defPower(c) * 1.3))}</span><button class="btn ${src ? 'primary' : ''}" data-target="${c.id}">${src ? '정벌' : '정찰'}</button></li>`; }).join('')}</ul>`, [], { title: '출전', wide: true });
     $('#modalBody').querySelectorAll('[data-target]').forEach(b => b.addEventListener('click', () => { const t = b.dataset.target; closeModal(); sel = t; render(); cityPopup(t); }));
   }
   function storyScreen() {
@@ -1290,18 +1312,21 @@
 
   function attackDialog(cid, pre) {
     const P = S.player, c = city(cid), F = fac(P);
-    const targets = (ADJ[cid] || []).filter(n => city(n).owner !== P);
+    const targets = Object.keys(S.cities).filter(n => city(n).owner !== P).sort((a, b) => hops(cid, a) - hops(cid, b) || CITY_INFO[a].y - CITY_INFO[b].y);
     const offs = idleOffs(cid);
-    if (!targets.length) { toast('맞닿은 적의 성이 없습니다.'); return; }
-    if (!offs.length) { toast('출진할 장수가 없습니다.'); return; }
-    if (c.soldiers < 500) { toast('병력이 500명 이상 있어야 출진할 수 있습니다.'); return; }
+    if (!targets.length) { toast('공격할 성이 없습니다.'); return; }
+    if (!offs.length) { const s2 = pre ? bestSource(pre) : sources()[0]; if (s2 && s2.id !== cid) return attackDialog(s2.id, pre); toast('출진할 장수가 없습니다.'); return; }
+    if (c.soldiers < 500) { const s2 = pre ? bestSource(pre) : sources()[0]; if (s2 && s2.id !== cid) return attackDialog(s2.id, pre); toast('병력이 500명 이상 있어야 출진할 수 있습니다.'); return; }
     const gens = offs.slice().sort((a, b) => b.war - a.war);
     const pros = offs.filter(o => isProphet(o) && F.ruler !== o.id).sort((a, b) => b.fai - a.fai);
     const own = ITEM_ORDER.filter(k => (F.items || {})[k] > 0);
     const n0 = Math.round(c.soldiers * 0.7 / 100) * 100;
     openModal(`<div class="war-form">
+      <label class="fld" for="atFrom">출발 성</label>
+      <select id="atFrom">${sources().concat(sources().some(x => x.id === cid) ? [] : [c]).map(s => `<option value="${s.id}" ${s.id === cid ? 'selected' : ''}>${CITY_INFO[s.id].name} — 병력 ${fmt(s.soldiers)} · 대기 장수 ${idleOffs(s.id).length}명</option>`).join('')}</select>
       <label class="fld" for="atTo">공격할 성</label>
-      <select id="atTo">${targets.map(t => { const tc = city(t); const w = tc.owner ? (allied(P, tc.owner) ? ' · 동맹!' : peaceBlocks(P, tc.owner) ? ' · 휴전 중' : '') : ''; return `<option value="${t}" ${t === pre ? 'selected' : ''}>${CITY_INFO[t].name} — ${tc.owner ? esc(fac(tc.owner).name) : '주인 없음'} ${fmt(tc.soldiers)}명 · 성벽 ${tc.def}${PLAINS.includes(t) ? ' · 평지' : ' · 산지'}${w}</option>`; }).join('')}</select>
+      <select id="atTo">${targets.map(t => { const tc = city(t); const w = tc.owner ? (allied(P, tc.owner) ? ' · 동맹!' : peaceBlocks(P, tc.owner) ? ' · 휴전 중' : '') : ''; const hh = hops(cid, t); return `<option value="${t}" ${t === pre ? 'selected' : ''}>${hh <= 1 ? '⚔' : `🐪${hh}칸`} ${CITY_INFO[t].name} — ${tc.owner ? esc(fac(tc.owner).name) : '주인 없음'} ${fmt(tc.soldiers)}명 · 성벽 ${tc.def}${PLAINS.includes(t) ? ' · 평지' : ' · 산지'}${w}</option>`; }).join('')}</select>
+      <p class="mute" id="atMarch"></p>
       <section class="wf-sec"><h3>① 장군 <small>최대 3명 · 무력 순</small></h3>
         <div class="wf-cards">${gens.map((o, i) => `<label class="wf-card"><input type="checkbox" name="gen" value="${o.id}" ${i === 0 && !isProphet(o) ? 'checked' : ''}><span class="thumb">${portraitOf(o)}</span><b>${esc(o.name)}</b><small>무${o.war} 지${o.int}</small></label>`).join('')}</div></section>
       <section class="wf-sec"><h3>② 군사</h3>
@@ -1340,15 +1365,19 @@
         voiceOf(gs[0], 'battle'); snd('sfx', 'horn');
         const direct = ((q('input[name=mode]:checked')[0] || {}).value || 'direct') === 'direct' && window.TACTICS;
         const done = r => { if (!r.win) { c.soldiers += r.attLeft; } sel = r.win ? to : cid; playBattle(r, () => captiveDialog(r.captives)); };
-        if (direct) TACTICS.start({ af: P, gens: gs, soldiers: n, cid: to, src: cid, train: c.train, unit, prophet, items, done });
-        else done(battle(P, gs, n, to, c.train, { unit, prophet, items }));
+        const hh = hops(cid, to);
+        if (direct) TACTICS.start({ af: P, gens: gs, soldiers: n, cid: to, src: cid, train: c.train, unit, prophet, items, hops: hh, done });
+        else done(battle(P, gs, n, to, c.train, { unit, prophet, items, hops: hh }));
       } }], { cancel: true, title: `출진 · ${CITY_INFO[cid].name}`, wide: true });
     const upd = () => {
       const n = +$('#atN').value, unit = (document.querySelector('#modalBody input[name=unit]:checked') || {}).value, rat = !!document.querySelector('#modalBody input[name=item][value=rations]:checked');
+      const hh = hops(cid, $('#atTo').value);
+      $('#atMarch').textContent = hh <= 1 ? '⚔ 맞닿은 성 — 곧바로 공격합니다.' : `🐪 원정 ${hh}칸 — 먼 길을 행군해 전력 ${Math.round(marchPow(hh) * 100)}%, 군량 ×${marchFood(hh)}. 지면 남은 병사가 ${CITY_INFO[cid].name}(으)로 돌아옵니다.`;
       $('#atNv').textContent = fmt(n);
-      $('#atCost').textContent = `군량 ${fmt(Math.round(n * 0.3 * (rat ? 0.5 : 1)))} 소모 예상${unit === 'chariot' ? ` · 전차 유지 금 ${fmt(Math.round(n / 20))}` : ''} · 훈련 ${c.train} · 신앙 ${Math.round(avgFaith(P))}`;
+      $('#atCost').textContent = `군량 ${fmt(Math.round(n * 0.3 * marchFood(hh) * (rat ? 0.5 : 1)))} 소모 예상${unit === 'chariot' ? ` · 전차 유지 금 ${fmt(Math.round(n / 20))}` : ''} · 훈련 ${c.train} · 신앙 ${Math.round(avgFaith(P))}`;
     };
     $('#modalBody').addEventListener('input', upd); upd();
+    $('#atFrom').addEventListener('change', e => { const to = $('#atTo').value; closeModal(); attackDialog(e.target.value, to); });
     // 선지자로 고른 인물은 장군 칸에서 자동으로 빠진다
     $('#modalBody').addEventListener('change', e => {
       if (e.target.name === 'pro' && e.target.value) { const g = document.querySelector(`#modalBody input[name=gen][value="${e.target.value}"]`); if (g) g.checked = false; }
@@ -1677,7 +1706,7 @@
     onCmd, askEndTurn, render, showBio, toast, portraitOf, avgFaith, facName, yearLabel, fmt, esc, idleOffs, checkStory, playDialogue,
     SEASONS, showLand, showMap, get mode() { return mode; },
     // 전술 전투(tactics.js)가 쓰는 엔진 함수
-    tac: { applyBattleResult, killOfficer, buffVal, ITEMS, UNITS, PLAINS, playBattle, captiveDialog, voiceOf, snd, clamp, rnd, log, isProphet, setInBattle: v => { inBattle = v; } },
+    tac: { marchPow, applyBattleResult, killOfficer, buffVal, ITEMS, UNITS, PLAINS, playBattle, captiveDialog, voiceOf, snd, clamp, rnd, log, isProphet, setInBattle: v => { inBattle = v; } },
   };
   bind();
   const flush = () => { if (S && !$('#app').hidden) { clearTimeout(autoTimer); writeSlot('auto'); } };

@@ -69,11 +69,13 @@
     // 믿음·기도·도구 보정
     B.units.forEach(u => { u.pw = power(u); });
     if (opts.prophet) B.units.filter(u => u.side === 'A').forEach(u => { u.pw *= 1 + Math.max(0, opts.prophet.fai - 60) / 200; });
+    if ((opts.hops || 1) > 1) { const k = T().marchPow(opts.hops); B.units.filter(u => u.side === 'A').forEach(u => { u.pw *= k; }); }
     if (it.has('trumpet')) { live('D').forEach(u => { u.soldiers = Math.round(u.soldiers * 0.92); u.morale -= 15; }); say('📯 양각 나팔 소리가 울리자 적진이 술렁인다!', 'horn'); }
     render(true);
     $('#tactic').hidden = false; document.body.classList.add('in-tactic');
     T().setInBattle(true); snd('bgm', 'war'); snd('sfx', 'march');
     say(`⚔ ${M.name} — ${GM().CITY_INFO[opts.cid].name}. ${M.desc}`);
+    if ((opts.hops || 1) > 1) say(`🐪 ${opts.hops}칸 먼 길을 행군해 온 원정군 — 전력 ${Math.round(T().marchPow(opts.hops) * 100)}%`);
     if (opts.gens[0]) T().voiceOf(opts.gens[0], 'battle');
     hint('내 부대를 누르면 갈 수 있는 칸(파랑)과 공격할 적(빨강)이 보입니다.');
   }
@@ -358,7 +360,7 @@
     if (B.ended) return; B.ended = true;
     const o = B.opts, A = live('A').reduce((s, u) => s + u.soldiers, 0), D = live('D').reduce((s, u) => s + u.soldiers, 0);
     const lines = B.log.slice(-12);
-    const res = T().applyBattleResult(o.af, o.gens, o.soldiers, o.cid, o.train, B.it, A, win ? 0 : Math.max(D, 1), lines, win);
+    const res = T().applyBattleResult(o.af, o.gens, o.soldiers, o.cid, o.train, B.it, A, win ? 0 : Math.max(D, 1), lines, win, o.hops || 1);
     B.captured.forEach(c => { if (c.alive && !res.captives.includes(c) && c.fac !== o.af) res.captives.push(c); });
     snd('sfx', win ? 'victory' : 'defeat');
     setTimeout(() => { $('#tactic').hidden = true; document.body.classList.remove('in-tactic'); T().setInBattle(false); o.done(res); }, 900);
