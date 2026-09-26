@@ -1006,6 +1006,15 @@
   }
 
   // ---------- 사명(스토리) ----------
+  // 주인공 대사(hero-lines.js)를 장의 도입·마무리 끝에 붙인다. 주인공이 없거나 떠났으면 붙이지 않는다.
+  function heroLines(i, kind) {
+    if (!S.hero || typeof HERO_LINES === 'undefined') return [];
+    const h = offById(S.hero.id); if (!h || !h.alive || h.fac !== S.player) return [];
+    const own = (STORY[S.scn] || {})[S.player];
+    const src = own ? (HERO_LINES[S.scn] || {})[S.player] : HERO_LINES.generic;
+    const c = src && src[i]; return (c && c[kind]) || [];
+  }
+  const chIdx = c => chain().indexOf(c);
   function chain() { const sc = STORY[S.scn] || {}; return sc[S.player] || STORY.generic; }
   function curChapter() { return chain()[S.story.ch] || null; }
   function kStage() { let i = 0; KINGDOM_STAGES.forEach((s, j) => { if (S.story.kingdom >= s[0]) i = j; }); const s = KINGDOM_STAGES[i]; return { lv: i + 1, name: s[1], desc: s[2], next: KINGDOM_STAGES[i + 1] }; }
@@ -1062,12 +1071,12 @@
     S.story.done.push(S.story.ch);
     S.story.ch++;
     startChapter();
-    playDialogue(ch.outro || [], () => {
+    playDialogue((ch.outro || []).concat(heroLines(chIdx(ch), 'outro')), () => {
       openModal(`<div class="clear-banner"><p class="eyebrow">사명 완수 · ${esc(ch.ref)}</p><h2>${esc(ch.title)}</h2></div>
         <div class="rewards"><p class="rw-title">보상</p><div class="rw-row">
         <span class="rw"><i>${ICON.king}</i><b>+${r.k || 0}</b><small>하나님 나라</small></span>
         ${r.gold ? `<span class="rw"><i>${ICON.gold}</i><b>${fmt(r.gold)}</b><small>금</small></span>` : ''}${r.food ? `<span class="rw"><i>${ICON.food}</i><b>${fmt(r.food)}</b><small>식량</small></span>` : ''}</div></div>`,
-        [{ label: '다음 사명', primary: true, fn: () => { storyBusy = false; render(); const nx = curChapter(); if (nx) playDialogue(nx.intro, () => { render(); checkStory(done); }, nx); else fin(); } }], { title: '사명 완수' });
+        [{ label: '다음 사명', primary: true, fn: () => { storyBusy = false; render(); const nx = curChapter(); if (nx) playDialogue(nx.intro.concat(heroLines(chIdx(nx), 'intro')), () => { render(); checkStory(done); }, nx); else fin(); } }], { title: '사명 완수' });
     }, ch);
     render();
   }
@@ -1080,6 +1089,7 @@
     if (who === 'narr') return { name: '', narr: true };
     if (who === 'word') return { name: '여호와의 말씀', word: true };
     const P = S.player, F = fac(P);
+    if (who === '@hero') { const h = S.hero && offById(S.hero.id); return h ? { name: h.name, o: h } : { name: '', narr: true }; }
     if (who === '@ruler') { const r = offById(F.ruler); return r ? { name: r.name, o: r } : { name: F.name, narr: true }; }
     if (who === '@advisor') { const a = S.offs.filter(o => o.alive && o.fac === P && o.id !== F.ruler).sort((x, y) => y.int - x.int)[0]; return a ? { name: a.name, o: a } : speaker('@ruler'); }
     const o = S.offs.find(x => x.name === who && x.alive) || S.offs.find(x => x.name === who);
@@ -1088,6 +1098,8 @@
   function playDialogue(lines, done, ch) {
     const box = $('#dialogue');
     if (!lines || !lines.length) return done && done();
+    const hn = S.hero && offById(S.hero.id) ? offById(S.hero.id).name : '';
+    lines = lines.map(([w, x]) => [w, String(x).replace(/\{name\}/g, hn)]);
     let i = 0, typing = null;
     box.hidden = false; snd('bgm', 'story');
     let lastSp = null;
@@ -1160,7 +1172,7 @@
       ${ch.reward.gold ? `<span class="rw"><i>${ICON.gold}</i><b>${fmt(ch.reward.gold)}</b><small>금</small></span>` : ''}${ch.reward.food ? `<span class="rw"><i>${ICON.food}</i><b>${fmt(ch.reward.food)}</b><small>식량</small></span>` : ''}</div></div></div>` : '<p>모든 사명을 이루었습니다.</p>'}
       <ol class="ch-list">${all.map((c, i) => `<li class="${i < S.story.ch ? 'done' : i === S.story.ch ? 'now' : ''}"><b>${esc(c.title)}</b><small>${esc(c.ref)}</small>${i <= S.story.ch ? `<button class="btn" data-replay="${i}">대화 보기</button>` : ''}</li>`).join('')}</ol>`,
       ch ? [{ label: '가기', primary: true, fn: () => { const t = storyTarget(); if (t) { const ci = CITY_INFO[t]; VB.x = ci.x - VB.w / 2; VB.y = ci.y - VB.h / 2; clampView(); sel = t; render(); } } }] : [], { title: '사명' });
-    $('#modalBody').querySelectorAll('[data-replay]').forEach(b => b.addEventListener('click', () => { const c = all[+b.dataset.replay]; closeModal(); playDialogue(c.intro.concat(+b.dataset.replay < S.story.ch ? c.outro : []), null, c); }));
+    $('#modalBody').querySelectorAll('[data-replay]').forEach(b => b.addEventListener('click', () => { const c = all[+b.dataset.replay]; closeModal(); playDialogue(c.intro.concat(heroLines(+b.dataset.replay, 'intro'), +b.dataset.replay < S.story.ch ? c.outro.concat(heroLines(+b.dataset.replay, 'outro')) : []), null, c); }));
   }
   function logScreen() {
     openModal(`<ul id="log" class="log">${S.log.slice(0, 80).map(l => `<li class="${l.kind}"><time>${l.t}</time>${esc(l.msg)}</li>`).join('')}</ul>`, [], { title: '연대기' });
@@ -1617,7 +1629,7 @@
     render(); centerLand();
     if (fresh) {
       const sc = scn(), ch = curChapter();
-      playDialogue([['narr', sc.intro]].concat(heroIntro(), ch ? ch.intro : []), () => { render(); runEvents(() => checkStory()); }, ch ? { title: `제1장 ${ch.title}`, ref: ch.ref } : { title: sc.title, ref: sc.ref });
+      playDialogue([['narr', sc.intro]].concat(heroIntro(), ch ? ch.intro : [], ch ? heroLines(chIdx(ch), 'intro') : []), () => { render(); runEvents(() => checkStory()); }, ch ? { title: `제1장 ${ch.title}`, ref: ch.ref } : { title: sc.title, ref: sc.ref });
     }
   }
 
