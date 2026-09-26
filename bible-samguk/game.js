@@ -1704,7 +1704,7 @@
     get S() { return S; }, get sel() { return sel; }, set sel(v) { sel = v; },
     hooks, city, fac, offById, offsIn, freeIn, citiesOf, CITY_INFO, ADJ, CMDS, STAT_NAME,
     onCmd, askEndTurn, render, showBio, toast, portraitOf, avgFaith, facName, yearLabel, fmt, esc, idleOffs, checkStory, playDialogue,
-    SEASONS, showLand, showMap, get mode() { return mode; },
+    SEASONS, showLand, showMap, artKey, get mode() { return mode; },
     // 전술 전투(tactics.js)가 쓰는 엔진 함수
     tac: { marchPow, applyBattleResult, killOfficer, buffVal, ITEMS, UNITS, PLAINS, playBattle, captiveDialog, voiceOf, snd, clamp, rnd, log, isProphet, setInBattle: v => { inBattle = v; } },
   };

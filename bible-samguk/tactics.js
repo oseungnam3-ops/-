@@ -71,6 +71,10 @@
     if (opts.prophet) B.units.filter(u => u.side === 'A').forEach(u => { u.pw *= 1 + Math.max(0, opts.prophet.fai - 60) / 200; });
     if ((opts.hops || 1) > 1) { const k = T().marchPow(opts.hops); B.units.filter(u => u.side === 'A').forEach(u => { u.pw *= k; }); }
     if (it.has('trumpet')) { live('D').forEach(u => { u.soldiers = Math.round(u.soldiers * 0.92); u.morale -= 15; }); say('📯 양각 나팔 소리가 울리자 적진이 술렁인다!', 'horn'); }
+    // 채색화 배경: 불러오면 칸 무늬를 걷어내고 그림 위에 칸만 옅게 남긴다
+    const g = $('#tGrid'); g.classList.remove('art'); g.style.backgroundImage = '';
+    const url = GM().artKey && GM().artKey('@bf-' + kind);
+    if (url) { const im = new Image(); im.onload = () => { if (B && B.kind === kind) { g.style.backgroundImage = `url('${url}')`; g.classList.add('art'); } }; im.src = url; }
     render(true);
     $('#tactic').hidden = false; document.body.classList.add('in-tactic');
     T().setInBattle(true); snd('bgm', 'war'); snd('sfx', 'march');
