@@ -284,6 +284,27 @@
   .hero-grid.sm { grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 8px; } .hero-grid.sm small { font-size: 9.5px; text-align: center; padding: 0 3px; }
   .snd-row { display: grid; grid-template-columns: 110px 1fr 36px; gap: 10px; align-items: center; }
   .snd-row b { font: 600 13px var(--mono); text-align: right; }
+  .realm-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+  .realm-list li { display: grid; grid-template-columns: auto 1fr auto auto; gap: 4px 10px; align-items: center; padding: 8px 10px; background: #151b2b; border: 1px solid #3a4666; }
+  .realm-list li div { display: grid; min-width: 0; } .realm-list small { font-size: 11.5px; } .realm-list .btn { padding: 6px 12px; }
+  .myring { fill: none; stroke: #ffd978; stroke-width: 2.2; stroke-dasharray: 5 4; opacity: .9; animation: spin 18s linear infinite; transform-box: fill-box; transform-origin: center; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .land-nav { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(env(safe-area-inset-bottom, 0px) + 196px); display: flex; gap: 4px; z-index: 2; }
+  .land-nav button { background: linear-gradient(#2c3753, #121827); border: 1px solid #c9a24a; color: #fff; padding: 4px 12px; box-shadow: 0 2px 8px rgba(0,0,0,.6); }
+  .land-nav [data-realm] { display: grid; justify-items: center; line-height: 1.15; min-width: 110px; }
+  .land-nav [data-realm] b { font: 17px var(--display); color: var(--gold-hi); } .land-nav small { font-size: 10px; color: var(--mute); }
+  .hero-make { display: grid; gap: 8px; }
+  .hero-make input#hName { width: 100%; padding: 10px; background: #0b0e16; color: var(--ink); border: 1px solid var(--line); font: 16px var(--body); }
+  .hm-row { display: flex; gap: 8px; }
+  .hm-looks { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .hm-look { display: grid; gap: 2px; padding: 3px; background: #121827; border: 2px solid #3a4666; }
+  .hm-look .pimg { aspect-ratio: 3 / 4; height: auto; } .hm-look .pimg > img { object-position: 50% 10%; }
+  .hm-look small { font-size: 11px; text-align: center; } .hm-look.on { border-color: var(--gold); box-shadow: 0 0 10px rgba(255,210,110,.45); }
+  .hm-cls { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 6px; }
+  .hm-c { display: grid; gap: 2px; text-align: left; padding: 8px 10px; background: #121827; border: 1px solid #3a4666; }
+  .hm-c small { font-size: 11px; color: var(--mute); } .hm-c.on { border-color: var(--gold); background: #1d2436; }
+  .hm-stats { display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; align-items: center; }
+  .hm-pm { display: flex; gap: 4px; } .hm-pm .btn { padding: 2px 10px; }
   .codex-h { font-size: 18px; color: var(--gold-hi); margin-top: 6px; } .codex-h small { font: 12px var(--body); }
   .hcard small { font-size: 10.5px; }
   .hc-pw { display: flex; gap: 4px; align-items: center; font: 600 11px var(--mono); color: #ffb3a6; }
@@ -461,7 +482,7 @@
 <section id="title"></section>
 
 <div id="app" hidden>
-  <div id="landWrap" hidden><div class="land-bg" id="landBg"></div><div id="land"><img id="landImg" alt="" draggable="false"><div id="landSpots"></div></div><div class="land-city" id="landCity"></div></div>
+  <div id="landWrap" hidden><div class="land-bg" id="landBg"></div><div id="land"><img id="landImg" alt="" draggable="false"><div id="landSpots"></div></div><div class="land-nav" id="landNav"></div><div class="land-city" id="landCity"></div></div>
   <div id="mapWrap"><svg id="map" viewBox="-20 -20 660 840" aria-label="가나안 지도"></svg></div>
   <header class="hud-top">
     <div class="res-bar" id="resBar"></div>
@@ -481,6 +502,7 @@
       <button data-side="story"><svg viewBox="0 0 24 24"><path d="M6 4 H17 A2 2 0 0 1 19 6 V18 H8 A2 2 0 0 1 6 16Z" fill="#e8d9ae" stroke="#7a5a26"/><path d="M4 6 A2 2 0 0 1 8 6 V16 A2 2 0 0 0 4 16Z M8 18 A2 2 0 0 0 10 20 H19 A2 2 0 0 0 21 18" fill="#cdb988" stroke="#7a5a26"/><path d="M10 8 H16 M10 11 H16 M10 14 H14" stroke="#7a5a26"/><circle cx="17" cy="4" r="2.6" fill="#d8402f"/></svg><span>임무</span></button>
       <button data-side="hero"><svg viewBox="0 0 24 24"><path d="M12 2 C7 2 5 6 5 10 L7 14 L9 13 L12 22 L15 13 L17 14 L19 10 C19 6 17 2 12 2Z" fill="#c9ced9" stroke="#5c6275"/><path d="M9 9 H15 L14 11 H10Z" fill="#2a3040"/><path d="M12 2 V7" stroke="#d8402f" stroke-width="2"/></svg><span>영웅</span></button>
       <button data-side="roster"><svg viewBox="0 0 24 24"><path d="M3 5 C6 4 9 4 12 6 C15 4 18 4 21 5 V19 C18 18 15 18 12 20 C9 18 6 18 3 19Z" fill="#e8d9ae" stroke="#7a5a26"/><path d="M12 6 V20" stroke="#7a5a26"/><path d="M7.5 9 V13 M6 10.5 H9 M16.5 9 V13 M15 10.5 H18" stroke="#b3322a" stroke-width="1.3"/></svg><span>성경도감</span></button>
+      <button data-side="realm"><svg viewBox="0 0 24 24"><path d="M5 21 V3" stroke="#e3e7f0" stroke-width="1.6"/><path d="M5 4 H18 L15 8 L18 12 H5Z" fill="#e6b64a" stroke="#8a5d12"/><path d="M9 7 l1 2 2 .2 -1.5 1.3 .5 2 -2-1 -2 1 .5-2 L5.8 9.2 8 9Z" fill="#fff6d6" transform="translate(1.5 -1.2) scale(.8)"/><path d="M2 21 H13" stroke="#e3e7f0" stroke-width="1.6"/></svg><span>내 영토</span></button>
       <button data-side="log"><svg viewBox="0 0 24 24"><path d="M12 21 C6 17 4 12 5 6 M12 21 C18 17 20 12 19 6" fill="none" stroke="#e6b64a" stroke-width="1.6"/><path d="M5 9 l-2 -1 M5.5 12.5 l-2.2 0 M7 15.5 l-2 1 M19 9 l2 -1 M18.5 12.5 l2.2 0 M17 15.5 l2 1" stroke="#e6b64a" stroke-width="1.6"/><path d="M12 5 l1.8 3.6 4 .6 -2.9 2.8 .7 4 -3.6 -1.9 -3.6 1.9 .7 -4 -2.9 -2.8 4 -.6z" fill="#ffd978" stroke="#8a5d12" stroke-width=".6"/></svg><span>연대기</span></button>
     </nav>
   </header>

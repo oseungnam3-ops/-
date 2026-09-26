@@ -44,7 +44,7 @@
   // art.js·art-real.js는 최상위 const라 window 속성이 아니므로 이름으로 직접 참조한다.
   const artSets = () => { const w = typeof ART !== 'undefined' ? ART : {}, r = typeof ART_REAL !== 'undefined' ? ART_REAL : {}; return artStyle() === 'real' ? [r, w] : [w, r]; };
   const artKey = k => { const [a, b] = artSets(); return a[k] || b[k] || null; };
-  const artOf = o => artKey(S.scn + ':' + o.name) || artKey(o.name);
+  const artOf = o => (o.art && artKey(o.art)) || artKey(S.scn + ':' + o.name) || artKey(o.name);
   const portraitOf = (o, big) => {
     const svg = window.PORTRAIT ? PORTRAIT.portrait(o, { color: o.fac && S.facs[o.fac] ? fac(o.fac).color : '#6b6250', ruler: !!(o.fac && S.facs[o.fac] && fac(o.fac).ruler === o.id) }) : '';
     const url = artOf(o);
@@ -146,6 +146,7 @@
 
   // ---------- 장수 ----------
   function killOfficer(o) {
+    if (o.hero) { log(`${o.name}이(가) 쓰러졌으나 여호와께서 목숨을 지키셨다.`, 'gold'); return; } // 주인공은 죽지 않는다
     o.alive = false;
     log(`${o.name}이(가) 세상을 떠났다.`, 'bad');
     if (o.fac && fac(o.fac).ruler === o.id) succession(o.fac);
@@ -352,7 +353,7 @@
     }
     A = Math.max(0, Math.round(A)); D = Math.max(0, Math.round(D));
     const win = D <= 0 || (A > D * 2.5 && A > 300);
-    const res = { win, attLeft: A, lines, captives: [], summary: '' };
+    const res = { win, attLeft: A, lines, captives: [], summary: '', cid };
     fac(af).food = Math.max(0, fac(af).food - Math.round(soldiers * 0.3 * (it.has('rations') ? 0.5 : 1)));
     if (win) {
       lines.push(`🏳 ${CITY_INFO[cid].name} 함락! ${aName}의 깃발이 오른다.`);
@@ -536,6 +537,8 @@
     const choices = mine ? e.choices : alt ? e.altChoices : null;
     const finish = (ch) => {
       const out = ch.run(G);
+      // 군주 자리를 고른 주인공은 사건이 새 지도자를 세워도 계속 나라를 이끈다
+      if (S.hero && S.hero.seat === 'ruler') { const h = offById(S.hero.id); if (h && h.alive && h.fac === S.player) fac(S.player).ruler = h.id; }
       if (!e.repeat || S.flags.arkHome) S.done[e.id] = true;
       if (e.repeat && !S.flags.arkHome) S.done[e.id] = false;
       Object.values(S.cities).forEach(fixCity);
@@ -728,13 +731,16 @@
       const on = (a === sel && hot.includes(b)) || (b === sel && hot.includes(a));
       h += `<line x1="${A.x}" y1="${A.y}" x2="${B.x}" y2="${B.y}" class="road-b"/><line x1="${A.x}" y1="${A.y}" x2="${B.x}" y2="${B.y}" class="road${on ? ' hot' : ''}"/>`;
     });
+    // 영토: 성마다 주인 색으로 은은하게 칠하고, 내 성은 금색 점선 고리로 두른다
+    h += '<g class="realm">' + Object.values(S.cities).filter(c => c.owner).map(c => { const ci = CITY_INFO[c.id], col = fac(c.owner).color;
+      return `<circle cx="${ci.x}" cy="${ci.y}" r="44" fill="${col}" opacity="${c.owner === P ? 0.3 : 0.16}"/>` + (c.owner === P ? `<circle cx="${ci.x}" cy="${ci.y}" r="34" class="myring"/>` : ''); }).join('') + '</g>';
     Object.values(S.cities).forEach(c => {
       const ci = CITY_INFO[c.id];
       const color = c.owner ? fac(c.owner).color : '#8d877a';
       const cap = c.owner && fac(c.owner).capital === c.id;
       const gov = governor(c.id);
       const badge = c.owner ? fac(c.owner).name[0] : '·';
-      const fn = c.owner ? fac(c.owner).name : '무주지', nw = ci.name.length * 10.5 + 10, sw = fn.length * 6.8 + 10, pw = Math.max(nw, sw);
+      const fn = c.owner ? fac(c.owner).name : '무주지', nw = (ci.name.length + (c.owner === P ? 1.2 : 0)) * 10.5 + 10, sw = fn.length * 6.8 + 10, pw = Math.max(nw, sw);
       h += `<g class="city${sel === c.id ? ' sel' : ''}${c.owner === P ? ' mine' : ''}" data-id="${c.id}" tabindex="0" role="button" aria-label="${ci.name}" transform="translate(${ci.x} ${ci.y})">
         <circle r="24" fill="transparent"/><g class="cicon">${cityIcon(c, color, cap)}</g>${townSprite(c.id, cap)}
         <g class="cflag" transform="translate(0 -12)">
@@ -743,7 +749,7 @@
           <text x="0" y="-22.5" class="cbadge">${esc(badge)}</text>
           ${cap ? '<path d="M-6 -36 l2 -5 l2 3 l2 -4 l2 4 l2 -3 l2 5z" fill="#ffd978" stroke="#6b4a0e" stroke-width=".5"/>' : ''}
           <g transform="translate(10 -34)"><rect width="${pw}" height="${c.owner ? 22 : 13}" rx="2" class="cplate"/>
-            <text x="5" y="10" class="cname">${ci.name}</text>${c.owner ? `<text x="5" y="19" class="cfac">(${esc(fn)})</text>` : `<text x="5" y="10" class="cfac"></text>`}</g>
+            <text x="5" y="10" class="cname">${c.owner === P ? '★ ' : ''}${ci.name}</text>${c.owner ? `<text x="5" y="19" class="cfac">(${esc(fn)})</text>` : `<text x="5" y="10" class="cfac"></text>`}</g>
         </g>
         <g transform="translate(-${String(fmtK(c.soldiers)).length * 2.8 + 5} 12)"><rect x="0" y="-8" width="${String(fmtK(c.soldiers)).length * 5.6 + 10}" height="11" rx="2" fill="#141b2c" opacity=".82"/><text x="5" y="0" class="csold">${fmtK(c.soldiers)}</text></g>`;
       if (sel === c.id) h += `<path class="bracket" d="M-26 -20 v-8 h8 M26 -20 v-8 h-8 M-26 14 v8 h8 M26 14 v8 h-8" fill="none" stroke="#ffd36a" stroke-width="2.4"/>`;
@@ -894,6 +900,8 @@
     if (u && img.getAttribute('src') !== u) { $('#land').classList.remove('noart'); img.src = u; $('#landBg').style.backgroundImage = `url('${u}')`; }
     $('#landSpots').innerHTML = `<div class="l-banner" style="left:26%;top:29.5%"><span class="fbadge" style="--fc:${F.color}">${esc(F.name[0])}</span><b>${ci.name}</b></div>` +
       SPOTS.map(s => { const b = c.build && c.build.k === s.id; return `<button class="spot" data-spot="${s.id}" style="left:${s.x}%;top:${s.y}%"><i>${SPOT_ICON[s.icon] || ICON[s.icon]}</i><b>${s.id === 'port' ? PORT_NAME[kind] : s.name}</b><em>${bl(c, s.id)}</em>${b ? `<span class="bld-timer">🔨 ${c.build.left}계절</span>` : ''}${(idle && s.cmds.some(k => CMDS[k])) || !upBlock(c, s.id) ? '<u aria-label="명령·공사 가능"></u>' : ''}</button>`; }).join('');
+    const mine = citiesOf(S.player).length;
+    $('#landNav').innerHTML = mine > 1 ? `<button data-step="-1" aria-label="이전 성">◀</button><button data-realm><b>${ci.name}</b><small>${citiesOf(S.player).length}성 중</small></button><button data-step="1" aria-label="다음 성">▶</button>` : `<button data-realm><b>${ci.name}</b><small>내 영토</small></button>`;
     $('#landCity').innerHTML = `<b>${ci.name}</b>${c.build ? `<span>🔨 ${BLD[c.build.k].name} 공사 ${c.build.left}계절</span>` : ''}<span>병력 ${fmt(c.soldiers)}</span><span>농업 ${c.agri}</span><span>상업 ${c.comm}</span><span>성벽 ${c.def}</span><span>신앙 ${c.faith}</span><span>민심 ${c.loy}</span><span>대기 장수 ${idle}</span>`;
   }
   function onSpot(id) {
@@ -959,6 +967,7 @@
     window.addEventListener('pointerup', () => { drag = null; });
     w.addEventListener('click', e => { if (moved > 6) { moved = 0; return; } const b = e.target.closest('[data-spot]'); if (b) onSpot(b.dataset.spot); });
     $('#landImg').addEventListener('error', () => { $('#land').classList.add('noart'); });
+    $('#landNav').addEventListener('click', e => { const s = e.target.closest('[data-step]'); if (s) return stepLand(+s.dataset.step); if (e.target.closest('[data-realm]')) realmScreen(); });
     document.querySelectorAll('[data-view]').forEach(b => b.addEventListener('click', () => { if (b.dataset.view === 'land') showLand(landCid); else if (b.dataset.view === 'map') showMap(); else nationScreen(); }));
     window.addEventListener('resize', () => { if (mode === 'land') centerLand(); });
   }
@@ -1118,7 +1127,7 @@
   function opower(o) { return o.war * 30 + o.int * 12 + o.pol * 5 + o.cha * 5 + o.fai * 8; }
   function heroScreen() {
     const list = S.offs.filter(o => o.alive && o.fac === S.player).sort((a, b) => opower(b) - opower(a));
-    openModal(`<div class="hero-grid">${list.map(o => { const g = grade(o); return `<button class="hcard ${g[1]}" data-hero="${o.id}"><span class="hc-img">${portraitOf(o)}</span><span class="hc-grade">${g[0]}</span><b>${esc(o.name)}</b><small>${CITY_INFO[o.city].name} · ${o.done ? '완료' : '대기'}</small><span class="hc-pw"><i>${ICON.troop}</i>${fmt(opower(o))}</span></button>`; }).join('')}</div>
+    openModal(`<div class="hero-grid">${list.map(o => { const g = grade(o); return `<button class="hcard ${g[1]}" data-hero="${o.id}"><span class="hc-img">${portraitOf(o)}</span><span class="hc-grade">${o.hero ? '★ 주인공' : g[0]}</span><b>${esc(o.name)}</b><small>${CITY_INFO[o.city].name} · ${o.done ? '완료' : '대기'}</small><span class="hc-pw"><i>${ICON.troop}</i>${fmt(opower(o))}</span></button>`; }).join('')}</div>
       <p class="mute">장수를 누르면 능력치와 기록을 볼 수 있습니다.</p>`, [{ label: '인물 도감', fn: showRoster }], { title: `영웅 · ${list.length}명`, wide: true });
   }
   function showBio(id) {
@@ -1175,6 +1184,7 @@
       <li>장수 한 명은 한 계절에 명령 하나. 모두 마쳤으면 <b>턴 종료</b>.</li>
       <li>가을에 농업만큼 식량을 거두고, 계절마다 상업만큼 금이 들어옵니다. 병사는 계절마다 식량을 먹습니다.</li>
       <li><b>신앙</b>이 높으면 전투 사기가 오르고 민심이 따라옵니다. 계절마다 식으니 <b>제사</b>로 지키세요.</li>
+      <li>왼쪽 <b>내 영토</b>에서 다스리는 성을 한눈에 보고 영지로 바로 갑니다. 지도에서 ★와 금색 고리가 내 성입니다. 영지 아래 ◀ ▶로 성을 넘길 수 있습니다.</li>
       <li>화면을 한 번 누르면 <b>배경음악</b>이 시작됩니다. 국가 화면의 <b>소리 설정</b>에서 음악·효과음·인물 목소리를 조절하세요.</li>
       <li>하단의 <b>사명</b>을 따라가면 인물들의 대화와 함께 하나님 나라가 자랍니다.</li>
       <li>지도는 끌어서 옮기고, 휠이나 두 손가락으로 확대합니다. 미니맵을 누르면 전체 지도로 돌아갑니다.</li></ul>`, [], { title: '도움말' });
@@ -1326,7 +1336,7 @@
 
   function playBattle(r, then) {
     inBattle = true; snd('bgm', 'war'); snd('sfx', 'march');
-    openModal(`<h2>${r.win ? '승전' : '전투'}</h2><div class="blog" id="blog"></div>`, [{ label: '확인', primary: true, fn: () => { inBattle = false; render(); then(); } }]);
+    openModal(`<h2>${r.win ? '승전' : '전투'}</h2><div class="blog" id="blog"></div>`, [{ label: '확인', primary: true, fn: () => { inBattle = false; render(); then(); } }].concat(r.win && city(r.cid).owner === S.player ? [{ label: `점령지 ${CITY_INFO[r.cid].name}(으)로 가기`, fn: () => { inBattle = false; showLand(r.cid); then(); } }] : []));
     const box = $('#blog');
     const fx = l => { if (/함락|멸망/.test(l)) snd('sfx', 'victory'); else if (/버텨냈다|퇴각/.test(l)) snd('sfx', 'defeat'); else if (l.startsWith('🗡')) snd('sfx', 'clash'); else if (l.startsWith('🔥')) snd('sfx', 'fire'); else if (l.startsWith('📯')) snd('sfx', 'horn'); else if (l.startsWith('⚡')) snd('sfx', 'thunder'); else if (l.startsWith('🙏')) snd('sfx', 'holy'); else if (/합 —/.test(l)) snd('sfx', Math.random() < 0.5 ? 'clash' : 'hit'); };
     const add = l => { const p = document.createElement('p'); p.textContent = l; box.appendChild(p); box.scrollTop = box.scrollHeight; };
@@ -1398,6 +1408,31 @@
       [{ label: '능력치 표', fn: showRoster }], { title: '성경도감', wide: true });
   }
 
+  // ---------- 내 영토 ----------
+  function focusCity(cid) {
+    mode = 'map'; sel = cid;
+    const ci = CITY_INFO[cid], w = $('#mapWrap'), ar = (w.clientWidth || 400) / Math.max(1, w.clientHeight || 800);
+    const vw = ar > 0.7 ? Math.min(460 * ar, 800) : 230, vh = vw / ar; VB = { x: ci.x - vw / 2, y: ci.y - vh / 2, w: vw, h: vh }; clampView();
+    render();
+  }
+  function realmScreen() {
+    const P = S.player, F = fac(P);
+    const cs = citiesOf(P).sort((a, b) => (b.id === F.capital) - (a.id === F.capital) || b.soldiers - a.soldiers);
+    if (!cs.length) { toast('다스리는 성이 없습니다.'); return; }
+    const total = cs.reduce((s, c) => s + c.soldiers, 0);
+    openModal(`<p class="mute">다스리는 성 <b>${cs.length}곳</b> · 병력 ${fmt(total)} · 누르면 그 성의 영지로 들어갑니다.</p><ul class="realm-list">${cs.map(c => { const idle = idleOffs(c.id).length;
+      return `<li><span class="fbadge" style="--fc:${F.color}">${c.id === F.capital ? '都' : esc(F.name[0])}</span>
+        <div><b>${c.id === F.capital ? '👑 ' : ''}${CITY_INFO[c.id].name}</b><small>병력 ${fmt(c.soldiers)} · 왕궁 Lv.${bl(c, 'palace')} · 민심 ${c.loy} · 신앙 ${c.faith}${c.build ? ` · 🔨 ${BLD[c.build.k].name} ${c.build.left}계절` : ''}</small><small>${idle ? `대기 장수 ${idle}명` : '장수 명령 완료'}${(ADJ[c.id] || []).some(n => city(n).owner !== P) ? ' · ⚔ 접경' : ''}</small></div>
+        <button class="btn primary" data-go="${c.id}">영지</button><button class="btn" data-see="${c.id}">지도</button></li>`; }).join('')}</ul>`, [], { title: `${F.name} · 내 영토`, wide: true });
+    $('#modalBody').querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => { closeModal(); showLand(b.dataset.go); }));
+    $('#modalBody').querySelectorAll('[data-see]').forEach(b => b.addEventListener('click', () => { closeModal(); focusCity(b.dataset.see); }));
+  }
+  function stepLand(d) {
+    const P = S.player, F = fac(P), cs = citiesOf(P).sort((a, b) => (b.id === F.capital) - (a.id === F.capital) || CITY_INFO[a.id].y - CITY_INFO[b.id].y);
+    if (cs.length < 2) { toast('다른 성이 없습니다.'); return; }
+    const i = cs.findIndex(c => c.id === landCid); showLand(cs[(i + d + cs.length) % cs.length].id);
+  }
+
   // ---------- 소리 설정 ----------
   function soundDialog() {
     if (!window.SND) { toast('이 브라우저에서는 소리를 낼 수 없습니다.'); return; }
@@ -1451,6 +1486,76 @@
     }));
   }
 
+  // ---------- 주인공 만들기 ----------
+  // 플레이어가 직접 성경 이야기의 주인공이 된다: 이름·성별·얼굴·직업·능력치·자리(군주/장수)를 고른다.
+  const HERO_LOOKS = [
+    { k: '@hero-1', g: 'm', n: '젊은 용사' }, { k: '@hero-2', g: 'm', n: '목동' }, { k: '@hero-3', g: 'm', n: '선지자' }, { k: '@hero-4', g: 'm', n: '지략가' },
+    { k: '@hero-5', g: 'f', n: '여전사' }, { k: '@hero-6', g: 'f', n: '사사' }, { k: '@hero-7', g: 'f', n: '선지자' }, { k: '@hero-8', g: 'f', n: '지혜자' },
+  ];
+  const HERO_CLS = {
+    warrior: { n: '용사', base: [85, 55, 50, 65, 70], d: '칼과 방패로 백성을 지키는 용사', look: [1, 5] },
+    sage: { n: '지략가', base: [55, 88, 75, 65, 65], d: '계책과 다스림에 능한 지략가', look: [4, 8] },
+    prophet: { n: '선지자', base: [35, 80, 55, 75, 95], d: '여호와의 말씀을 전하는 선지자', look: [3, 7] },
+    shepherd: { n: '목자 왕', base: [75, 70, 72, 88, 85], d: '양 떼를 치듯 백성을 돌보는 목자', look: [2, 6] },
+  };
+  const HERO_STATS = ['무력', '지력', '정치', '매력', '신앙'], HERO_BONUS = 15;
+  function heroCreate(scnId, facId) {
+    const sc = SCENARIOS.find(x => x.id === scnId), f = sc.factions.find(x => x.id === facId);
+    const st = { name: '', g: 'm', cls: 'warrior', look: '@hero-1', add: [0, 0, 0, 0, 0], seat: 'ruler' };
+    const draw = () => {
+      const C = HERO_CLS[st.cls], used = st.add.reduce((a, b) => a + b, 0);
+      openModal(`<div class="hero-make">
+        <label class="fld" for="hName">이름 <small class="mute">(성경 인물과 겹치지 않게, 8자까지)</small></label>
+        <input id="hName" maxlength="8" value="${esc(st.name)}" placeholder="예: 에벤에셀" autocomplete="off">
+        <p class="fld">성별</p><div class="hm-row">${[['m', '남성'], ['f', '여성']].map(([k, l]) => `<button class="btn${st.g === k ? ' primary' : ''}" data-g="${k}">${l}</button>`).join('')}</div>
+        <p class="fld">얼굴</p><div class="hm-looks">${HERO_LOOKS.filter(l => l.g === st.g).map(l => `<button class="hm-look${st.look === l.k ? ' on' : ''}" data-look="${l.k}"><span class="pimg">${window.PORTRAIT ? PORTRAIT.portrait({ name: l.n, war: 70, int: 70, pol: 60, cha: 70, fai: 80, gender: l.g, desc: l.n }, { color: f.color }) : ''}<img src="${artKey(l.k)}" alt="" onerror="this.remove()"></span><small>${l.n}</small></button>`).join('')}</div>
+        <p class="fld">직업</p><div class="hm-cls">${Object.entries(HERO_CLS).map(([k, c]) => `<button class="hm-c${st.cls === k ? ' on' : ''}" data-cls="${k}"><b>${c.n}</b><small>${c.d}</small></button>`).join('')}</div>
+        <p class="fld">능력치 <small class="mute">보너스 ${HERO_BONUS - used}점 남음</small></p>
+        <div class="hm-stats">${HERO_STATS.map((s, i) => { const v = Math.min(99, C.base[i] + st.add[i]); return `<div class="sbar"><span>${s}</span><div><i style="width:${v}%"></i></div><b>${v}</b></div><span class="hm-pm"><button class="btn" data-st="${i}" data-d="-1" ${st.add[i] ? '' : 'disabled'}>−</button><button class="btn" data-st="${i}" data-d="1" ${used < HERO_BONUS && v < 99 ? '' : 'disabled'}>+</button></span>`; }).join('')}</div>
+        <p class="fld">자리</p><div class="hm-cls">
+          <button class="hm-c${st.seat === 'ruler' ? ' on' : ''}" data-seat="ruler"><b>군주로</b><small>${esc(f.name)}을(를) 직접 이끈다. ${esc(f.ruler)}은(는) 곁에서 돕는 장수가 된다.</small></button>
+          <button class="hm-c${st.seat === 'officer' ? ' on' : ''}" data-seat="officer"><b>장수로</b><small>군주 ${esc(f.ruler)}의 부름을 받은 장수로 이야기에 뛰어든다.</small></button></div>
+        <p class="mute">주인공은 전투에서 쓰러져도 죽지 않습니다. 대화와 사건에 함께 등장합니다.</p></div>`,
+        [{ label: '이 주인공으로 시작', primary: true, keep: true, fn: go }, { label: '뒤로', fn: () => confirmStart(scnId, facId) }], { title: `주인공 만들기 · ${f.name}`, wide: true });
+      const body = $('#modalBody');
+      $('#hName').addEventListener('input', e => { st.name = e.target.value.trim(); });
+      body.querySelectorAll('[data-g]').forEach(b => b.addEventListener('click', () => { st.g = b.dataset.g; st.look = HERO_LOOKS[HERO_CLS[st.cls].look[st.g === 'm' ? 0 : 1] - 1].k; draw(); }));
+      body.querySelectorAll('[data-look]').forEach(b => b.addEventListener('click', () => { st.look = b.dataset.look; draw(); }));
+      body.querySelectorAll('[data-cls]').forEach(b => b.addEventListener('click', () => { st.cls = b.dataset.cls; st.add = [0, 0, 0, 0, 0]; st.look = HERO_LOOKS[HERO_CLS[st.cls].look[st.g === 'm' ? 0 : 1] - 1].k; draw(); }));
+      body.querySelectorAll('[data-st]').forEach(b => b.addEventListener('click', () => { st.add[+b.dataset.st] = Math.max(0, st.add[+b.dataset.st] + (+b.dataset.d)); draw(); }));
+      body.querySelectorAll('[data-seat]').forEach(b => b.addEventListener('click', () => { st.seat = b.dataset.seat; draw(); }));
+    };
+    const go = () => {
+      const name = ($('#hName').value || '').trim().replace(/[<>"&]/g, '');
+      if (!name) { toast('주인공의 이름을 지어 주세요.'); $('#hName').focus(); return; }
+      if (sc.officers.some(r => r[0] === name)) { toast(`'${name}'은(는) 이 시대의 성경 인물 이름입니다. 다른 이름을 지어 주세요.`); return; }
+      closeModal();
+      newGame(scnId, facId);
+      const C = HERO_CLS[st.cls], F = fac(facId), v = C.base.map((b, i) => Math.min(99, b + st.add[i]));
+      const o = addOfficer([name, v[0], v[1], v[2], v[3], v[4], facId, F.capital, `${C.d}. 여호와께서 부르신 이 이야기의 주인공`, '이 이야기의 주인공']);
+      Object.assign(o, { hero: true, gender: st.g, art: st.look, cls: st.cls });
+      S.hero = { id: o.id, seat: st.seat, prev: F.ruler };
+      if (st.seat === 'ruler') F.ruler = o.id;
+      log(`${name}이(가) ${F.name}의 ${st.seat === 'ruler' ? '군주로' : '장수로'} 이야기에 들어섰다.`, 'gold');
+      VB = null; startPlay(true); autosave();
+    };
+    draw();
+  }
+  function heroIntro() {
+    if (!S.hero) return [];
+    const o = offById(S.hero.id); if (!o) return [];
+    const F = fac(S.player), prev = offById(S.hero.prev), C = HERO_CLS[o.cls] || HERO_CLS.warrior;
+    const lines = [['narr', `그때 여호와께서 한 사람을 부르셨다. ${C.n} ${o.name} — 이 이야기는 이제 그의 발걸음을 따라간다.`], ['word', '"두려워하지 말라 내가 너와 함께 함이라 놀라지 말라 나는 네 하나님이 됨이라" (사 41:10)']];
+    if (S.hero.seat === 'ruler') {
+      lines.push([o.name, `${F.name}의 백성이여, 여호와께서 나를 세우셨소. 칼이 아니라 언약 위에 나라를 세웁시다!`]);
+      if (prev && prev.id !== o.id) lines.push([prev.name, `${o.name}이여, 하나님께서 그대를 택하셨다면 나도 기꺼이 그대 곁에서 싸우겠소.`]);
+    } else if (prev) {
+      lines.push([prev.name, `${o.name}이라 했느냐? 여호와께서 너를 내게 보내셨구나. 함께 가자.`]);
+      lines.push([o.name, `명을 받들겠습니다! 제 칼과 기도로 ${F.name}을(를) 섬기겠습니다.`]);
+    }
+    return lines;
+  }
+
   // ---------- 타이틀 ----------
   function showTitle() {
     closeModal();
@@ -1502,7 +1607,7 @@
       <p class="mute">군주 ${esc(f.ruler)} · 도읍 ${CITY_INFO[f.capital].name} · 금 ${fmt(f.gold)} · 식량 ${fmt(f.food)}</p>
       <p><b>목표</b> — ${esc((sc.goalText && sc.goalText[facId]) || '가나안의 열여덟 성을 차지한다.')}</p>
       <p class="mute">${STORY[scnId] && STORY[scnId][facId] ? `스토리 사명 ${STORY[scnId][facId].length}장` : '일반 사명 4장'}</p></div></div>`,
-      [{ label: '이 세력으로 시작', primary: true, fn: () => { newGame(scnId, facId); VB = null; startPlay(true); autosave(); } }], { title: '세력 선택' });
+      [{ label: '내 주인공으로 시작', primary: true, fn: () => heroCreate(scnId, facId) }, { label: '역사 인물로 시작', fn: () => { newGame(scnId, facId); VB = null; startPlay(true); autosave(); } }], { title: '세력 선택' });
   }
 
   function startPlay(fresh) {
@@ -1512,7 +1617,7 @@
     render(); centerLand();
     if (fresh) {
       const sc = scn(), ch = curChapter();
-      playDialogue([['narr', sc.intro]].concat(ch ? ch.intro : []), () => { render(); runEvents(() => checkStory()); }, ch ? { title: `제1장 ${ch.title}`, ref: ch.ref } : { title: sc.title, ref: sc.ref });
+      playDialogue([['narr', sc.intro]].concat(heroIntro(), ch ? ch.intro : []), () => { render(); runEvents(() => checkStory()); }, ch ? { title: `제1장 ${ch.title}`, ref: ch.ref } : { title: sc.title, ref: sc.ref });
     }
   }
 
@@ -1529,7 +1634,7 @@
     $('#lordBtn').addEventListener('click', () => { const r = offById(fac(S.player).ruler); if (r) showBio(r.id); });
     $('#questBtn').addEventListener('click', storyScreen);
     $('#questText').addEventListener('click', storyScreen);
-    document.querySelectorAll('[data-side]').forEach(b => b.addEventListener('click', () => { const n = b.dataset.side; if (n === 'story') storyScreen(); else if (n === 'hero') heroScreen(); else if (n === 'roster') codexScreen(); else logScreen(); }));
+    document.querySelectorAll('[data-side]').forEach(b => b.addEventListener('click', () => { const n = b.dataset.side; if (n === 'story') storyScreen(); else if (n === 'hero') heroScreen(); else if (n === 'roster') codexScreen(); else if (n === 'realm') realmScreen(); else logScreen(); }));
     document.querySelectorAll('[data-nav]').forEach(b => b.addEventListener('click', () => {
       const n = b.dataset.nav;
       if (n === 'land') showLand(fac(S.player).capital);

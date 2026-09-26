@@ -10,7 +10,7 @@
 
   function roleOf(o, isRuler) {
     const d = o.desc || '', origin = o.origin ?? o.fac;
-    if (WOMEN.includes(o.name)) return 'woman';
+    if (o.gender === 'f' || WOMEN.includes(o.name)) return 'woman';
     if (origin === 'egypt') return 'egypt';
     if (d.includes('제사장')) return 'priest';
     if (/선지자|선견자|하나님의 사람/.test(d)) return 'prophet';

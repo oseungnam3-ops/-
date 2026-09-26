@@ -111,5 +111,13 @@ const ART = {
   "@town-hill": "https://d2ol7oe51mr4n9.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/9b5604e1-c220-4a5d-9823-7b002c615103.png",
   "@town-coast": "https://d2ol7oe51mr4n9.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/b303f0b3-c107-46e9-97cd-46efbabd931b.png",
   "@town-canaan": "https://d2ol7oe51mr4n9.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/b35d5f11-8191-4ba8-9428-839f3531d3b9.png",
-  "@town-desert": "https://d2ol7oe51mr4n9.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/bbf00924-4951-4fe6-baa4-f37f347b42a0.png"
+  "@town-desert": "https://d2ol7oe51mr4n9.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/bbf00924-4951-4fe6-baa4-f37f347b42a0.png",
+  "@hero-1": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260926_000634_99446186-6c2a-4d9e-bb7a-be0e2b0ec764.png",
+  "@hero-2": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260926_000634_05241e8d-31d8-4dc7-99b3-cb15ce42ca52.png",
+  "@hero-3": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260926_000635_2230b33c-578a-4842-8cc6-01848b1ee341.png",
+  "@hero-4": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260926_000634_a52e3340-881d-4512-8c42-92d5b6971187.png",
+  "@hero-5": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260926_000650_f376c2f7-04da-4753-ab3c-9f235799105a.png",
+  "@hero-6": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260926_000650_5a9d543a-a57a-447a-affe-342d3c025fdc.png",
+  "@hero-7": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260926_000650_ad30a0f8-df1c-4402-be30-9393842845d6.png",
+  "@hero-8": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260926_000651_8b5ce2a1-5d01-41d3-ab2e-53c0ff5e4d9d.png"
 };
