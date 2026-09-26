@@ -1490,17 +1490,27 @@
     if (!window.SND) { toast('이 브라우저에서는 소리를 낼 수 없습니다.'); return; }
     SND.unlock(); const p = SND.pref;
     const row = (k, lb) => `<label class="snd-row"><span>${lb}</span><input type="range" min="0" max="100" step="5" value="${Math.round(p[k] * 100)}" data-snd="${k}"><b>${Math.round(p[k] * 100)}</b></label>`;
+    const song = () => { const g = SND.song; return g ? `♪ ${esc(g.t)} <small>${esc(g.en)} · ${g.verse}절 ${g.verse === 1 ? '피리' : '하프'}</small>` : (p.mode === 'hymn' ? '♪ 화면을 누르면 찬양이 시작됩니다' : '시대 음악 재생 중'); };
     openModal(`<label class="snd-row"><span>소리 켜기</span><input type="checkbox" id="sndOn" ${p.on ? 'checked' : ''}></label>
       ${row('bgm', '배경음악')}${row('sfx', '효과음')}${row('voice', '인물 목소리')}
-      <p class="mute">배경음악은 장면마다 바뀝니다 — 타이틀 · 지도 · 영지(내정) · 전쟁 · 대화. 리라·목동 피리·틀북·양각 나팔 소리를 브라우저에서 직접 합성합니다.</p>
+      <h4 class="snd-h">배경음악 종류</h4>
+      <div class="snd-mode"><button class="btn${p.mode === 'hymn' ? ' primary' : ''}" data-mode="hymn">🎵 찬양 메들리</button><button class="btn${p.mode !== 'hymn' ? ' primary' : ''}" data-mode="era">🏺 시대 음악</button></div>
+      <p class="mute">${p.mode === 'hymn' ? `찬송가 ${SND.hymns.length}곡을 경음악으로 섞어서 계속 들려줍니다. 한 곡을 두 번(1절 피리 · 2절 하프) 연주하고 다음 곡으로 넘어갑니다. 전쟁 중에는 전쟁 음악이 나옵니다.` : '장면마다 바뀌는 음악 — 타이틀 · 지도 · 영지(내정) · 전쟁 · 대화. 리라·목동 피리·틀북·양각 나팔 소리를 브라우저에서 직접 합성합니다.'}</p>
+      ${p.mode === 'hymn' ? `<div class="snd-now"><span id="sndNow">${song()}</span><button class="btn" id="sndNext">다음 곡 ▶</button></div>
+      <details class="snd-list"><summary>찬양 목록 (${SND.hymns.length}곡)</summary><ol>${SND.hymns.map(h => `<li>${esc(h.t)} <small>${esc(h.en)}</small></li>`).join('')}</ol><p class="mute">모두 저작권이 끝난 공개 저작물(public domain) 찬송가 곡조입니다. 악보: Open Hymnal Project.</p></details>` : ''}
+      <h4 class="snd-h">미리 듣기 — 시대 음악 · 목소리</h4>
       <div class="code-btns"><button class="btn" data-try="bgm:title">타이틀</button><button class="btn" data-try="bgm:map">지도</button><button class="btn" data-try="bgm:land">영지</button><button class="btn" data-try="bgm:war">전쟁</button><button class="btn" data-try="bgm:story">대화</button>
         <button class="btn" data-try="voice:king">군주 목소리</button><button class="btn" data-try="voice:warrior">무장</button><button class="btn" data-try="voice:sage">선지자·책사</button><button class="btn" data-try="voice:woman">여성</button><button class="btn" data-try="voice:enemy">적장</button></div>`,
       [], { title: '소리 설정' });
     const body = $('#modalBody');
     $('#sndOn').addEventListener('change', e => SND.set('on', e.target.checked));
     body.querySelectorAll('[data-snd]').forEach(r => r.addEventListener('input', () => { SND.set(r.dataset.snd, r.value / 100); r.nextElementSibling.textContent = r.value; }));
-    body.querySelectorAll('[data-try]').forEach(b => b.addEventListener('click', () => { const [k, v] = b.dataset.try.split(':'); if (k === 'bgm') SND.bgm(v); else SND.voice(v, ['neutral', 'excl', 'obey', 'battle'][Math.floor(Math.random() * 4)]); }));
+    body.querySelectorAll('[data-try]').forEach(b => b.addEventListener('click', () => { const [k, v] = b.dataset.try.split(':'); if (k === 'bgm') SND.bgm(v, true); else SND.voice(v, ['neutral', 'excl', 'obey', 'battle'][Math.floor(Math.random() * 4)]); }));
+    body.querySelectorAll('[data-mode]').forEach(b => b.addEventListener('click', () => { SND.set('mode', b.dataset.mode); soundDialog(); }));
+    const nx = $('#sndNext'); if (nx) nx.addEventListener('click', () => { SND.unlock(); SND.next(); setTimeout(() => { const n = $('#sndNow'); if (n) n.innerHTML = song(); }, 60); });
   }
+  // 찬양 메들리: 곡이 바뀌면 화면 아래에 곡 이름을 잠깐 띄운다
+  window.addEventListener('snd-song', e => { if ($('#modal').hidden || !$('#sndNow')) toast('♪ ' + e.detail.t); const n = $('#sndNow'); if (n && window.SND) { const g = SND.song; if (g) n.innerHTML = `♪ ${esc(g.t)} <small>${esc(g.en)} · ${g.verse}절</small>`; } });
 
   // ---------- 사용 설명서 ----------
   const MANUAL_PDF = 'https://d2ol7oe51mr4n9.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/6f3caa27-612d-4a1b-b62b-8e3571e63e8b.pdf';

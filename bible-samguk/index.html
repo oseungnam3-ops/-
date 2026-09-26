@@ -289,6 +289,11 @@
   .hero-grid.sm { grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 8px; } .hero-grid.sm small { font-size: 9.5px; text-align: center; padding: 0 3px; }
   .snd-row { display: grid; grid-template-columns: 110px 1fr 36px; gap: 10px; align-items: center; }
   .snd-row b { font: 600 13px var(--mono); text-align: right; }
+  .snd-h { margin: 14px 0 6px; font-size: 14px; color: var(--gold, #e8c46a); }
+  .snd-mode { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .snd-now { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; margin: 6px 0 8px; border: 1px solid #3a4666; background: rgba(12, 16, 26, .55); border-radius: 6px; }
+  .snd-now small { display: block; opacity: .7; font-size: 11px; }
+  .snd-list { margin-bottom: 10px; } .snd-list summary { cursor: pointer; font-size: 13px; } .snd-list ol { margin: 6px 0; padding-left: 22px; font-size: 13px; line-height: 1.7; } .snd-list small { opacity: .6; }
   .realm-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
   .realm-list li { display: grid; grid-template-columns: auto 1fr auto auto; gap: 4px 10px; align-items: center; padding: 8px 10px; background: #151b2b; border: 1px solid #3a4666; }
   .realm-list li div { display: grid; min-width: 0; } .realm-list small { font-size: 11.5px; } .realm-list .btn { padding: 6px 12px; }
@@ -638,6 +643,7 @@
 <script src="art.js"></script>
 <script src="portrait.js"></script>
 <script src="voices.js"></script>
+<script src="hymns.js"></script>
 <script src="audio.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>

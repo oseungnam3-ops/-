@@ -5,7 +5,8 @@
 (() => {
   'use strict';
   const PREF_KEY = 'bible-samguk-audio';
-  const pref = (() => { try { return Object.assign({ bgm: 0.55, sfx: 0.8, voice: 0.9, on: true }, JSON.parse(localStorage.getItem(PREF_KEY) || '{}')); } catch (e) { return { bgm: 0.55, sfx: 0.8, voice: 0.9, on: true }; } })();
+  const DEF = { bgm: 0.55, sfx: 0.8, voice: 0.9, on: true, mode: 'hymn' }; // mode: hymn = 찬양 메들리, era = 시대 음악
+  const pref = (() => { try { return Object.assign({}, DEF, JSON.parse(localStorage.getItem(PREF_KEY) || '{}')); } catch (e) { return Object.assign({}, DEF); } })();
   const savePref = () => { try { localStorage.setItem(PREF_KEY, JSON.stringify(pref)); } catch (e) { /* 저장소 없음 */ } };
 
   const BGM_GAIN = 1.3; // 배경음악 버스 배율 (효과음·목소리와 균형)
@@ -99,13 +100,15 @@
   };
   let cur = null, want = null, timer = null, step = 0, nextT = 0, melLevel = 1;
   function startTrack(name) {
-    stopTrack(true); const T = TRACKS[name]; if (!T || !ctx) return;
-    cur = name; step = 0; nextT = ctx.currentTime + 0.12;
-    bgmBus.gain.cancelScheduledValues(ctx.currentTime); bgmBus.gain.setValueAtTime(0.0001, ctx.currentTime); bgmBus.gain.linearRampToValueAtTime(pref.bgm * BGM_GAIN, ctx.currentTime + 1.2);
+    stopTrack(true); if (!ctx) return;
+    if (name === 'hymn') { cur = name; fadeIn(); hymnNext(); timer = setInterval(hymnTick, 60); return; }
+    const T = TRACKS[name]; if (!T) return;
+    cur = name; step = 0; nextT = ctx.currentTime + 0.12; fadeIn();
     timer = setInterval(() => tick(T), 60);
   }
+  function fadeIn() { bgmBus.gain.cancelScheduledValues(ctx.currentTime); bgmBus.gain.setValueAtTime(0.0001, ctx.currentTime); bgmBus.gain.linearRampToValueAtTime(pref.bgm * BGM_GAIN, ctx.currentTime + 1.2); }
   function stopTrack(quick) {
-    clearInterval(timer); timer = null; cur = null;
+    clearInterval(timer); timer = null; cur = null; hs = null;
     if (ctx && bgmBus) { bgmBus.gain.cancelScheduledValues(ctx.currentTime); bgmBus.gain.setValueAtTime(bgmBus.gain.value, ctx.currentTime); bgmBus.gain.linearRampToValueAtTime(0.0001, ctx.currentTime + (quick ? 0.25 : 0.8)); }
   }
   function tick(T) {
@@ -123,11 +126,79 @@
       nextT += s16; step++;
     }
   }
-  function bgm(name) {
-    want = name;
+  // 장면 → 곡. 찬양 모드에서는 전쟁을 뺀 모든 장면이 한 메들리를 이어서 듣는다(장면이 바뀌어도 곡이 끊기지 않음).
+  const target = name => pref.mode === 'hymn' && name !== 'war' ? 'hymn' : name;
+  let scene = 'title';
+  function bgm(name, force) {
+    if (!force) scene = name;
+    want = force ? name : target(name);
     if (!ctx || ctx.state !== 'running') return; // 첫 터치 뒤에 시작
-    if (cur !== name) startTrack(name);
+    if (cur !== want) startTrack(want);
   }
+
+  // ---------- 찬양 메들리 ----------
+  // hymns.js의 4성부 악보를 경음악으로 연주한다. 1절: 피리 선율 + 현악 패드 + 베이스, 2절: 하프 합주.
+  const HY = typeof HYMNS !== 'undefined' ? HYMNS : [];
+  const parsed = new Map();
+  function parseHymn(h) {
+    if (parsed.has(h)) return parsed.get(h);
+    const vs = h.v.map(str => { let t = 0; const out = []; str.split(' ').forEach(tok => { const [p, d] = tok.split(':'); const q = +d / 4; if (p !== 'r') out.push({ t, d: q, ps: p.split('.').map(Number) }); t += q; }); return out; });
+    const len = Math.max(...vs.map(v => v.length ? v[v.length - 1].t + v[v.length - 1].d : 0));
+    const r = { vs, len }; parsed.set(h, r); return r;
+  }
+  function pad(m, t, dur, v) { // 현악 패드: 살짝 어긋난 톱니파 둘을 부드럽게 거른 소리
+    const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 1100; lp.connect(bgmBus);
+    const a = Math.min(0.25, dur * 0.3), rel = Math.min(0.35, dur * 0.4);
+    [-6, 5].forEach(dt => { const o = ctx.createOscillator(), g = ctx.createGain(); o.type = 'sawtooth'; o.frequency.value = hz(m); o.detune.value = dt;
+      g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(v, t + a); g.gain.setValueAtTime(v, t + Math.max(a, dur - rel)); g.gain.linearRampToValueAtTime(0.0001, t + dur + 0.05);
+      o.connect(g); g.connect(lp); o.start(t); o.stop(t + dur + 0.1); });
+  }
+  function harp(m, t, v) { // 하프: 부드럽게 오래 울리는 뜯는 소리
+    const f = hz(m), lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 3000; lp.connect(bgmBus);
+    osc('triangle', f, t, 2.4, lp, v, 0.004); osc('sine', f * 2, t, 1.2, lp, v * 0.3, 0.004); osc('sine', f * 4.02, t, 0.35, lp, v * 0.06, 0.003);
+  }
+  function bass(m, t, dur, v) {
+    const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 500; lp.connect(bgmBus);
+    const o = ctx.createOscillator(), g = ctx.createGain(); o.type = 'triangle'; o.frequency.value = hz(m);
+    g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(v, t + 0.04); g.gain.exponentialRampToValueAtTime(v * 0.45, t + Math.min(dur, 1.2)); g.gain.linearRampToValueAtTime(0.0001, t + dur + 0.08);
+    o.connect(g); g.connect(lp); o.start(t); o.stop(t + dur + 0.15);
+  }
+  let hs = null, queue = [], songNo = -1;
+  const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+  function hymnNext() {
+    if (!HY.length) return;
+    if (!queue.length) { queue = shuffle(HY.map((_, i) => i)); if (queue[0] === songNo && queue.length > 1) queue.push(queue.shift()); }
+    songNo = queue.shift();
+    const h = HY[songNo], P = parseHymn(h);
+    const qpm = Math.max(66, Math.min(150, h.bpm)) * 0.8; // 배경으로 듣기 좋게 조금 느리게
+    hs = { h, P, spq: 60 / qpm, verse: 0, t0: ctx.currentTime + 0.3, ptr: P.vs.map(() => 0) };
+    try { window.dispatchEvent(new CustomEvent('snd-song', { detail: { t: h.t, en: h.en } })); } catch (e) { /* 알림 불가 */ }
+  }
+  function hymnTick() {
+    if (!hs) return;
+    const now = ctx.currentTime, horizon = now + 0.3, { P, spq } = hs, harpVerse = hs.verse === 1;
+    P.vs.forEach((v, vi) => {
+      while (hs.ptr[vi] < v.length) {
+        const e = v[hs.ptr[vi]], t = hs.t0 + e.t * spq; if (t > horizon) break;
+        hs.ptr[vi]++; if (t < now - 0.05) continue;
+        const dur = e.d * spq, top = vi === 0, low = vi === P.vs.length - 1 && P.vs.length > 2;
+        e.ps.forEach((m, k) => {
+          const lead = top && k === 0;
+          if (harpVerse) harp(lead ? m + 12 : m, t, lead ? 0.2 : low ? 0.12 : 0.07);
+          else if (lead) flute(m, t, dur * 0.96, 0.12);
+          else if (low || (vi === P.vs.length - 1 && k === e.ps.length - 1)) bass(m, t, dur * 0.95, 0.16);
+          else pad(m, t, dur * 0.98, 0.022);
+        });
+        if (harpVerse && low) bass(e.ps[e.ps.length - 1], t, dur * 0.9, 0.08);
+      }
+    });
+    const end = hs.t0 + P.len * spq;
+    if (now > end - 0.05) {
+      if (hs.verse === 0) { hs.verse = 1; hs.t0 = end + spq; hs.ptr = P.vs.map(() => 0); }
+      else if (now > end + 2.2) hymnNext(); // 곡 사이 잠깐 쉼
+    }
+  }
+  function next() { if (cur === 'hymn' && ctx) { hymnNext(); } else if (pref.mode === 'hymn') bgm('title'); }
 
   // ---------- 효과음 ----------
   const SFX = {
@@ -175,6 +246,7 @@
   // ---------- 설정 ----------
   function set(k, v) {
     pref[k] = v; savePref(); if (!ctx) return;
+    if (k === 'mode' && cur !== 'war') bgm(scene);
     if (k === 'on') master.gain.setTargetAtTime(v ? 1 : 0, ctx.currentTime, 0.05);
     if (k === 'bgm') bgmBus.gain.setTargetAtTime(v * BGM_GAIN, ctx.currentTime, 0.05);
     if (k === 'sfx') sfxBus.gain.setTargetAtTime(v, ctx.currentTime, 0.05);
@@ -182,5 +254,5 @@
   // 점검용: 전체 출력의 최고값·평균 음량
   let an = null;
   function level() { if (!ctx) return null; if (!an) { an = ctx.createAnalyser(); an.fftSize = 2048; master.connect(an); } const d = new Float32Array(an.fftSize); an.getFloatTimeDomainData(d); let pk = 0, s = 0; d.forEach(v => { pk = Math.max(pk, Math.abs(v)); s += v * v; }); return { peak: pk, rms: Math.sqrt(s / d.length) }; }
-  window.SND = { bgm, sfx, voice, roleKey, set, level, get pref() { return Object.assign({}, pref); }, get track() { return cur; }, unlock };
+  window.SND = { bgm, sfx, voice, roleKey, set, level, next, hymns: HY.map(h => ({ t: h.t, en: h.en })), get song() { return cur === 'hymn' && hs ? { t: hs.h.t, en: hs.h.en, verse: hs.verse + 1 } : null; }, get pref() { return Object.assign({}, pref); }, get track() { return cur; }, unlock };
 })();
