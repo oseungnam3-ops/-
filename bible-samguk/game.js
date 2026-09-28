@@ -14,6 +14,8 @@
   const WG = typeof WORLD_GEO !== 'undefined' ? WORLD_GEO : { w: 1400.9, h: 920, lon0: 10, lat1: 45, k: 40, cos: 0.83389, land: '', lakes: '', rivers: {} };
   const wproj = ([lon, lat]) => ({ wx: Math.round((lon - WG.lon0) * WG.cos * WG.k * 10) / 10, wy: Math.round((WG.lat1 - lat) * WG.k * 10) / 10 });
   const REGION = typeof WORLD_REGION !== 'undefined' ? WORLD_REGION : {};
+  // 위성 지형(NASA Blue Marble): 같은 투영 틀에 맞춘 전체 그림 한 장 + 확대하면 보이는 세밀 조각들
+  const WART = typeof WORLD_ART !== 'undefined' ? WORLD_ART : null;
   CITY_TABLE.forEach(([id, name, x, y, pop, agri, comm, def, desc, only]) => {
     const ll = (typeof CITY_LL !== 'undefined' && CITY_LL[id]) || null;
     CITY_INFO[id] = Object.assign({ id, name, x, y, pop, agri, comm, def, desc, only, world: !!REGION[id], region: REGION[id] || '가나안' }, ll ? wproj(ll) : { wx: null, wy: null });
@@ -1009,6 +1011,8 @@
     </defs>
     <rect x="-600" y="-600" width="${W + 1200}" height="${H + 1200}" fill="#3f6a70"/>
     <rect x="0" y="0" width="${W}" height="${H}" fill="url(#wSea)" filter="url(#wPaper)"/>
+    ${WART ? `<image href="${WART.base}" x="0" y="0" width="${W}" height="${H}" preserveAspectRatio="none" onload="var s=this.closest('svg');if(s)s.classList.add('wart-on')" onerror="this.remove()"/><g id="wTiles"></g>` : ''}
+    <g class="wvec">
     <use href="#wLandP" fill="none" stroke="#9cc3b8" stroke-width="12" stroke-linejoin="round" opacity=".45"/>
     <use href="#wLandP" fill="url(#wLand)" stroke="#6b5230" stroke-width="1.3" stroke-linejoin="round" filter="url(#wPaper)"/>
     <g clip-path="url(#wClip)">`;
@@ -1023,9 +1027,13 @@
     // 강: 초록 들판을 먼저 넓게, 그 위에 물줄기
     const RV = WG.rivers || {};
     ['nile', 'euph', 'tigris'].forEach(k => { if (RV[k]) h += `<path d="${RV[k]}" fill="none" stroke="#7f9a4a" stroke-width="13" stroke-linecap="round" stroke-linejoin="round" opacity=".42"/>`; });
-    Object.keys(RV).forEach(k => { h += `<path d="${RV[k]}" fill="none" stroke="#3f7f9c" stroke-width="${k === 'jordan' ? 1.2 : 2}" stroke-linecap="round" stroke-linejoin="round"/>`; });
+    h += `</g>`;
+    // 물줄기는 위성 지형 위에도 가늘게 남겨 강 이름과 함께 읽히게 한다
+    Object.keys(RV).forEach(k => { h += `<path d="${RV[k]}" class="wriver" fill="none" stroke="#3f7f9c" stroke-width="${k === 'jordan' ? 1.2 : 2}" stroke-linecap="round" stroke-linejoin="round"/>`; });
+    h += `<g class="wvec">`;
     if (WG.lakes) h += `<path d="${WG.lakes}" fill="#3f7f9c" stroke="#2c5f74" stroke-width=".6"/>`;
     WORLD_MTN.forEach(([lon, lat, s]) => { const p = WL(lon, lat); h += mtn(p.wx, p.wy, s * 0.7, s >= 1.2); });
+    h += `</g>`;
     WORLD_TEXT.forEach(([t, lon, lat, k, rot]) => { const p = WL(lon, lat); h += `<text x="${p.wx}" y="${p.wy}" class="wgeo ${k}"${rot ? ` transform="rotate(${rot} ${p.wx} ${p.wy})"` : ''}>${t}</text>`; });
     // 테두리와 나침반
     h += `<rect x="0" y="0" width="${W}" height="${H}" fill="none" stroke="#2c2012" stroke-width="7"/><rect x="7" y="7" width="${W - 14}" height="${H - 14}" fill="none" stroke="#c9ad6e" stroke-width="1.4"/>`;
@@ -1098,8 +1106,25 @@
     const svg = $('#map');
     svg.setAttribute('viewBox', `${VB.x} ${VB.y} ${VB.w} ${VB.h}`);
     // 세계 지도의 성 표지는 확대해도 화면에서 거의 같은 크기로 (지도 단위 ÷ 화면 픽셀)
-    if (world) svg.style.setProperty('--ws', clamp(0.95 * VB.w / Math.max(1, svg.clientWidth || window.innerWidth), 0.28, 1.5).toFixed(3));
+    if (world) { svg.style.setProperty('--ws', clamp(0.95 * VB.w / Math.max(1, svg.clientWidth || window.innerWidth), 0.28, 1.5).toFixed(3)); worldTiles(svg); }
     const r = $('#miniView'); if (r) { r.setAttribute('x', VB.x); r.setAttribute('y', VB.y); r.setAttribute('width', VB.w); r.setAttribute('height', VB.h); }
+  }
+  // 확대했을 때만 화면에 걸친 세밀 조각을 불러온다 (한 번 불러온 조각은 그대로 둔다)
+  function worldTiles(svg) {
+    const g = svg.querySelector('#wTiles'); if (!g || !WART) return;
+    const px = VB.w / Math.max(1, svg.clientWidth || window.innerWidth); // 화면 1픽셀당 지도 단위
+    if (px > WG.w / WART.baseW) return; // 전체 그림으로 충분할 때
+    const tw = WG.w / WART.cols, th = WG.h / WART.rows;
+    const c0 = Math.max(0, Math.floor(VB.x / tw)), c1 = Math.min(WART.cols - 1, Math.floor((VB.x + VB.w) / tw));
+    const r0 = Math.max(0, Math.floor(VB.y / th)), r1 = Math.min(WART.rows - 1, Math.floor((VB.y + VB.h) / th));
+    for (let r = r0; r <= r1; r++) for (let c = c0; c <= c1; c++) {
+      if (g.querySelector(`[data-t="${r}_${c}"]`)) continue;
+      const im = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+      im.setAttribute('data-t', `${r}_${c}`); im.setAttribute('href', WART.tiles[`${r}_${c}`] || '');
+      im.setAttribute('x', c * tw); im.setAttribute('y', r * th); im.setAttribute('width', tw + 0.5); im.setAttribute('height', th + 0.5);
+      im.setAttribute('preserveAspectRatio', 'none'); im.onerror = () => im.remove();
+      g.appendChild(im);
+    }
   }
   function drawMini() {
     const m = $('#mini');

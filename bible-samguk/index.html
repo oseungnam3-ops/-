@@ -119,6 +119,14 @@
   .edge:focus-visible .edge-l { stroke: var(--gold-hi); }
   /* 세계 지도 (양피지 채색) */
   .wgrid { stroke: #f6ecd0; stroke-width: .8; opacity: .22; }
+  /* 위성 지형이 올라오면 그림 지형(벡터)은 숨기고, 글씨는 밝게 */
+  #map.wart-on .wvec { display: none; }
+  #map.wart-on .wriver { stroke: #7fc4e0; opacity: .55; }
+  #map.wart-on .wgeo { fill: #fbf1d6; stroke: rgba(28, 18, 6, .78); opacity: .95; }
+  #map.wart-on .wgeo.v { fill: #bfe6f5; stroke: rgba(10, 30, 45, .8); }
+  #map.wart-on .wcompass .wgeo, #map.wart-on .wcompass + .wtitle + .wgeo.s2 { fill: #fbf1d6; stroke: rgba(28, 18, 6, .78); stroke-width: 3px; paint-order: stroke; }
+  #map.wart-on .wtitle { fill: #fbf1d6; paint-order: stroke; stroke: rgba(28, 18, 6, .78); stroke-width: 3px; }
+  #map.wart-on .wcompass circle, #map.wart-on .wcompass path:first-of-type { stroke: #fbf1d6; }
   .wgeo { fill: #4a3418; font: italic 22px var(--display); letter-spacing: .12em; text-anchor: middle; pointer-events: none; paint-order: stroke; stroke: rgba(246, 234, 200, .7); stroke-width: 3px; opacity: .85; }
   .wgeo.r2 { font-size: 13px; letter-spacing: .08em; }
   .wgeo.s { fill: #e9f1ea; stroke: rgba(20, 45, 55, .5); font-size: 24px; letter-spacing: .5em; opacity: .8; }
