@@ -843,3 +843,27 @@ HERO_LINES.e_inter = {
     },
   ],
 };
+
+// 장수가 모자랄 때: 역사에 이름이 남은 하스몬 시대 사람들이 하나님의 군대에 합류한다 (마카비서는 외경 — 역사 자료)
+EVENTS.e_inter.push({ id: 'faithfulJoin', who: 'army', auto: 0, repeat: true,
+  cond: G => G.done.modein && G.exists('army') && Object.values(GAME.S.offs).filter(o => o.alive && o.fac === 'army').length <= 4 && G.turn >= (G.flags.joinNext || 0),
+  title: '율법에 열심 있는 자들이 모여들다', ref: '마카비1서 2:27, 42; 8:17; 12:16 (외경); 단 11:32',
+  text: '"오직 자기의 하나님을 아는 백성은 강하여 용맹을 떨치리라" (단 11:32). 하나님의 군대의 장수들이 줄어들자, 율법을 지키려는 사람들이 광야와 성읍에서 모여들었다. 그 가운데에는 훗날 로마와 스파르타에 사절로 간 사람들처럼 역사에 이름을 남긴 이들도 있었다.',
+  choices: [
+    { label: '그들을 맞아 장수로 세운다', run: G => {
+      G.flags.joinNext = G.turn + 8;
+      const pool = [
+        ['에우폴레모스', 55, 82, 80, 72, 85, 'army', 'jerusalem', '요한의 아들. 유다 마카비가 로마에 보낸 사절, 역사가.', '마카비1서 8:17 (외경)'],
+        ['야손', 60, 70, 72, 68, 82, 'army', 'jerusalem', '엘르아살의 아들. 에우폴레모스와 함께 로마에 간 사절.', '마카비1서 8:17 (외경)'],
+        ['누메니우스', 58, 76, 78, 74, 80, 'army', 'jerusalem', '안티오쿠스의 아들. 요나단이 로마와 스파르타에 보낸 사절.', '마카비1서 12:16 (외경)'],
+        ['안티파테르', 62, 70, 70, 66, 78, 'army', 'jerusalem', '야손의 아들. 누메니우스와 함께 간 사절.', '마카비1서 12:16 (외경)'],
+        ['도시데오스', 80, 60, 50, 64, 82, 'army', 'jerusalem', '유다 마카비의 장수. 길르앗 원정에서 싸웠다.', '마카비2서 12:19, 35 (외경)'],
+        ['소시파테르', 78, 58, 52, 62, 80, 'army', 'jerusalem', '유다 마카비의 장수. 도시데오스와 함께 싸웠다.', '마카비2서 12:19 (외경)'],
+      ];
+      const got = [];
+      for (const row of pool) { if (got.length >= 2) break; const o = G.recruit(row); if (o) got.push(o.name); }
+      G.eachCity('army', c => { c.faith += 3; });
+      return got.length ? `${got.join('·')}이(가) 하나님의 군대에 합류했다. 모든 성의 신앙 +3.` : '더 모일 사람이 없었으나, 남은 무리의 신앙이 굳세어졌다. 모든 성의 신앙 +3.';
+    } },
+    { label: '지금은 남은 무리로 버틴다', run: G => { G.flags.joinNext = G.turn + 8; return '남은 장수들로 버티기로 했다.'; } },
+  ] });

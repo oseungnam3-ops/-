@@ -128,12 +128,14 @@
     eachCity: (f, fn) => citiesOf(f).forEach(c => { fn(c); fixCity(c); }),
     buff: (f, k, turns, val) => { S.buffs[f] = S.buffs[f] || {}; S.buffs[f][k] = { turns, val }; },
     rel: (a, b, d) => setRel(a, b, getRel(a, b) + d),
-    kingdom: (d, why) => { if (S.story) addKingdom(d, why); },
+    kingdom: (d, why) => { if (S.story) addKingdom(d > 0 && S.scn.startsWith('e_') ? d * 0.5 : d, why); }, // 새 시대는 사건이 많아 절반만
     avgFaith: f => avgFaith(f),
     setRuler: (f, n) => { const o = offByName(n); if (o && o.alive && exists(f) && o.fac === f) fac(f).ruler = o.id; },
     item: (f, id, n = 1) => { if (!exists(f) || !ITEMS[id]) return; const F = fac(f); F.items = F.items || {}; F.items[id] = (F.items[id] || 0) + n; },
     res: (f, add) => { if (!exists(f)) return; const F = fac(f); Object.entries(add).forEach(([k, v]) => { F[k] = Math.max(0, (F[k] || 0) + v); }); },
     kill: n => { const o = offByName(n); if (o && o.alive) killOfficer(o); },
+    // 새 인물을 세력에 들인다 (행: [이름, 무, 지, 정, 매, 신, 세력, 도시, 소개, 성경]) — 이미 있으면 그 사람을 부른다
+    recruit: row => { if (offByName(row[0])) return null; if (!exists(row[6])) return null; const o = addOfficer(row); if (!S.cities[o.city] || S.cities[o.city].owner !== o.fac) o.city = fac(o.fac).capital; return o; },
     join: (n, f, cid) => { const o = offByName(n); if (!o || !o.alive || !exists(f)) return; const wasRuler = o.fac && fac(o.fac).ruler === o.id; const from = o.fac; o.fac = f; o.city = cid || fac(f).capital; if (wasRuler) succession(from); },
     transferAll: (from, to) => {
       citiesOf(from).forEach(c => { c.owner = to; c.loy = clamp(c.loy + 5, 0, 100); });
@@ -1612,7 +1614,7 @@
         if (r.ok) {
           log(`${CITY_INFO[cid].name}: ${o.name}의 ${C.label} — ${r.msg}`);
           S.story.counts[key] = (S.story.counts[key] || 0) + 1;
-          if (key === 'relief') addKingdom(1); if (key === 'worship') addKingdom(0.5);
+          { const h = S.scn.startsWith('e_') ? 0.5 : 1; if (key === 'relief') addKingdom(1 * h); if (key === 'worship') addKingdom(0.5 * h); }
         }
         if (r.ok && hooks.onCommand && hooks.onCommand(o, cid, key, r)) { render(); return; }
         if (r.ok) { landFx(key, r.msg); voiceOf(o, 'obey'); snd('sfx', { comm: 'coin', relief: 'coin', wall: 'build', worship: 'holy', recruit: 'march', train: 'clash', agri: 'page', search: 'page' }[key] || 'click'); }
