@@ -1271,11 +1271,13 @@
     $('#modalBody').querySelectorAll('.pick').forEach(b => b.addEventListener('click', () => { closeModal(); then(offById(b.dataset.o)); }));
   }
 
-  function onCmd(key) {
+  function onCmd(key, oid) {
     const cid = sel;
     if (CMDS[key]) {
       const C = CMDS[key];
-      pickOfficer(cid, C.stat, `${C.label} — ${CITY_INFO[cid].name}`, o => {
+      // oid가 있으면 고르는 창 없이 그 장수에게 바로 맡긴다 (3D 성내에서 장수와 대화 → 명령)
+      const pre = oid && offById(oid), pickOr = pre ? (c, s, t, then) => { if (pre.alive && pre.fac === S.player && pre.city === cid && !pre.done) then(pre); else toast('이 장수는 지금 명령을 받을 수 없습니다.'); } : pickOfficer;
+      pickOr(cid, C.stat, `${C.label} — ${CITY_INFO[cid].name}`, o => {
         const r = doCmd(S.player, o, cid, key);
         if (r.ok) {
           log(`${CITY_INFO[cid].name}: ${o.name}의 ${C.label} — ${r.msg}`);
@@ -1730,7 +1732,7 @@
   window.GAME = {
     get S() { return S; }, get sel() { return sel; }, set sel(v) { sel = v; },
     hooks, city, fac, offById, offsIn, freeIn, citiesOf, CITY_INFO, ADJ, CMDS, STAT_NAME,
-    onCmd, askEndTurn, render, showBio, toast, portraitOf, avgFaith, facName, yearLabel, fmt, esc, idleOffs, checkStory, playDialogue,
+    onCmd, cmdWith: (key, oid) => { if (CMDS[key] && S.cities[sel]) onCmd(key, oid); }, askEndTurn, render, showBio, toast, portraitOf, avgFaith, facName, yearLabel, fmt, esc, idleOffs, checkStory, playDialogue,
     SEASONS, showLand, showMap, artKey, get mode() { return mode; },
     // 전술 전투(tactics.js)가 쓰는 엔진 함수
     tac: { marchPow, applyBattleResult, killOfficer, buffVal, ITEMS, UNITS, PLAINS, playBattle, captiveDialog, voiceOf, snd, clamp, rnd, log, isProphet, setInBattle: v => { inBattle = v; } },
