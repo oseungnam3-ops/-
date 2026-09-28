@@ -602,7 +602,9 @@
         const myP = sidePower(f, offsIn(c.id, f), c.train, false, c);
         const targets = enemies.filter(n => !peaceBlocks(f, n.owner) && (!n.owner || getRel(f, n.owner) < 60))
           .map(n => ({ n, score: c.soldiers * 0.7 * myP / Math.max(1, n.soldiers * (n.owner ? sidePower(n.owner, offsIn(n.id, n.owner), n.train, true, n) : 1)) }))
-          .filter(t => t.score > (isWorld(c.id) !== isWorld(t.n.id) ? 2.2 : 1.4)).sort((a, b) => b.score - a.score); // 가나안 밖과 안을 넘나드는 원정은 훨씬 우세할 때만
+          .filter(t => t.score > (isWorld(c.id) !== isWorld(t.n.id) ? 2.2 : 1.4) * (t.n.owner === S.player && S.scn.startsWith('e_') ? 1.35 : 1))
+          .filter(t => !(t.n.owner === S.player && S.scn.startsWith('e_') && S.turn <= 8)).sort((a, b) => b.score - a.score);
+          // 새 여섯 시대: 처음 8턴은 적이 하나님의 군대의 성을 치지 않고(나라를 세울 틈), 그 뒤에도 더 우세할 때만 친다 // 가나안 밖과 안을 넘나드는 원정은 훨씬 우세할 때만
         if (targets.length) {
           const t = targets[0].n;
           const force = Math.round(c.soldiers * 0.7);
@@ -2011,20 +2013,20 @@
     SCENARIOS.forEach(sc => { A['@' + sc.id] = artKey('@' + sc.id); });
     let h = `<div class="title-art" style="${A['@title'] ? `background-image:url('${A['@title']}')` : ''}"></div>
       <div class="title-inner">
-      <p class="eyebrow">성경 역사 전략 시뮬레이션</p>
+      <p class="eyebrow">마하나임 · 하나님의 군대</p>
       <h1>성경 삼국지</h1>
-      <p class="lede">아브라함의 장막에서 여호수아의 정복, 사사 시대, 사울의 왕국, 다윗의 통일, 왕국의 분열까지. 인물들과 대화하며 성을 다스리고, 칼이 아닌 언약 위에 하나님 나라를 세워 간다.</p>
+      <p class="lede">"야곱이 그들을 볼 때에 이르되 이는 하나님의 군대라 하고 그 땅 이름을 마하나임이라 하였더라" (창 32:2). 족장의 장막에서 출애굽과 가나안, 사사와 왕국의 시대를 지나 신구약 중간 시대까지 — 마하나임 하나님의 군대를 이끌고 애굽·앗수르·바벨론·그리스·로마의 땅으로 나아가 하나님 나라를 세워 간다.</p>
       <div class="title-btns">${saved ? `<button class="gbtn" id="contBtn"><span>이어하기</span><small>${esc(SCENARIOS.find(x => x.id === saved.scn).title)} · ${esc(saved.facName)} · BC ${saved.year}년 ${SEASONS[saved.season] || ''} · ${saved.turn}턴</small></button>` : ''}
       <button class="btn" id="loadBtn">불러오기</button><button class="btn" id="galBtn">인물 갤러리</button><button class="btn" id="sndBtn">소리 설정</button><button class="btn" id="manBtn">📖 사용 설명서</button></div>
       <h2 class="sec">시나리오</h2><div class="scns">`;
-    // 여섯 시대 개편 중: 새 시대(e_*)는 모두 준비될 때까지 ?preview=1 에서만 보인다
-    const preview = /[?&]preview=1/.test(location.search);
-    SCENARIOS.filter(sc => preview || !sc.id.startsWith('e_')).forEach(sc => {
+    // 여섯 시대(e_*)만 보인다. 옛 일곱 시나리오는 저장 파일을 이어 하도록 데이터만 남겨 두었다 (?classic=1 에서 보인다)
+    const classic = /[?&]classic=1/.test(location.search);
+    SCENARIOS.filter(sc => classic ? !sc.id.startsWith('e_') : sc.id.startsWith('e_')).sort((a, b) => b.year - a.year).forEach(sc => {
       const main = sc.factions.filter(f => STORY[sc.id] && STORY[sc.id][f.id]), rest = sc.factions.filter(f => !main.includes(f));
       const fb = f => `<button class="facbtn${main.includes(f) ? ' story' : ''}" data-scn="${sc.id}" data-fac="${f.id}" style="--fc:${f.color}"><i>${esc(f.name[0])}</i><b>${esc(f.name)}</b><small>${esc(f.ruler)} · ${Object.keys(f.cities).length}성${main.includes(f) ? ' · 스토리' : ''}</small></button>`;
       h += `<article class="scn"><div class="scn-art" style="${A['@' + sc.id] ? `background-image:url('${A['@' + sc.id]}')` : ''}"><span class="yr">BC ${sc.year}</span><h3>${esc(sc.title)}</h3><span class="ref">${esc(sc.ref)}</span></div>
         <p>${esc(sc.intro)}</p><div class="facs">${main.map(fb).join('')}
-          <details><summary>다른 세력으로 시작</summary><div class="facs">${rest.map(fb).join('')}</div></details>
+          ${sc.id.startsWith('e_') ? '' : `<details><summary>다른 세력으로 시작</summary><div class="facs">${rest.map(fb).join('')}</div></details>`}
         </div></article>`;
     });
     h += `</div><p class="foot">인물과 사건은 성경 기록을 바탕으로 요약·각색했습니다. 능력치와 전투 결과, 인물 일러스트는 창작입니다.</p></div>`;
