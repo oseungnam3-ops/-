@@ -1,5 +1,5 @@
 // 성경 삼국지 — 지도·시나리오·인물·역사 이벤트 데이터
-// 도시: [id, 이름, x, y, 인구, 농업, 상업, 성벽, 설명]
+// 도시: [id, 이름, x, y, 인구, 농업, 상업, 성벽, 설명, (그 시나리오에만 나오는 성이면 시나리오 id)]
 const CITY_TABLE = [
   ['dan', '단', 382, 107, 20000, 40, 30, 40, '이스라엘 최북단, 요단강 발원지'],
   ['hazor', '하솔', 362, 165, 35000, 50, 45, 70, '가나안 북부 여러 나라의 머리'],
@@ -27,6 +27,9 @@ const CITY_TABLE = [
   ['beersheba', '브엘세바', 170, 640, 12000, 35, 30, 35, '맹세의 우물, 남방의 끝'],
   ['kirhareseth', '길하레셋', 395, 625, 20000, 40, 35, 80, '모압의 산성 도읍'],
   ['bozrah', '보스라', 370, 737, 18000, 30, 50, 65, '에돔의 도읍'],
+  ['modein', '모데인', 232, 426, 8000, 45, 20, 20, '하스몬 가문의 고향, 봉기가 시작된 마을', 'maccabees'],
+  ['emmaus', '엠마오', 238, 508, 12000, 50, 30, 35, '아얄론 골짜기 어귀, 유다 마카비가 고르기아스를 물리친 곳', 'maccabees'],
+  ['gezer', '게셀', 190, 446, 15000, 45, 45, 70, '해안길과 예루살렘 길을 지키는 요새. 시몬이 되찾았다', 'maccabees'],
 ];
 
 const ROADS = [
@@ -42,6 +45,9 @@ const ROADS = [
   ['gath', 'ekron'], ['gath', 'ashkelon'], ['gath', 'gaza'], ['ekron', 'ashdod'], ['ekron', 'joppa'],
   ['ashdod', 'ashkelon'], ['ashdod', 'joppa'], ['ashkelon', 'gaza'], ['rabbah', 'dibon'],
   ['dibon', 'kirhareseth'], ['kirhareseth', 'bozrah'],
+  ['modein', 'joppa'], ['modein', 'gezer'], ['modein', 'bethel'], ['modein', 'emmaus'],
+  ['emmaus', 'jerusalem'], ['emmaus', 'gezer'], ['emmaus', 'bethlehem'],
+  ['gezer', 'joppa'], ['gezer', 'ashdod'], ['gezer', 'hebron'],
 ];
 
 // 이스라엘·유다 본토 (다윗 통일/재통일 목표)
@@ -488,6 +494,62 @@ const SCENARIOS = [
     goals: { judah: HOLY_LAND, israel: HOLY_LAND },
     goalText: { judah: '갈라진 열두 지파를 다시 하나로 (본토 14성 통일).', israel: '갈라진 열두 지파를 다시 하나로 (본토 14성 통일).' },
   },
+  {
+    id: 'maccabees',
+    title: '신구약 중간 시대 — 마카비 혁명',
+    year: 167,
+    ref: '다니엘 8:9-14; 11:21-35; 요한복음 10:22 · 역사 자료: 마카비1·2서(외경)',
+    intro: '말라기 이후 선지자의 음성이 끊긴 사백 년. 알렉산더의 제국이 갈라지고, 셀레우코스 왕 안티오쿠스 4세 "에피파네스"가 예루살렘 성전에 이방 제단을 세우고 율법을 금했다. 다니엘이 본 "멸망의 가증한 것"이다. 모데인의 늙은 제사장 맛다디아와 다섯 아들이 일어선다.',
+    factions: [
+      { id: 'judea', name: '하스몬 가문', ruler: '맛다디아', color: '#e2b04a', capital: 'modein', gold: 600, food: 5000, aggr: 0.45,
+        desc: '모데인의 제사장 맛다디아와 다섯 아들(요한·시몬·유다·엘르아살·요나단). 작은 마을 하나에서 시작하는 믿음의 봉기.',
+        cities: { modein: 2500 } },
+      { id: 'seleucid', name: '셀레우코스 왕국', ruler: '안티오쿠스 4세', color: '#8a63c9', capital: 'damascus', gold: 4000, food: 18000, aggr: 0.3,
+        desc: '알렉산더의 후계 왕국. 안디옥에서 수리아와 유다를 다스리며 헬라화를 강요한다. 예루살렘에는 아크라 요새의 수비대가 있다.',
+        cities: { damascus: 8000, jerusalem: 3000, shechem: 2500, bethel: 1500, jericho: 1500, emmaus: 1200, bethlehem: 1000, megiddo: 2500, bethshean: 2500, hazor: 2000, dan: 1500, joppa: 2000, gezer: 2000 } },
+      { id: 'idumea', name: '이두매', ruler: '이두매 족장', color: '#b5804f', capital: 'hebron', gold: 700, food: 5000, aggr: 0.3,
+        desc: '에서의 자손. 유다 남쪽 헤브론까지 올라와 살고 있다.', cities: { hebron: 2500, beersheba: 1500 } },
+      { id: 'ammon', name: '암몬', ruler: '디모데', color: '#5ea67c', capital: 'rabbah', gold: 800, food: 6000, aggr: 0.35,
+        desc: '디모데가 이끄는 요단 동편의 군대. 길르앗의 유다 사람들을 괴롭힌다.', cities: { rabbah: 3000, ramoth: 2000, mahanaim: 1500 } },
+      { id: 'nabatea', name: '나바티아', ruler: '아레다', color: '#c79a3a', capital: 'bozrah', gold: 1500, food: 5000, aggr: 0.15,
+        desc: '대상로를 쥔 아라비아 사람들. 유다 마카비를 평화롭게 맞았다.', cities: { bozrah: 2500, kirhareseth: 2000, dibon: 1500 } },
+      { id: 'coast', name: '해안 헬라 성읍', ruler: '아스돗 장관', color: '#c9573f', capital: 'ashdod', gold: 1500, food: 6000, aggr: 0.2,
+        desc: '옛 블레셋 땅의 헬라화된 항구 도시들.', cities: { ashdod: 2500, ashkelon: 2000, gaza: 2500 } },
+      { id: 'tyre', name: '두로·시돈', ruler: '두로 장관', color: '#3fb3b5', capital: 'tyre', gold: 2500, food: 5000, aggr: 0.1,
+        desc: '셀레우코스 왕을 섬기는 부유한 항구. 갈릴리의 유다 사람들을 위협한다.', cities: { tyre: 3500 } },
+    ],
+    neutral: { shiloh: 600 },
+    hide: ['ekron', 'gath'], // 가드는 이미 사라졌고, 이 무렵 그 일대의 요새는 게셀이다
+    officers: [
+      ['맛다디아', 55, 75, 65, 88, 98, 'judea', 'modein', '모데인의 제사장. "우리와 우리 자녀들은 조상들의 언약을 따라 살겠다" 하며 이방 제단을 허물었다.', '마카비1서 2:1-28 (외경)'],
+      ['유다 마카비', 97, 86, 70, 92, 95, 'judea', 'modein', '맛다디아의 셋째 아들. "망치(마카비)"라 불린 용사. 적은 무리로 큰 군대를 여러 번 이겼다.', '마카비1서 3:1-9'],
+      ['시몬', 76, 90, 91, 80, 88, 'judea', 'modein', '둘째 아들. 아버지가 "지혜로운 사람이니 아버지로 여기라" 한 형제. 훗날 이방의 멍에를 벗긴다.', '마카비1서 2:65; 13:41-42'],
+      ['요나단', 82, 86, 84, 78, 86, 'judea', 'modein', '막내아들. 형 유다를 이어 백성을 이끌고 대제사장이 되었다.', '마카비1서 9:28-31; 10:20'],
+      ['엘르아살', 92, 50, 40, 72, 90, 'judea', 'modein', '넷째 아들. 벧스가랴에서 왕이 탄 줄 안 코끼리 밑으로 뛰어들었다.', '마카비1서 6:43-46'],
+      ['요한', 68, 60, 66, 66, 84, 'judea', 'modein', '맏아들. 짐을 맡기러 나바티아로 가던 길에 죽임을 당했다.', '마카비1서 9:35-36'],
+      ['하시딤 장로', 40, 72, 55, 72, 97, null, 'modein', '율법에 목숨을 건 "경건한 사람들"의 어른. 맛다디아에게 합류했다.', '마카비1서 2:42'],
+      ['엘르아살 노인', 10, 85, 55, 82, 100, null, 'jerusalem', '아흔 살의 서기관. 거짓으로 돼지고기를 먹는 척하라는 권유도 거절하고 순교했다.', '마카비2서 6:18-31 (외경); 히 11:35'],
+      ['일곱 아들의 어머니', 5, 80, 45, 90, 100, null, 'jerusalem', '일곱 아들이 한 날에 순교하는 것을 보며 "하늘과 땅을 보라"고 격려한 어머니.', '마카비2서 7장 (외경); 히 11:35'],
+      ['안티오쿠스 4세', 70, 80, 76, 62, 5, 'seleucid', 'damascus', '스스로 "신의 현현(에피파네스)"이라 부른 왕. 성전에 이방 제단을 세웠다. 다니엘이 예언한 "비천한 사람".', '단 11:21-36; 마카비1서 1:10-64'],
+      ['리시아스', 76, 80, 86, 60, 8, 'seleucid', 'damascus', '왕의 섭정. 대군과 코끼리를 이끌고 벧술과 벧스가랴로 왔다.', '마카비1서 3:32-37; 6:28-63'],
+      ['바키데스', 86, 76, 70, 50, 5, 'seleucid', 'damascus', '엘라사에서 유다 마카비를 쓰러뜨린 장군.', '마카비1서 7:8; 9:1-22'],
+      ['코끼리 부대장', 86, 30, 20, 30, 0, 'seleucid', 'damascus', '전투 코끼리 서른두 마리를 모는 장수. 코끼리마다 망대와 궁수를 실었다.', '마카비1서 6:30-37'],
+      ['니가노르', 80, 65, 55, 50, 5, 'seleucid', 'jerusalem', '성전을 향해 손을 들고 위협한 장군. 아다르월 13일에 패했다.', '마카비1서 7:26-50'],
+      ['메넬라오스', 30, 72, 72, 30, 5, 'seleucid', 'jerusalem', '돈으로 대제사장 자리를 산 헬라파.', '마카비2서 4:23-29 (외경)'],
+      ['아폴로니우스', 72, 55, 50, 40, 5, 'seleucid', 'shechem', '사마리아의 장관. 유다 마카비에게 죽고 그 칼을 빼앗겼다.', '마카비1서 3:10-12'],
+      ['세론', 70, 45, 40, 45, 5, 'seleucid', 'megiddo', '수리아 군대 장관. 벧호론 비탈에서 패했다.', '마카비1서 3:13-24'],
+      ['고르기아스', 82, 78, 50, 45, 5, 'seleucid', 'emmaus', '밤에 유다의 진을 기습하려다 빈 진을 친 장수.', '마카비1서 4:1-25'],
+      ['알키모스', 35, 66, 60, 40, 15, 'seleucid', 'bethel', '대제사장 자리를 얻으려 하시딤을 속인 사람.', '마카비1서 7:5-25'],
+      ['이두매 족장', 65, 50, 46, 45, 10, 'idumea', 'hebron', '에서 자손의 족장.', '마카비1서 5:3'],
+      ['디모데', 78, 66, 55, 50, 5, 'ammon', 'rabbah', '암몬 군대를 이끌고 길르앗의 유다 사람들을 에워싼 장수.', '마카비1서 5:6-13, 37-44'],
+      ['아레다', 62, 72, 76, 72, 20, 'nabatea', 'bozrah', '나바티아 사람들의 왕. 대상로를 다스린다.', '마카비2서 5:8 (외경)'],
+      ['아스돗 장관', 60, 56, 60, 45, 5, 'coast', 'ashdod', '헬라화된 해안 도시의 장관.', '마카비1서 5:68'],
+      ['두로 장관', 50, 70, 80, 64, 5, 'tyre', 'tyre', '두로와 시돈의 부유한 장관.', '마카비1서 5:15'],
+    ],
+    rel: [['judea', 'nabatea', 60], ['seleucid', 'coast', 70], ['seleucid', 'tyre', 70], ['seleucid', 'idumea', 60], ['seleucid', 'ammon', 60], ['judea', 'seleucid', 5]],
+    goals: { judea: ['modein', 'emmaus', 'jerusalem', 'bethel', 'jericho', 'bethlehem', 'hebron', 'joppa', 'gezer'] },
+    goalText: { judea: '이방의 멍에를 벗고 유다 땅 9성(예루살렘·욥바 포함)을 되찾는다.' },
+  },
 ];
 
 // 사사 시대 이벤트 도우미. 사사들이 차례로 일어나고, 신앙이 식으면 압제자가 돌아온다.
@@ -637,6 +699,66 @@ const PATRI_KIT = {
     if (G.exists('edom')) G.rel('abraham', 'edom', 10);
     G.flags.twelve = true;
     return '벧엘을 떠나 에브랏에 이르기 전, 라헬이 난산 끝에 아들을 낳고 숨을 거두며 그 이름을 베노니라 했으나 야곱은 베냐민이라 불렀다(35:16-18). ' + (ben ? '베냐민이 합류해 열두 아들이 찼다. ' : '') + '야곱이 베들레헴 길에 라헬의 묘비를 세웠다(35:19-20)' + (settled ? ' — 베들레헴에 장막을 쳤다' : '') + '. 이삭은 백팔십 세에 죽어 에서와 야곱이 함께 그를 장사했다(35:28-29; 세일과의 관계 +10).';
+  },
+};
+
+// 마카비 혁명 이벤트 도우미. 하스몬 가문(judea)이 모데인 한 마을에서 셀레우코스 제국에 맞선다.
+const MACC_KIT = {
+  // 이 판에 있는 성인지 (시나리오마다 숨겨진 성이 있다)
+  on: (G, cid) => !!G.city(cid),
+  mine: (G, cid) => MACC_KIT.on(G, cid) && G.ownerOf(cid) === 'judea',
+  sel: (G, cid) => MACC_KIT.on(G, cid) && G.ownerOf(cid) === 'seleucid',
+  faithAll: (G, d, loy) => { if (G.exists('judea')) G.eachCity('judea', c => { c.faith += d; if (loy) c.loy += loy; }); },
+  // 세력 f의 성 병력을 k배로 (only가 있으면 그 성들만)
+  cut: (G, f, k, only) => { if (G.exists(f)) G.eachCity(f, c => { if (!only || only.includes(c.id)) c.soldiers = Math.floor(c.soldiers * k); }); },
+  // 하스몬 가문의 본거지 (도읍을 잃었으면 남은 성 가운데 병력이 가장 많은 곳)
+  home: G => {
+    if (!G.exists('judea')) return null;
+    const cap = G.fac('judea').capital;
+    if (MACC_KIT.mine(G, cap)) return G.city(cap);
+    let best = null; G.eachCity('judea', c => { if (!best || c.soldiers > best.soldiers) best = c; });
+    return best;
+  },
+  add: (G, n) => { const c = MACC_KIT.home(G); if (c) c.soldiers += n; return !!c; },
+  // 셀레우코스와 맞닿은 하스몬 성 가운데 가장 약한 곳 (없으면 본거지)
+  front: G => {
+    const mine = []; if (G.exists('judea')) G.eachCity('judea', c => mine.push(c));
+    const near = mine.filter(c => ROADS.some(([a, b]) => MACC_KIT.on(G, a) && MACC_KIT.on(G, b) &&
+      ((a === c.id && G.ownerOf(b) === 'seleucid') || (b === c.id && G.ownerOf(a) === 'seleucid'))));
+    const pool = (near.length ? near : mine).sort((x, y) => x.soldiers - y.soldiers);
+    return pool.length ? pool[0].id : null;
+  },
+  // 셀레우코스의 습격 (군사는 도읍에서 나온다)
+  raid: (G, max) => {
+    const t = MACC_KIT.front(G);
+    if (!t || !G.exists('seleucid')) return '';
+    return G.raid('seleucid', t, max);
+  },
+  // 하스몬 가문의 지도자를 세운다 (살아 있고 가문에 있을 때만)
+  lead: (G, name) => { if (G.alive(name) && G.facOf(name) === 'judea') { G.setRuler('judea', name); return true; } return false; },
+  stat: (G, name, k, d) => { const o = G.o(name); if (o && o.alive) o[k] = Math.max(0, Math.min(100, o[k] + d)); },
+  // 재야 인물을 하스몬 가문에 합류시킨다
+  enlist: (G, name) => {
+    if (!G.exists('judea') || !G.alive(name) || G.facOf(name)) return false;
+    const h = MACC_KIT.home(G); G.join(name, 'judea', h ? h.id : undefined); return true;
+  },
+  // 안티오쿠스가 군대 절반을 이끌고 동방으로 (마카비1서 3:27-37)
+  east: G => {
+    if (!G.exists('seleucid')) return '';
+    const F = G.fac('seleucid');
+    MACC_KIT.cut(G, 'seleucid', 0.5, [F.capital]); MACC_KIT.cut(G, 'seleucid', 0.8, ['dan', 'hazor', 'megiddo', 'bethshean']);
+    F.gold = Math.max(0, F.gold - 1200); F.aggr = 0.2;
+    G.buff('seleucid', 'atk', 6, -0.1); G.flags.eastCampaign = G.turn;
+    return '셀레우코스 도읍의 군사 절반과 북쪽 성들의 군사 20%가 동방으로 떠났다. 셀레우코스 금 -1200, 6턴 동안 공격력 -10%, 한동안 공세가 누그러진다.';
+  },
+  // 성전 정결과 봉헌 (마카비1서 4:36-61)
+  dedicate: G => {
+    const c = G.city('jerusalem');
+    c.faith += 30; c.loy += 15; c.def += 10;
+    c.bld = c.bld || {}; c.bld.temple = Math.min(10, (c.bld.temple || 1) + 1);
+    MACC_KIT.faithAll(G, 10); G.fac('judea').gold = Math.max(0, G.fac('judea').gold - 200);
+    G.flags.hanukkah = G.turn; G.kingdom(10, '성전 봉헌');
+    return '금 -200. 예루살렘 신앙 +30, 민심 +15, 성벽 +10, 성전 Lv.+1. 하스몬 가문 모든 성 신앙 +10. 시온 산에 높은 성벽과 망대를 쌓았다 (4:60).';
   },
 };
 
@@ -1396,6 +1518,324 @@ const EVENTS = {
       text: '아사가 여호와 보시기에 정직하게 행했다. 남색하는 자를 쫓아내고, 그의 어머니 마아가가 아세라의 가증한 우상을 만들자 태후의 자리를 폐하였다.',
       choices: [
         { label: '우상을 찍어 기드론 시냇가에서 불사른다', run: G => { G.eachCity('judah', c => { c.faith += 20; c.loy -= 5; c.def = Math.min(100, c.def + 5); }); return '유다 신앙 +20, 민심 -5, 모든 성벽 +5.'; } },
+      ] },
+  ],
+  maccabees: [
+    { id: 'modeinAltar', who: 'judea', auto: 0,
+      cond: G => G.turn >= 1 && G.exists('judea') && G.exists('seleucid') && MACC_KIT.mine(G, 'modein'),
+      title: '모데인의 이방 제단', ref: '마카비1서 2:15-28 (외경); 단 11:32',
+      text: '왕의 관리들이 모데인에 와서 이방 제단을 쌓고 제사장 맛다디아에게 말했다. "당신은 이 성읍의 어른이니 먼저 나와 왕의 명령대로 제물을 바치시오. 그러면 당신과 아들들은 왕의 친구가 되어 금과 은과 많은 선물을 받을 것이오." 맛다디아가 큰 소리로 대답했다. "나와 내 아들들과 내 형제들은 우리 조상들의 언약을 따라 살겠소." "오직 자기의 하나님을 아는 백성은 강하여 용맹을 떨치리라" (단 11:32).',
+      choices: [
+        { label: '이방 제단을 허물고 "율법에 열심 있는 자는 나를 따르라" 외친다', run: G => {
+          MACC_KIT.add(G, 700); MACC_KIT.faithAll(G, 10, 5);
+          G.buff('judea', 'atk', 4, 0.2); G.rel('judea', 'seleucid', -5);
+          G.flags.zeal = true; G.kingdom(5, '언약을 따라 살겠다');
+          return '맛다디아가 제단을 허물었다. 율법을 따르려는 사람들이 산으로 모여들었다 — 본거지 병력 +700, 신앙 +10, 민심 +5, 4턴 동안 공격력 +20%. 산지와 동굴이 그들의 성이 되었다.'; } },
+        { label: '왕의 친구가 되어 제물을 바친다', run: G => {
+          G.fac('judea').gold += 500; G.rel('judea', 'seleucid', 40); MACC_KIT.faithAll(G, -25, -10);
+          G.flags.apostate = true; G.kingdom(-10, '이방 제단에 절하다');
+          return '금 +500, 셀레우코스와의 관계 +40. 그러나 모데인 사람들이 등을 돌렸다 — 신앙 -25, 민심 -10. "그가 또 언약을 배반하고 악행하는 자를 속임수로 타락시킬 것이나" (단 11:32).'; } },
+      ],
+      altWho: 'seleucid', altText: '모데인의 늙은 제사장 맛다디아가 왕의 제물을 거부하고, 제물을 바치려던 사람과 왕의 관리를 쳐 죽였다. 그와 아들들이 산으로 달아났다.',
+      altChoices: [
+        { label: '산을 뒤져 그들을 쫓는다', run: G => {
+          const h = MACC_KIT.home(G); if (h) h.soldiers = Math.floor(h.soldiers * 0.75);
+          G.buff('seleucid', 'atk', 2, 0.1); G.flags.zeal = true;
+          return '추격대가 광야의 굴까지 쫓아갔다. 하스몬 가문의 병력 25%가 흩어졌고, 셀레우코스 2턴 동안 공격력 +10%.'; } },
+        { label: '안식일을 기다려 굴을 에워싼다', run: G => {
+          G.flags.zeal = true; G.flags.sabbathTrap = true;
+          return '율법을 지키는 자들은 안식일에 싸우지 않는다. 기다리면 된다.'; } },
+      ] },
+    { id: 'sabbath', who: 'judea', auto: 0,
+      cond: G => G.done.modeinAltar && G.turn >= 2 && G.exists('judea'),
+      title: '안식일의 결단과 하시딤', ref: '마카비1서 2:29-44 (외경); 마 12:11-12; 막 2:27',
+      text: '광야의 굴에 숨은 천 명이 안식일에 공격을 받았다. 그들은 돌 하나 던지지 않고 "우리는 모두 결백하게 죽겠다. 하늘과 땅이 증인이 되리라" 하며 아내와 자녀와 함께 죽었다 (2:37-38). 맛다디아와 벗들이 크게 슬퍼하며 의논했다. "우리가 모두 형제들처럼 한다면 이방인들이 우리를 땅에서 곧 없애 버릴 것이다." 그때 율법에 목숨을 건 경건한 사람들, 하시딤의 무리가 찾아왔다.',
+      choices: [
+        { label: '"안식일이라도 우리를 치러 오면 맞서 싸우자" 하고 하시딤을 맞는다', run: G => {
+          G.eachCity('judea', c => { c.train += 12; });
+          MACC_KIT.enlist(G, '하시딤 장로'); MACC_KIT.add(G, G.flags.sabbathTrap ? 600 : 1000);
+          G.flags.sabbathDefense = true; G.kingdom(3, '생명을 지키는 안식일');
+          return (G.flags.sabbathTrap ? '안식일을 노린 포위가 풀렸다. ' : '') + '모든 성의 훈련 +12. 하시딤 장로가 합류하고 본거지 병력 +' + (G.flags.sabbathTrap ? 600 : 1000) + '. 훗날 예수께서 말씀하셨다. "안식일은 사람을 위하여 있는 것이요 사람이 안식일을 위하여 있는 것이 아니니" (막 2:27), "안식일에 선을 행하는 것이 옳으니라" (마 12:12).'; } },
+        { label: '안식일에는 끝내 손을 들지 않는다', run: G => {
+          const h = MACC_KIT.home(G); if (h) h.soldiers = Math.floor(h.soldiers * (G.flags.sabbathTrap ? 0.55 : 0.7));
+          MACC_KIT.faithAll(G, 8); MACC_KIT.enlist(G, '하시딤 장로');
+          G.buff('seleucid', 'atk', 3, 0.15);
+          return `안식일마다 적이 찾아왔다. 본거지 병력 ${G.flags.sabbathTrap ? 45 : 30}% 희생, 신앙 +8, 셀레우코스 3턴 동안 공격력 +15%. 하시딤 장로가 합류했다. 그들은 순전했으나, 율법을 주신 분은 생명을 지키라고 하셨다 (레 18:5).`; } },
+      ] },
+    { id: 'martyrs', who: 'judea', auto: 0,
+      cond: G => G.done.modeinAltar && G.turn >= 3 && G.exists('judea') && G.alive('엘르아살 노인') && !G.facOf('엘르아살 노인'),
+      title: '엘르아살 노인과 일곱 아들의 어머니', ref: '마카비2서 6:18–7:41 (외경); 히 11:35-36; 단 12:2',
+      text: '아흔 살 서기관 엘르아살은 억지로 돼지고기를 먹으라는 명령을 받았다. 친구들이 몰래 다른 고기를 가져와 먹는 척만 하라고 권했지만 그는 거절했다. "이 나이에 거짓으로 꾸미는 것은 합당하지 않다. 젊은이들이 나 때문에 미혹될 것이다." 얼마 뒤 일곱 형제와 어머니가 같은 명령 앞에 섰다. 어머니는 막내에게 말했다. "하늘과 땅을 보아라. 하나님께서 없는 데서 이 모든 것을 만드셨다. 죽음을 받아들여라. 그분의 자비로 내가 너를 형들과 함께 다시 맞으리라" (마카비2서 7:28-29). "어떤 이들은 더 좋은 부활을 얻고자 하여 악형을 받되 구차히 풀려나기를 원하지 아니하였으며" (히 11:35).',
+      choices: [
+        { label: '그들의 증언을 온 유다에 전하며 부활의 소망을 붙든다', run: G => {
+          G.kill('엘르아살 노인'); G.kill('일곱 아들의 어머니');
+          MACC_KIT.faithAll(G, 12, 5); G.flags.martyrs = true; G.kingdom(6, '더 좋은 부활');
+          return '엘르아살 노인과 일곱 아들의 어머니가 순교했다. 하스몬 가문 신앙 +12, 민심 +5. "땅의 티끌 가운데에서 자는 자 중에 많은 사람이 깨어나 영생을 받는 자도 있겠고" (단 12:2).'; } },
+        { label: '슬픔을 딛고 칼을 간다', run: G => {
+          G.kill('엘르아살 노인'); G.kill('일곱 아들의 어머니');
+          MACC_KIT.faithAll(G, 5); G.buff('judea', 'atk', 3, 0.2); G.flags.martyrs = true;
+          return '엘르아살 노인과 일곱 아들의 어머니가 순교했다. 하스몬 가문 신앙 +5, 3턴 동안 공격력 +20%. 그러나 원수 갚는 것은 여호와께 속했다 (롬 12:19).'; } },
+      ],
+      altWho: 'seleucid', altText: '아흔 살 서기관과 일곱 형제의 어머니가 왕의 명령을 거부했다. 본보기가 필요하다고 신하들이 말한다.',
+      altChoices: [
+        { label: '본보기로 처형한다', run: G => {
+          G.kill('엘르아살 노인'); G.kill('일곱 아들의 어머니'); MACC_KIT.faithAll(G, 12, 5); G.flags.martyrs = true;
+          return '처형은 두려움이 아니라 믿음을 퍼뜨렸다. 하스몬 가문 신앙 +12, 민심 +5.'; } },
+        { label: '늙은이와 여인은 돌려보낸다', run: G => {
+          MACC_KIT.enlist(G, '엘르아살 노인'); MACC_KIT.enlist(G, '일곱 아들의 어머니'); G.rel('judea', 'seleucid', 5);
+          return '두 사람이 풀려나 산으로 갔다. 하스몬 가문에 합류했고, 관계가 조금 누그러졌다.'; } },
+      ] },
+    { id: 'mattathiasDeath', who: 'judea', auto: 0,
+      cond: G => (G.done.sabbath || G.turn >= 6) && G.turn >= 4 && G.exists('judea') && !G.flags.hammer, // 1장은 이 유언으로 끝난다(맛다디아가 먼저 쓰러져도 반드시 열린다)
+      title: '맛다디아의 유언', ref: '마카비1서 2:49-70 (외경); 수 1:9',
+      text: '맛다디아가 죽을 때가 되어 아들들에게 말했다. "내 아들들아, 율법을 위하여 열심을 내고 조상들의 언약을 위하여 목숨을 바쳐라. 아브라함과 요셉과 비느하스와 여호수아와 갈렙과 다윗과 엘리야와 다니엘을 기억하라. 여호와를 의지하는 사람은 아무도 쓰러지지 않는다. 너희 형 시몬은 지혜로운 사람이니 아버지로 여겨라. 유다 마카비는 어려서부터 힘센 용사였으니 군대의 장관이 되게 하라." 그는 백사십육 년에 죽어 모데인의 조상 묘에 묻혔다.',
+      choices: [
+        { label: '유다를 군대의 장관으로, 시몬을 아버지처럼 세운다', run: G => {
+          G.kill('맛다디아');
+          const j = MACC_KIT.lead(G, '유다 마카비') || MACC_KIT.lead(G, '시몬') || MACC_KIT.lead(G, '요나단');
+          MACC_KIT.stat(G, '시몬', 'int', 3); MACC_KIT.stat(G, '유다 마카비', 'cha', 3);
+          G.buff('judea', 'atk', 4, 0.2); MACC_KIT.faithAll(G, 5, 5);
+          G.flags.hammer = true; G.kingdom(4, '아버지의 유언');
+          return '맛다디아가 세상을 떠났다. 온 이스라엘이 크게 슬퍼했다. ' + (j ? '유다 마카비가 형제들과 함께 일어나 아버지를 이었다. ' : '') + '4턴 동안 공격력 +20%, 신앙·민심 +5, 시몬 지력 +3, 유다 매력 +3. "그는 싸움에서 사자와 같았다" (마카비1서 3:4).'; } },
+      ] },
+    { id: 'apollonius', who: 'judea', auto: 0,
+      cond: G => G.done.mattathiasDeath && G.turn >= 6 && G.exists('judea') && G.exists('seleucid') && G.alive('유다 마카비') && G.facOf('유다 마카비') === 'judea',
+      title: '아폴로니우스의 칼과 벧호론 비탈', ref: '마카비1서 3:10-26 (외경); 삼상 14:6',
+      text: '사마리아의 장관 아폴로니우스가 이방인과 사마리아에서 큰 군대를 모아 나왔다. 뒤이어 수리아 군대 장관 세론이 "유다와 그를 따르는 자들을 쳐서 이름을 내리라" 하며 벧호론 비탈을 올라왔다. 유다를 따르는 사람들은 굶주렸고 수가 적었다. 유다가 말했다. "많은 사람으로 이기든 적은 사람으로 이기든 하늘 앞에서는 다를 것이 없다. 전쟁의 승리는 군대의 많음에 있지 않고 하늘로부터 오는 힘에 있다" (마카비1서 3:18-19).',
+      choices: [
+        { label: '비탈 위에서 기다렸다가 적은 무리로 덮친다', run: G => {
+          G.buff('judea', 'atk', 4, 0.25);
+          const r = MACC_KIT.raid(G, 2500);
+          const a = G.alive('아폴로니우스'), s = G.alive('세론');
+          G.kill('아폴로니우스'); G.kill('세론');
+          MACC_KIT.cut(G, 'seleucid', 0.6, ['shechem', 'bethel']); MACC_KIT.cut(G, 'seleucid', 0.8, ['megiddo', 'gezer']);
+          MACC_KIT.stat(G, '유다 마카비', 'war', 2); G.item('judea', 'shield', 1);
+          G.fac('judea').gold += 400;
+          G.flags.bethHoron = true; G.kingdom(6, '하늘로부터 오는 힘');
+          return (r ? `사마리아 군대의 진격: ${r} ` : '') + (a ? '유다가 아폴로니우스를 쳐서 그 칼을 빼앗아 평생 그것으로 싸웠다. ' : '') + (s ? '벧호론 비탈에서 세론의 군대가 무너졌다. ' : '') + '세겜·벧엘의 셀레우코스 군 40%, 므깃도·게셀 20% 궤멸. 유다 마카비 무력 +2, 큰 방패와 전리품 금 +400, 4턴 동안 공격력 +25%. "여호와의 구원은 사람이 많고 적음에 달리지 아니하였느니라" (삼상 14:6).'; } },
+        { label: '수가 적으니 산성에 숨어 지킨다', run: G => {
+          const r = MACC_KIT.raid(G, 3000);
+          G.eachCity('judea', c => { c.def += 8; c.loy -= 5; });
+          return (r ? `셀레우코스의 공격: ${r} ` : '') + '모든 성의 성벽 +8, 그러나 민심 -5. 두려움은 적보다 빨리 퍼진다.'; } },
+      ],
+      altWho: 'seleucid', altText: '유다라는 자가 "망치"라 불리며 무리를 모으고 있다. 사마리아의 아폴로니우스와 군대 장관 세론이 출전을 청한다.',
+      altChoices: [
+        { label: '아폴로니우스와 세론을 보낸다', run: G => {
+          const r = MACC_KIT.raid(G, 4000);
+          if (Math.random() < 0.6) { G.kill('아폴로니우스'); G.buff('judea', 'atk', 3, 0.15); }
+          return (r || '출전한 군대가 산길에서 길을 잃었다.') + ' 벧호론 비탈은 좁고 가파르다.'; } },
+        { label: '지방 수비대에 맡겨 둔다', run: G => { G.buff('judea', 'atk', 3, 0.15); return '유다의 이름이 이방인들 사이에 퍼졌다. 하스몬 가문 3턴 동안 공격력 +15%.'; } },
+      ] },
+    { id: 'eastCampaign', who: 'seleucid', auto: 0,
+      cond: G => G.turn >= 7 && G.exists('seleucid') && G.alive('안티오쿠스 4세') && G.facOf('안티오쿠스 4세') === 'seleucid' && (G.done.apollonius || G.turn >= 9),
+      title: '왕이 동방으로 떠나다', ref: '마카비1서 3:27-37 (외경); 단 11:44',
+      text: '유다의 소문을 들은 안티오쿠스 왕이 크게 노했다. 그러나 병사들에게 한 해 치 품삯을 주고 나니 국고가 비었다. 여러 지방의 조세도 줄었다. 왕은 군대의 절반을 이끌고 페르시아로 가서 조공을 거두기로 하고, 섭정 리시아스에게 나머지 절반과 코끼리를 맡기며 유다를 쓸어버리라고 명했다. "동북에서부터 소문이 이르러 그를 번민하게 하므로" (단 11:44).',
+      choices: [
+        { label: '군대의 절반을 이끌고 동방으로 간다', run: G => MACC_KIT.east(G) },
+        { label: '동방은 미루고 유다를 먼저 친다', run: G => {
+          const F = G.fac('seleucid'); F.gold = Math.max(0, F.gold - 600);
+          G.eachCity('seleucid', c => { c.loy -= 10; }); G.buff('seleucid', 'atk', 3, 0.1);
+          const r = MACC_KIT.raid(G, 4000);
+          return '금 -600, 셀레우코스 모든 성 민심 -10 (밀린 품삯), 3턴 동안 공격력 +10%.' + (r ? ' ' + r : ''); } },
+      ],
+      altWho: 'judea', altText: '안디옥에서 소식이 왔다. 국고가 빈 안티오쿠스 왕이 군대 절반을 이끌고 페르시아로 떠났다. 남은 군대는 섭정 리시아스가 맡았다.',
+      altChoices: [
+        { label: '이 틈에 백성을 모으고 훈련한다', run: G => {
+          const out = MACC_KIT.east(G); MACC_KIT.add(G, 800); G.eachCity('judea', c => { c.train += 8; });
+          return out + ' 하스몬 가문 본거지 병력 +800, 모든 성 훈련 +8.'; } },
+      ] },
+    { id: 'mizpah', who: 'judea', auto: 0,
+      cond: G => (G.done.apollonius && G.turn >= 9 || G.turn >= 13) && G.exists('judea') && G.exists('seleucid') && G.ownerOf('emmaus') !== 'judea',
+      title: '미스바의 금식과 엠마오의 밤', ref: '마카비1서 3:38–4:25 (외경); 대하 20:12; 신 20:5-8',
+      text: '리시아스가 니가노르와 고르기아스에게 보병 사만과 기병 칠천을 주어 엠마오에 진을 치게 했다. 유다와 형제들은 예루살렘 맞은편 미스바에 모여 금식하고 굵은 베옷을 입고 율법책을 펴 놓고 부르짖었다. 유다는 율법대로 집을 짓는 자, 새로 장가든 자, 포도원을 심은 자, 두려워하는 자를 모두 집으로 돌려보냈다 (신 20:5-8). 그날 밤 고르기아스가 보병 오천과 기병 천으로 유다의 진을 기습하러 떠났다.',
+      choices: [
+        { label: '진에 불만 남겨 두고 밤새 엠마오의 본진으로 간다', run: G => {
+          const h = MACC_KIT.home(G); if (h) h.soldiers = Math.floor(h.soldiers * 0.9);
+          MACC_KIT.cut(G, 'seleucid', 0.4, ['emmaus']); MACC_KIT.cut(G, 'seleucid', 0.8, ['jerusalem', 'bethlehem', 'gezer']);
+          G.buff('judea', 'atk', 4, 0.35); MACC_KIT.faithAll(G, 10); G.item('judea', 'trumpet', 1);
+          G.fac('judea').gold += 500; G.flags.mizpah = true; G.kingdom(6, '오직 주만 바라보나이다');
+          return '두려워하는 자들이 돌아가 본거지 병력 10%가 줄었다. 그러나 새벽에 나팔을 불며 엠마오의 본진을 치자 엠마오의 셀레우코스 군 60%가 무너졌고, 빈 진을 친 고르기아스의 군대는 연기를 보고 흩어졌다 (예루살렘·베들레헴·게셀 20% 궤멸). 4턴 동안 공격력 +35%, 신앙 +10, 양각 나팔과 노획한 금 +500.'; } },
+        { label: '진을 굳게 지키며 고르기아스를 기다린다', run: G => {
+          const r = MACC_KIT.raid(G, 3500); G.buff('judea', 'atk', 2, 0.1);
+          return (r ? `고르기아스의 기습: ${r} ` : '') + '밤새 진을 지켰다. 2턴 동안 공격력 +10%.'; } },
+      ],
+      altWho: 'seleucid', altText: '척후가 알렸다. 유다의 무리가 미스바에서 금식하고 있다. 고르기아스가 밤에 그들의 진을 치겠다고 한다.',
+      altChoices: [
+        { label: '고르기아스를 밤에 보낸다', run: G => {
+          MACC_KIT.cut(G, 'seleucid', 0.5, ['emmaus']); G.buff('judea', 'atk', 3, 0.25);
+          return '고르기아스는 빈 진을 쳤다. 그사이 엠마오의 본진이 불탔다 — 엠마오 병력 50% 궤멸, 하스몬 가문 3턴 동안 공격력 +25%.'; } },
+        { label: '본진을 지키고 날이 밝기를 기다린다', run: G => { const r = MACC_KIT.raid(G, 3000); return r || '유다의 무리는 산으로 물러갔다.'; } },
+      ] },
+    { id: 'bethzur', who: 'judea', auto: 0,
+      cond: G => (G.done.mizpah || G.turn >= 15) && G.turn >= 11 && G.exists('judea') && G.exists('seleucid') && G.alive('리시아스') && G.facOf('리시아스') === 'seleucid',
+      title: '벧술의 리시아스', ref: '마카비1서 4:26-35 (외경); 삼상 14:6',
+      text: '이듬해 리시아스가 정예 보병 육만과 기병 오천을 이끌고 이두매를 돌아 벧술에 진을 쳤다. 유다는 만 명을 거느리고 나가 기도했다. "이스라엘의 구원자시여, 다윗의 손으로 거인을 꺾으시고 요나단과 그의 무기를 든 소년의 손에 이방인의 진을 넘기신 주님, 이 진영도 주님의 백성 이스라엘의 손에 넘겨 주소서" (마카비1서 4:30-31).',
+      choices: [
+        { label: '다윗과 요나단의 하나님께 기도하고 맞선다', run: G => {
+          G.buff('judea', 'atk', 4, 0.25); G.buff('seleucid', 'atk', 3, -0.15);
+          const r = MACC_KIT.raid(G, 4500);
+          MACC_KIT.cut(G, 'seleucid', 0.55, ['jerusalem']); MACC_KIT.cut(G, 'seleucid', 0.8, ['bethlehem', 'jericho', 'bethel']);
+          MACC_KIT.faithAll(G, 5);
+          G.flags.bethzur = true; G.kingdom(5, '벧술의 승리');
+          return (r ? `벧술의 싸움: ${r} ` : '') + '리시아스의 군대가 무너지자 그는 안디옥으로 물러가 용병을 더 모으기로 했다. 예루살렘 아크라 요새의 수비대 45%, 베들레헴·여리고·벧엘 20% 궤멸. 하스몬 가문 4턴 동안 공격력 +25%, 셀레우코스 3턴 동안 -15%, 신앙 +5. 이제 성전으로 올라갈 길이 열렸다.'; } },
+        { label: '성벽 안에서 대군이 지나가기를 기다린다', run: G => {
+          const r = MACC_KIT.raid(G, 5000); G.eachCity('judea', c => { c.def += 10; });
+          return (r ? `리시아스의 공격: ${r} ` : '') + '모든 성의 성벽 +10.'; } },
+      ],
+      altWho: 'seleucid', altText: '섭정 리시아스가 대군을 모았다. 벧술로 가서 유다를 치겠다고 한다.',
+      altChoices: [
+        { label: '벧술로 대군을 보낸다', run: G => { const r = MACC_KIT.raid(G, 6000); G.buff('judea', 'atk', 2, 0.15); return (r || '유다의 무리가 흩어져 숨었다.') + ' 유다가 기도하고 맞섰다 — 하스몬 가문 2턴 동안 공격력 +15%.'; } },
+        { label: '안디옥으로 돌아가 용병을 더 모은다', run: G => { const F = G.fac('seleucid'); F.gold = Math.max(0, F.gold - 500); const c = G.city(F.capital); if (c) c.soldiers += 3000; return '금 -500, 도읍 병력 +3000.'; } },
+      ] },
+    { id: 'dedication', who: 'judea', auto: 0,
+      cond: G => G.exists('judea') && G.ownerOf('jerusalem') === 'judea',
+      title: '성전 봉헌 — 수전절', ref: '마카비1서 4:36-61 (외경); 요 10:22-23',
+      text: '유다와 형제들이 시온 산에 올라 보니 성소는 황폐하고 제단은 더럽혀졌으며 문들은 불탔고 뜰에는 풀이 수풀처럼 자라 있었다. 유다는 사람들을 보내 아크라 요새의 수비대를 막게 하고, 율법에 흠 없는 제사장들을 뽑아 성소를 정결하게 했다. 더럽혀진 제단의 돌은 "예언자가 나타나 그 돌들에 대해 알려 줄 때까지" 성전 산 한 곳에 쌓아 두었다 (4:46). 기슬르월 이십오일, 새 제단 위에서 다시 번제가 올라갔다.',
+      choices: [
+        { label: '성소를 정결하게 하고 여드레 동안 봉헌한다', run: G => MACC_KIT.dedicate(G) + ' 해마다 기슬르월 이십오일부터 여드레 동안 이 날을 기뻐하기로 정했다 (4:59). 이 절기가 수전절이다 — "예루살렘에 수전절이 이르니 때는 겨울이라" (요 10:22). 기름 한 병이 여드레 동안 탔다는 이야기는 후대 랍비 문헌의 전승이다.' },
+        { label: '봉헌을 미루고 먼저 아크라 요새를 친다', run: G => {
+          const c = G.city('jerusalem'); c.soldiers += 1500; c.train += 10; c.faith -= 5;
+          G.flags.hanukkah = G.turn; G.kingdom(-3, '봉헌을 미루다');
+          return '예루살렘 병력 +1500, 훈련 +10. 그러나 제단은 비어 있고 백성은 탄식한다 — 예루살렘 신앙 -5.'; } },
+      ],
+      altWho: 'seleucid', altText: '유다의 무리가 예루살렘에 들어가 이방 제단을 헐고 성소를 다시 봉헌했다는 소식이 왔다.',
+      altChoices: [
+        { label: '분노하여 복수를 다짐한다', run: G => { const out = MACC_KIT.dedicate(G); G.buff('seleucid', 'atk', 3, 0.15); return '유다 사람들의 봉헌: ' + out + ' 셀레우코스 3턴 동안 공격력 +15%.'; } },
+      ] },
+    { id: 'brethren', who: 'judea', auto: 0,
+      cond: G => G.flags.hanukkah && G.turn >= G.flags.hanukkah + 2 && G.exists('judea'),
+      title: '길르앗과 갈릴리의 형제들', ref: '마카비1서 5:1-68 (외경)',
+      text: '성전이 봉헌되었다는 소식에 사방의 이방 민족이 분노하여 그들 가운데 사는 유다 사람들을 죽이기 시작했다. 길르앗에서는 암몬의 디모데가 형제들을 요새에 몰아넣고 에워쌌고, 갈릴리에서는 두로와 시돈 사람들이 몰려왔다는 편지가 왔다. 옷을 찢은 사자들이 소리쳤다. "와서 우리를 구해 주십시오!"',
+      choices: [
+        { label: '시몬은 갈릴리로, 유다와 요나단은 길르앗으로 간다', run: G => {
+          MACC_KIT.cut(G, 'ammon', 0.6); MACC_KIT.cut(G, 'tyre', 0.8); MACC_KIT.cut(G, 'idumea', 0.7, ['hebron']);
+          MACC_KIT.add(G, 1500); G.fac('judea').food = Math.max(0, G.fac('judea').food - 1000);
+          if (G.exists('ammon')) G.rel('judea', 'ammon', -20); if (G.exists('idumea')) G.rel('judea', 'idumea', -15);
+          MACC_KIT.faithAll(G, 5, 8); G.flags.brethren = true; G.kingdom(5, '형제를 구하다');
+          return '시몬이 갈릴리에서, 유다와 요나단이 길르앗에서 형제들을 구해 아내와 자녀와 함께 유다 땅으로 데려왔다. 유다는 남쪽으로 헤브론을 쳤다 (5:65). 암몬 병력 40%, 두로 20%, 헤브론의 이두매 군 30% 궤멸. 본거지 병력 +1500, 식량 -1000, 신앙 +5, 민심 +8.'; } },
+        { label: '유다 땅을 지키는 데 힘을 모은다', run: G => {
+          MACC_KIT.faithAll(G, -5, -8); if (G.exists('ammon')) G.buff('ammon', 'atk', 3, 0.2);
+          return '길르앗과 갈릴리의 형제들이 홀로 남았다. 신앙 -5, 민심 -8, 암몬 3턴 동안 공격력 +20%. "네 형제가 가난하게 되어 빈손으로 네 곁에 있거든 너는 그를 도와" (레 25:35).'; } },
+      ] },
+    { id: 'antiochusDeath', who: 'seleucid', auto: 0,
+      cond: G => G.turn >= 14 && (G.flags.hanukkah || G.turn >= 18) && G.exists('seleucid') && G.alive('안티오쿠스 4세') && G.facOf('안티오쿠스 4세') === 'seleucid',
+      title: '안티오쿠스 에피파네스의 죽음', ref: '마카비1서 6:1-17 (외경); 단 8:25; 11:45',
+      text: '동방을 돌던 안티오쿠스 왕이 엘리마이스의 신전을 털려다 실패하고 물러나던 길에, 유다에 보낸 군대가 패하고 성소의 이방 제단이 헐렸다는 소식을 들었다. 그가 병들어 누워 말했다. "내가 예루살렘에서 행한 악을 이제 기억한다. 그 때문에 이 재앙이 내게 닥쳤다" (마카비1서 6:12-13). "그가 또 스스로 서서 만왕의 왕을 대적할 것이나 그가 사람의 손으로 말미암지 아니하고 깨지리라" (단 8:25).',
+      choices: [
+        { label: '섭정 리시아스가 어린 왕 안티오쿠스 5세를 세운다', run: G => {
+          G.kill('안티오쿠스 4세'); if (G.alive('리시아스') && G.facOf('리시아스') === 'seleucid') G.setRuler('seleucid', '리시아스');
+          const F = G.fac('seleucid'); F.aggr = 0.35; G.eachCity('seleucid', c => { c.loy -= 8; });
+          G.flags.antiochusDead = true;
+          return '안티오쿠스 4세가 이방 땅에서 죽었다. 섭정 리시아스가 어린 왕의 이름으로 나라를 이끈다. 셀레우코스 모든 성 민심 -8. 리시아스는 코끼리 부대를 모아 다시 유다로 향한다. "그의 종말이 이르리니 도와 줄 자가 없으리라" (단 11:45).'; } },
+        { label: '왕의 친구 빌립에게 왕관과 옥새를 맡긴다', run: G => {
+          G.kill('안티오쿠스 4세'); G.eachCity('seleucid', c => { c.loy -= 15; });
+          G.fac('seleucid').aggr = 0.25; G.flags.antiochusDead = true;
+          return '안티오쿠스 4세가 죽었다. 왕이 빌립에게 나라를 맡겼으나 리시아스가 이를 따르지 않아 궁정이 둘로 갈라졌다 (6:14-17). 셀레우코스 모든 성 민심 -15.'; } },
+      ],
+      altWho: 'judea', altText: '동방에서 소식이 왔다. 안티오쿠스 에피파네스가 엘리마이스에서 물러나다 병들어 죽었다고 한다.',
+      altChoices: [
+        { label: '원수의 죽음을 기뻐하지 않고 하나님의 공의를 기억한다', run: G => {
+          G.kill('안티오쿠스 4세'); if (G.alive('리시아스') && G.facOf('리시아스') === 'seleucid') G.setRuler('seleucid', '리시아스');
+          G.fac('seleucid').aggr = 0.35; G.eachCity('seleucid', c => { c.loy -= 8; }); MACC_KIT.faithAll(G, 5);
+          G.flags.antiochusDead = true; G.kingdom(3, '공의는 여호와께');
+          return '안티오쿠스 4세가 죽고 리시아스가 어린 왕을 앞세웠다. 셀레우코스 민심 -8, 하스몬 가문 신앙 +5. "네 원수가 넘어질 때에 즐거워하지 말며" (잠 24:17).'; } },
+      ] },
+    { id: 'elephants', who: 'judea', auto: 0,
+      cond: G => G.flags.antiochusDead && G.turn >= 16 && G.exists('judea') && G.exists('seleucid') && G.alive('엘르아살') && G.facOf('엘르아살') === 'judea',
+      title: '벧스가랴의 코끼리', ref: '마카비1서 6:28-63 (외경); 요 15:13',
+      text: '리시아스가 어린 왕을 모시고 보병 십만, 기병 이만, 싸움 코끼리 서른두 마리를 이끌고 왔다. 코끼리마다 나무 망대를 얹고 용사들을 태웠으며, 포도즙과 오디즙을 보여 흥분시켰다. 벧스가랴에서 맛다디아의 넷째 아들 엘르아살은 코끼리 하나가 왕의 갑옷을 입고 가장 높은 것을 보았다. 왕이 그 위에 있다고 생각했다.',
+      choices: [
+        { label: '엘르아살이 그 코끼리 밑으로 뛰어든다', run: G => {
+          G.kill('엘르아살'); G.kill('코끼리 부대장');
+          const r = MACC_KIT.raid(G, 5000);
+          G.eachCity('judea', c => { c.soldiers = Math.floor(c.soldiers * 0.9); });
+          G.fac('judea').food = Math.max(0, G.fac('judea').food - 1500);
+          G.buff('seleucid', 'atk', 3, -0.2); G.rel('judea', 'seleucid', 35); MACC_KIT.faithAll(G, 8);
+          G.flags.lysiasPeace = true; G.kingdom(6, '친구를 위하여 목숨을');
+          return '엘르아살이 코끼리 배 밑에서 창으로 찔렀다. 코끼리가 쓰러지며 그를 덮쳤다. ' + (r ? `벧스가랴의 싸움: ${r} ` : '') + '하스몬 가문 모든 성 병력 10% 손실, 안식년이라 식량 -1500. 그때 리시아스가 안디옥의 반란 소식을 듣고 화평을 청했다. "그들이 자기 율법대로 살게 하자" (6:59). 셀레우코스와의 관계 +35, 셀레우코스 3턴 동안 공격력 -20%, 신앙 +8. "사람이 친구를 위하여 자기 목숨을 버리면 이보다 더 큰 사랑이 없나니" (요 15:13).'; } },
+        { label: '엘르아살을 붙잡고 벧스가랴에서 물러난다', run: G => {
+          G.eachCity('judea', c => { c.soldiers = Math.floor(c.soldiers * 0.8); });
+          G.buff('seleucid', 'atk', 3, 0.15); G.rel('judea', 'seleucid', 20); G.flags.lysiasPeace = true;
+          return '물러나는 길에 모든 성의 병력 20%를 잃었다. 셀레우코스 3턴 동안 공격력 +15%. 그러나 리시아스도 안디옥의 반란 소식에 서둘러 화평을 맺고 돌아갔다 (관계 +20).'; } },
+      ],
+      altWho: 'seleucid', altText: '리시아스가 어린 왕과 코끼리 서른두 마리를 이끌고 벧스가랴에 이르렀다. 그런데 안디옥에서 빌립이 반란을 일으켰다는 소식이 왔다.',
+      altChoices: [
+        { label: '코끼리를 앞세워 끝까지 밀어붙인다', run: G => { G.kill('엘르아살'); const r = MACC_KIT.raid(G, 6000); G.eachCity('seleucid', c => { c.loy -= 10; }); return '엘르아살이 코끼리 밑에서 죽었다. ' + (r || '') + ' 그사이 안디옥이 흔들린다 — 셀레우코스 민심 -10.'; } },
+        { label: '유다 사람들이 율법대로 살게 하고 화평을 맺는다', run: G => { G.kill('엘르아살'); G.rel('judea', 'seleucid', 35); G.flags.lysiasPeace = true; return '엘르아살이 코끼리 밑에서 죽었다. 리시아스가 화평을 맺고 안디옥으로 돌아갔다 (관계 +35).'; } },
+      ] },
+    { id: 'alcimus', who: 'judea', auto: 0,
+      cond: G => G.turn >= 18 && (G.done.elephants || G.turn >= 22) && G.exists('judea') && G.exists('seleucid') && G.alive('알키모스'),
+      title: '알키모스의 배신', ref: '마카비1서 7:5-25 (외경); 시 146:3',
+      text: '새 왕 데메트리오스가 대제사장 자리를 탐하는 알키모스를 바키데스와 함께 보냈다. 서기관들과 하시딤은 "아론의 자손 제사장이 군대와 함께 왔으니 우리를 해치지 않으리라" 하며 먼저 화평을 청했다. 알키모스는 평화의 말로 맹세했으나, 그들 가운데 육십 명을 붙잡아 하루에 죽였다 (7:12-16).',
+      choices: [
+        { label: '"귀인들을 의지하지 말라" — 하시딤을 붙들고 알키모스를 거부한다', run: G => {
+          MACC_KIT.faithAll(G, 6); G.rel('judea', 'seleucid', -20);
+          const h = MACC_KIT.home(G); if (h) h.soldiers += 600;
+          G.flags.alcimusRefused = true; G.kingdom(3, '사람을 의지하지 않다');
+          return '셀레우코스와의 관계 -20. 흩어진 하시딤이 다시 유다에게로 돌아왔다 — 본거지 병력 +600, 신앙 +6. "귀인들을 의지하지 말며 도울 힘이 없는 인생도 의지하지 말지니" (시 146:3).'; } },
+        { label: '대제사장 알키모스와 화평을 맺는다', run: G => {
+          G.rel('judea', 'seleucid', 15); MACC_KIT.faithAll(G, -10, -8);
+          if (G.facOf('하시딤 장로') === 'judea') G.kill('하시딤 장로');
+          G.kingdom(-5, '거짓 평화');
+          return '셀레우코스와의 관계 +15. 그러나 평화의 맹세 뒤에 하시딤의 피가 흘렀다 — 하시딤 장로가 죽고, 신앙 -10, 민심 -8.'; } },
+      ] },
+    { id: 'nicanor', who: 'judea', auto: 0,
+      cond: G => G.turn >= 20 && (G.done.alcimus || G.turn >= 24) && G.exists('judea') && G.exists('seleucid') && G.alive('니가노르') && G.facOf('니가노르') === 'seleucid',
+      title: '니가노르의 날과 로마의 조약', ref: '마카비1서 7:26-50; 8장 (외경); 왕하 19:35; 시 20:7',
+      text: '니가노르가 성전을 향해 손을 들고 "유다를 내 손에 넘기지 않으면 이 집을 불사르겠다" 맹세했다. 유다가 아다사에서 기도했다. "앗수르 왕의 사자들이 모독했을 때 주의 천사가 나가 그들 가운데 십팔만 오천을 쳤습니다. 오늘 이 군대도 우리 앞에서 쳐부수소서" (마카비1서 7:41-42; 왕하 19:35). 아다르월 십삼일, 니가노르가 먼저 쓰러졌다. 그 뒤 유다는 먼 서쪽의 강국 로마에 사절을 보낼지 의논했다.',
+      choices: [
+        { label: '니가노르를 물리친 뒤 로마에 사절을 보내 동맹을 맺는다', run: G => {
+          G.kill('니가노르'); MACC_KIT.cut(G, 'seleucid', 0.7, ['jerusalem', 'bethlehem', 'bethel', 'emmaus', 'gezer', 'jericho']);
+          G.buff('judea', 'atk', 4, 0.25); G.buff('seleucid', 'atk', 6, -0.15);
+          G.fac('judea').gold = Math.max(0, G.fac('judea').gold - 300); G.flags.nicanorDay = true; G.flags.rome = true; G.kingdom(4, '니가노르의 날');
+          return '니가노르가 죽고 유다 땅 근처의 셀레우코스 군 30% 궤멸. 해마다 아다르월 십삼일을 지키기로 했다. 금 -300으로 로마와 조약을 맺자 로마가 데메트리오스 왕에게 경고했다 — 하스몬 가문 4턴 동안 공격력 +25%, 셀레우코스 6턴 동안 -15%. 그러나 백 년 뒤(BC 63) 예루살렘에 들어온 것은 바로 그 로마였다.'; } },
+        { label: '니가노르를 물리치되 병거와 말이 아니라 여호와의 이름을 자랑한다', run: G => {
+          G.kill('니가노르'); MACC_KIT.cut(G, 'seleucid', 0.7, ['jerusalem', 'bethlehem', 'bethel', 'emmaus', 'gezer', 'jericho']);
+          G.buff('judea', 'atk', 4, 0.25); MACC_KIT.faithAll(G, 10, 5); G.flags.nicanorDay = true; G.kingdom(7, '여호와의 이름을 자랑하다');
+          return '니가노르가 죽고 유다 땅 근처의 셀레우코스 군 30% 궤멸. 4턴 동안 공격력 +25%, 신앙 +10, 민심 +5. "어떤 사람은 병거, 어떤 사람은 말을 의지하나 우리는 여호와 우리 하나님의 이름을 자랑하리로다" (시 20:7).'; } },
+      ],
+      altWho: 'seleucid', altText: '니가노르가 성전을 불사르겠다고 맹세하고 벧호론에 진을 쳤다. 유다가 아다사에서 맞선다.',
+      altChoices: [
+        { label: '니가노르에게 맡긴다', run: G => { G.kill('니가노르'); G.buff('judea', 'atk', 3, 0.2); return '아다르월 십삼일, 니가노르가 먼저 쓰러지고 그의 군대가 흩어졌다. 하스몬 가문 3턴 동안 공격력 +20%.'; } },
+        { label: '바키데스를 함께 보낸다', run: G => { const r = MACC_KIT.raid(G, 5000); return r || '유다의 무리는 산으로 물러갔다.'; } },
+      ] },
+    { id: 'elasa', who: 'judea', auto: 0,
+      cond: G => G.turn >= 24 && (G.done.nicanor || G.turn >= 28) && G.exists('judea') && G.exists('seleucid') && G.alive('유다 마카비') && G.facOf('유다 마카비') === 'judea',
+      title: '엘라사에 쓰러진 망치', ref: '마카비1서 9:1-22 (외경); 삼하 1:19',
+      text: '데메트리오스가 바키데스에게 보병 이만과 기병 이천을 주어 보냈다. 엘라사에 진을 친 유다의 군사 삼천 가운데 대부분이 두려워 흩어지고 팔백 명만 남았다. 그들이 말했다. "지금은 물러났다가 형제들과 함께 돌아와 싸웁시다." 유다가 대답했다. "우리가 도망하는 일은 없을 것이다. 우리의 때가 왔다면 형제들을 위하여 용감하게 죽자. 우리의 명예에 흠을 남기지 말자" (9:9-10).',
+      choices: [
+        { label: '팔백 명과 함께 엘라사에서 끝까지 싸운다', run: G => {
+          G.kill('유다 마카비'); const nx = MACC_KIT.lead(G, '요나단') || MACC_KIT.lead(G, '시몬');
+          MACC_KIT.faithAll(G, 8, 5); G.buff('judea', 'atk', 4, 0.2); MACC_KIT.cut(G, 'seleucid', 0.85);
+          G.flags.judasFell = true; G.kingdom(5, '형제들을 위하여');
+          return '유다가 바키데스의 오른쪽 날개를 무너뜨렸으나 끝내 쓰러졌다. 요나단과 시몬이 형의 시신을 모데인 조상의 묘에 장사했고 온 이스라엘이 울었다. "어찌하여 이스라엘을 구원하던 용사가 쓰러졌는가" (마카비1서 9:21; 삼하 1:19). ' + (nx ? '요나단이 형을 이어 백성을 이끈다. ' : '') + '셀레우코스 모든 성 병력 15% 손실, 하스몬 가문 신앙 +8, 민심 +5, 4턴 동안 공격력 +20%.'; } },
+        { label: '물러났다가 형제들과 함께 돌아온다', run: G => {
+          MACC_KIT.stat(G, '유다 마카비', 'cha', -8); MACC_KIT.faithAll(G, -3, -10); G.buff('seleucid', 'atk', 3, 0.2);
+          const r = MACC_KIT.raid(G, 4000); G.flags.elasaRetreat = true; G.kingdom(-3, '흩어진 진');
+          return '유다가 살아 돌아왔지만 흩어진 군사들은 쉽게 돌아오지 않았다. 유다 마카비 매력 -8, 민심 -10, 셀레우코스 3턴 동안 공격력 +20%.' + (r ? ' 바키데스의 추격: ' + r : ''); } },
+      ],
+      altWho: 'seleucid', altText: '바키데스가 엘라사에서 유다의 진을 찾아냈다. 유다를 따르던 자들이 흩어지고 있다.',
+      altChoices: [
+        { label: '바키데스가 전군으로 친다', run: G => { G.kill('유다 마카비'); MACC_KIT.lead(G, '요나단'); MACC_KIT.faithAll(G, 8); return '유다 마카비가 엘라사에서 쓰러졌다. 요나단이 형을 이었다. 하스몬 가문 신앙 +8.'; } },
+      ] },
+    { id: 'simon', who: 'judea', auto: 0,
+      cond: G => G.turn >= 26 && (G.done.elasa || G.turn >= 32) && G.exists('judea') && G.alive('시몬') && G.facOf('시몬') === 'judea' && G.cityCount('judea') >= 6,
+      title: '이방의 멍에가 벗겨지다', ref: '마카비1서 13:1-53; 14:4-49 (외경); 미 4:4',
+      text: '요나단은 대제사장이 되어 여러 해 백성을 이끌었으나, 트리폰의 속임수에 사로잡혀 바스가마에서 죽었다 (13:23). 맛다디아의 아들 가운데 시몬 하나만 남았다. 데메트리오스 2세는 유다의 조공을 면제했고, 시몬은 게셀을 에워싸 차지하고 정결하게 했다. 백칠십 년(BC 142), 이방인의 멍에가 이스라엘에서 벗겨졌다 (13:41). 백성이 시몬을 어떻게 세울지 의논한다.',
+      choices: [
+        { label: '"신실한 예언자가 나타날 때까지" 시몬을 대제사장과 영도자로 세운다', run: G => {
+          if (G.facOf('요나단') === 'judea') G.kill('요나단'); MACC_KIT.lead(G, '시몬');
+          MACC_KIT.faithAll(G, 8, 15); G.fac('judea').gold += 800;
+          if (G.exists('seleucid')) G.rel('judea', 'seleucid', 30);
+          MACC_KIT.cut(G, 'seleucid', 0.5, ['joppa', 'gezer']);
+          if (MACC_KIT.mine(G, 'joppa')) { const c = G.city('joppa'); c.bld = c.bld || {}; c.bld.port = Math.min(10, (c.bld.port || 1) + 2); }
+          G.flags.independence = true; G.kingdom(8, '이방의 멍에를 벗다');
+          return '시몬이 대제사장이며 장군이며 유다인의 영도자가 되었다 — 그러나 "신실한 예언자가 나타날 때까지" (14:41). 금 +800, 신앙 +8, 민심 +15, 셀레우코스와의 관계 +30. 욥바·게셀의 셀레우코스 군 50% 궤멸' + (MACC_KIT.mine(G, 'joppa') ? ', 욥바 항구 Lv.+2 — 시몬이 욥바를 항구로 삼아 바다의 섬들로 가는 길을 열었다 (14:5)' : '') + '. "사람마다 자기 포도나무와 무화과나무 아래에 앉았다" (14:12; 미 4:4).'; } },
+        { label: '시몬을 왕으로 세운다', run: G => {
+          if (G.facOf('요나단') === 'judea') G.kill('요나단'); MACC_KIT.lead(G, '시몬');
+          MACC_KIT.faithAll(G, -8, 20); G.fac('judea').gold += 800; MACC_KIT.cut(G, 'seleucid', 0.5, ['joppa', 'gezer']);
+          G.flags.independence = true; G.flags.hasmoneanKing = true; G.kingdom(-4, '다윗의 자손이 아닌 왕');
+          return '금 +800, 민심 +20, 욥바·게셀의 셀레우코스 군 50% 궤멸. 그러나 제사장 가문이 왕관을 쓰자 하시딤은 등을 돌렸다 — 신앙 -8. 훗날 하스몬 왕들은 권력 다툼 끝에 로마를 불러들였다. 약속된 왕은 다윗의 자손으로 오신다 (삼하 7:12-13; 사 11:1).'; } },
       ] },
   ],
 };
