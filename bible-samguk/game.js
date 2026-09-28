@@ -223,23 +223,64 @@
     });
   }
   // 전쟁 도구: 병영에서 만들고 출진할 때 두 가지까지 쓴다. 성물(relic)은 쓰고도 남는다.
+  // rar: 희귀도(common 일반 · rare 희귀 · epic 영웅 · legend 전설). cost가 없는 것은 전장에서만 얻는다.
   const ITEMS = {
-    ladder: { name: '공성 사다리', cost: { wood: 300 }, camp: 1, desc: '성벽의 방어 효과를 절반으로 줄인다' },
-    sling: { name: '물매 돌', cost: { stone: 250 }, camp: 1, desc: '적에게 주는 피해 +12%' },
-    rations: { name: '군량 수레', cost: { wood: 100, food: 800 }, camp: 1, desc: '출진 군량 소모를 절반으로' },
-    shield: { name: '큰 방패', cost: { wood: 250, gold: 60 }, camp: 2, desc: '아군이 받는 피해 -20%' },
-    torch: { name: '횃불과 항아리', cost: { wood: 150, gold: 60 }, camp: 2, desc: '첫 합에 기습 — 적 병력 -12% (삿 7:20)' },
-    trumpet: { name: '양각 나팔', cost: { gold: 180 }, camp: 3, desc: '적의 사기를 꺾어 병력 -8%, 계략 적중 +' },
-    ram: { name: '충차', cost: { wood: 600, stone: 200, gold: 120 }, camp: 4, desc: '성벽 효과 -35%, 함락 뒤 성벽 손상 적음' },
-    sword_goliath: { name: '골리앗의 칼', cost: null, relic: true, desc: '성물 — 일기토에서 대장의 무력 +15 (삼상 21:9)' },
+    ladder: { name: '공성 사다리', rar: 'common', cost: { wood: 300 }, camp: 1, desc: '성벽의 방어 효과를 절반으로 줄인다' },
+    sling: { name: '물매 돌', rar: 'common', cost: { stone: 250 }, camp: 1, desc: '적에게 주는 피해 +12%' },
+    rations: { name: '군량 수레', rar: 'common', cost: { wood: 100, food: 800 }, camp: 1, desc: '출진 군량 소모를 절반으로' },
+    herb: { name: '길르앗의 유향', rar: 'common', cost: { food: 300, gold: 50 }, camp: 1, desc: '치료 약초 — 매 턴 아군 병력 3% 회복, 전투 뒤 부상병 10% 복귀 (렘 8:22)' },
+    shield: { name: '큰 방패', rar: 'rare', cost: { wood: 250, gold: 60 }, camp: 2, desc: '아군이 받는 피해 -20%' },
+    torch: { name: '횃불과 항아리', rar: 'rare', cost: { wood: 150, gold: 60 }, camp: 2, desc: '첫 합에 기습 — 적 병력 -12%, 화계 적중 + (삿 7:20)' },
+    bow: { name: '합성 활', rar: 'rare', cost: { wood: 250, gold: 90 }, camp: 2, desc: '궁수·물매병 사거리 +1, 원거리 피해 +15%' },
+    banner: { name: '여호와 닛시 군기', rar: 'rare', cost: { gold: 150, wood: 60 }, camp: 2, desc: '아군 사기 +15, 부대가 무너져도 사기 하락 절반 (출 17:15)' },
+    firearrow: { name: '불화살', rar: 'rare', cost: { wood: 200, gold: 80 }, camp: 3, desc: '궁수의 화살에 불 — 30% 확률로 적을 태우고 코끼리를 날뛰게 한다, 화계 +15%' },
+    trumpet: { name: '양각 나팔', rar: 'epic', cost: { gold: 180 }, camp: 3, desc: '적의 사기를 꺾어 병력 -8%, 계략 적중 +' },
+    horse: { name: '애굽 군마', rar: 'epic', cost: { gold: 220, food: 500 }, camp: 3, desc: '기마·전차 이동 +1, 돌격 피해 +15% (왕상 10:28)' },
+    helmet: { name: '놋 투구', rar: 'epic', cost: { stone: 250, gold: 160 }, camp: 4, desc: '아군이 받는 근접 피해 -12% (삼상 17:38)' },
+    ram: { name: '충차', rar: 'epic', cost: { wood: 600, stone: 200, gold: 120 }, camp: 4, desc: '성벽 효과 -35%, 성문을 세 배로 부순다' },
+    gold_shield: { name: '솔로몬의 금 방패', rar: 'epic', cost: null, relic: true, desc: '성물 — 아군이 받는 피해 -10% (왕상 10:17)' },
+    sword_goliath: { name: '골리앗의 칼', rar: 'legend', cost: null, relic: true, duel: 15, desc: '성물 — 일기토에서 대장의 무력 +15 (삼상 21:9)' },
+    jawbone: { name: '나귀 턱뼈', rar: 'legend', cost: null, relic: true, duel: 12, desc: '성물 — 일기토 무력 +12, 대장 부대 공격 +10% (삿 15:15)' },
+    jonathan_bow: { name: '요나단의 활', rar: 'legend', cost: null, relic: true, era: 4, desc: '성물 — 궁수·물매병 피해 +25% (삼하 1:22)' },
+    // 신앙의 성물: 영력(기도)·말씀 카드와 이어진다. era: 이 시대부터 전장에서 나온다(words.js의 시대 순서)
+    anointing_horn: { name: '기름 뿔', rar: 'rare', cost: { gold: 120, food: 200 }, camp: 2, faith: true, desc: '전투 시작 영력 +30 (삼상 16:13)' },
+    psalm_scroll: { name: '시편 두루마리', rar: 'rare', cost: { gold: 140 }, camp: 2, faith: true, desc: '말씀 선포에 드는 영력 -25%' },
+    manna_jar: { name: '만나 항아리', rar: 'rare', cost: null, relic: true, faith: true, era: 1, desc: '성물 — 출진 군량이 들지 않는다 (출 16:33)' },
+    tabernacle_lamp: { name: '성막의 등불', rar: 'rare', cost: null, relic: true, faith: true, era: 1, desc: '성물 — 기도로 모으는 영력 +50% (출 27:20)' },
+    faith_shield: { name: '믿음의 방패', rar: 'rare', cost: null, relic: true, faith: true, desc: '성물 — 아군이 받는 피해 -12%, 사기 +10 (엡 6:16)' },
+    urim_thummim: { name: '우림과 둠밈', rar: 'epic', cost: null, relic: true, faith: true, era: 1, desc: '성물 — 화계·교란 적중 +20% (출 28:30)' },
+    aaron_rod: { name: '아론의 싹 난 지팡이', rar: 'epic', cost: null, relic: true, faith: true, era: 1, desc: '성물 — 선지자·제사장의 기도 효과 두 배 (민 17:8)' },
+    bronze_serpent: { name: '놋뱀', rar: 'epic', cost: null, relic: true, faith: true, era: 1, desc: '성물 — 매 턴 아군 병력 4% 회복, 불 피해 절반 (민 21:9)' },
+    torah_scroll: { name: '율법 두루마리', rar: 'epic', cost: null, relic: true, faith: true, era: 1, desc: '성물 — 말씀의 효과 +25% (신 31:26)' },
+    salvation_helmet: { name: '구원의 투구', rar: 'epic', cost: null, relic: true, faith: true, duel: 5, desc: '성물 — 대장 일기토 무력 +5, 아군이 교란에 덜 걸린다 (엡 6:17)' },
+    gideon_trumpet: { name: '기드온의 나팔과 항아리', rar: 'epic', cost: null, relic: true, faith: true, era: 3, desc: '성물 — 「기드온의 나팔과 횃불」을 열고 전투 시작에 적진을 흔든다 (삿 7:16)' },
+    david_sling: { name: '다윗의 물매', rar: 'epic', cost: null, relic: true, faith: true, era: 4, desc: '성물 — 물매병 피해 +20% · 「만군의 여호와의 이름으로」를 연다 (삼상 17:49)' },
+    moses_staff: { name: '모세의 지팡이', rar: 'legend', cost: null, relic: true, faith: true, era: 1, desc: '성물 — 「홍해를 가르시다」「여호와 닛시」를 열고 말씀 영력 -10 (출 4:17)' },
+    elijah_mantle: { name: '엘리야의 겉옷', rar: 'legend', cost: null, relic: true, faith: true, era: 5, desc: '성물 — 「하늘에서 내린 불」을 열고 아군이 강을 건넌다 (왕하 2:8)' },
+    ark: { name: '언약궤', rar: 'legend', cost: null, relic: true, faith: true, era: 1, desc: '성물 — 영력 매 턴 +12, 적 사기 -10 · 「여리고의 함성」을 연다 (수 6:4)' },
   };
-  const ITEM_ORDER = ['ladder', 'sling', 'rations', 'shield', 'torch', 'trumpet', 'ram', 'sword_goliath'];
-  // 병종
-  const UNITS = {
-    spear: { name: '창병', desc: '균형 잡힌 보병' },
-    sling: { name: '물매병', desc: '처음 두 합 피해 +35%, 이후 -10% (삿 20:16)' },
-    chariot: { name: '전차병', desc: '평지 성 공격 +25%, 산지 -15% · 병영 Lv.5 · 금 소모', camp: 5 },
-  };
+  // 시대 제한: 전장에서 나올 수 있는 가장 이른 시대 (말씀 카드와 같은 순서)
+  Object.assign(ITEMS.sword_goliath, { era: 4 }); Object.assign(ITEMS.jawbone, { era: 3 }); Object.assign(ITEMS.gold_shield, { era: 4 }); Object.assign(ITEMS.horse, { era: 4 }); Object.assign(ITEMS.banner, { era: 1 }); Object.assign(ITEMS.trumpet, { era: 2 }); Object.assign(ITEMS.ram, { era: 4 }); Object.assign(ITEMS.firearrow, { era: 3 }); Object.assign(ITEMS.helmet, { era: 3 }); Object.assign(ITEMS.torch, { era: 3 }); Object.assign(ITEMS.ladder, { era: 2 });
+  const ITEM_ORDER = ['ladder', 'sling', 'rations', 'herb', 'shield', 'torch', 'bow', 'banner', 'firearrow', 'anointing_horn', 'psalm_scroll', 'trumpet', 'horse', 'helmet', 'ram',
+    'manna_jar', 'tabernacle_lamp', 'faith_shield', 'urim_thummim', 'aaron_rod', 'bronze_serpent', 'torah_scroll', 'salvation_helmet', 'gideon_trumpet', 'david_sling', 'gold_shield', 'moses_staff', 'elijah_mantle', 'ark', 'sword_goliath', 'jawbone', 'jonathan_bow'];
+  const eraNow = () => window.WORDS ? WORDS.era(S.scn) : 4;
+  const RARITY = { common: { name: '일반', w: 55 }, rare: { name: '희귀', w: 30 }, epic: { name: '영웅', w: 12 }, legend: { name: '전설', w: 3 } };
+  // 쓰러뜨린 적장의 칼: 'blade:장수id' — 장수 기록에서 그때그때 만든다(저장 걱정 없음)
+  function itemInfo(k) {
+    if (ITEMS[k]) return ITEMS[k];
+    if (typeof k === 'string' && k.startsWith('blade:')) {
+      const o = offById(k.slice(6)); if (!o) return null;
+      const b = clamp(Math.round((o.war - 50) / 5), 3, 10);
+      return { name: `${o.name}의 칼`, rar: o.war >= 88 ? 'legend' : o.war >= 78 ? 'epic' : 'rare', relic: true, duel: b, atk: b / 100, blade: o.id, desc: `성물 — 일기토 무력 +${b}, 대장 부대 공격 +${b}% · 싸움에서 ${o.name}에게서 얻은 칼` };
+    }
+    return null;
+  }
+  const ownedItems = F => Object.keys(F.items || {}).filter(k => F.items[k] > 0 && itemInfo(k)).sort((a, b) => (ITEM_ORDER.indexOf(a) + 1 || 99) - (ITEM_ORDER.indexOf(b) + 1 || 99));
+  // 대장 일기토 무력 보너스(가진 성물 중 가장 큰 것)
+  const duelBonus = it => [...it].reduce((m, k) => Math.max(m, (itemInfo(k) || {}).duel || 0), 0);
+  // 병종 (units.js의 UNITDEF에서): 출진 창·자동 전투가 쓴다
+  const UD = window.UNITDEF;
+  const UNITS = Object.fromEntries(Object.entries(UD.TYPES).filter(([k]) => k !== 'guard' && k !== 'prophet').map(([k, t]) => [k, { name: t.n, desc: t.desc, camp: t.camp, gold: t.gold }]));
   const LABEL_LEFT = ['modein', 'emmaus', 'ashkelon', 'gaza']; // 이웃 성과 이름표가 겹치지 않게 왼쪽에 단다
   const PLAINS = ['emmaus', 'gezer', 'megiddo', 'bethshean', 'gaza', 'ashdod', 'ashkelon', 'ekron', 'joppa', 'hazor', 'damascus', 'jericho', 'beersheba', 'dan', 'tyre'];
   // 선지자·제사장(또는 신앙 90 이상)은 출진에서 장군과 따로 '선지자' 자리로 따라가 기도한다.
@@ -306,8 +347,17 @@
     return p;
   }
 
-  // 공격 실행. 반환: {win, attLeft, lines[], summary, captives[]}
-  // opts: { unit: 병종, prophet: 동행 선지자, items: 쓰는 전쟁 도구 id[] }
+  // 병력을 장수 무력 비율로 나눈 병종 구성 [{t, n, o}]
+  function composition(f, offs, n, types, siege) {
+    if (!offs.length) return [{ t: 'guard', n }];
+    const ty = types || UD.assign(f, offs, { siege }), ws = offs.reduce((s, o) => s + o.war, 0) || 1;
+    return offs.map(o => ({ t: ty[o.id] || 'spear', n: n * o.war / ws, o }));
+  }
+  const hasCls = (comp, cls) => comp.filter(x => UD.TYPES[x.t].cls === cls).reduce((s, x) => s + x.n, 0) / (comp.reduce((s, x) => s + x.n, 0) || 1);
+  const hasT = (comp, t) => comp.some(x => x.t === t);
+
+  // 공격 실행. 반환: {win, attLeft, lines[], summary, captives[], loot}
+  // opts: { unit: 주력 병종, types: {장수id: 병종}, prophet: 동행 선지자, items: 쓰는 전쟁 도구 id[] }
   function battle(af, aoffs, soldiers, cid, train, opts = {}) {
     const c = city(cid), df = c.owner;
     const doffs = df ? offsIn(cid, df) : [];
@@ -315,63 +365,125 @@
     const aName = facName(af), dName = df ? facName(df) : '성읍 백성';
     let A = soldiers, D = c.soldiers;
     let aP = sidePower(af, aoffs, train, false, c);
-    const it = new Set(opts.items || []), unit = opts.unit || 'spear', pr = opts.prophet && opts.prophet.alive ? opts.prophet : null;
+    const it = new Set(opts.items || []), pr = opts.prophet && opts.prophet.alive ? opts.prophet : null;
     const wallK = (it.has('ladder') ? 0.5 : 1) * (it.has('ram') ? 0.65 : 1);
     let dP = df ? sidePower(df, doffs, c.train, true, c, wallK) : 0.8 * (1 + c.def * wallK / 180);
     const aL = aoffs.slice().sort((a, b) => b.war - a.war)[0];
     const dL = doffs.slice().sort((a, b) => b.war - a.war)[0];
+    const flat = PLAINS.includes(cid), siege = c.def >= 70 || (df && fac(df).capital === cid);
+    // 병종 구성: 공격은 출진 창에서 고른 대로(없으면 세력 편성), 수비는 그 세력의 병종으로
+    const types = opts.types || (opts.unit && opts.unit !== 'spear' ? Object.fromEntries(aoffs.map(o => [o.id, opts.unit])) : null);
+    const ac = composition(af, aoffs, soldiers, types, siege);
+    const dc = doffs.length ? composition(df, doffs.slice(0, 4), D * 0.75, null, siege).concat([{ t: 'guard', n: D * 0.25 }]) : [{ t: 'guard', n: D }];
     lines.push(`⚔ ${aName}군 ${fmt(A)}명이 ${CITY_INFO[cid].name}(${dName} ${fmt(D)}명)을 공격한다.`);
-    if (aL) lines.push(`공격 대장: ${aoffs.map(o => o.name).join(', ')}`);
-    if (dL) lines.push(`수비 대장: ${doffs.map(o => o.name).join(', ')}`);
+    const tn = t => UD.TYPES[t].n;
+    if (aL) lines.push(`공격 대장: ${aoffs.map(o => o.name).join(', ')} — ${[...new Set(ac.map(x => tn(x.t)))].join('·')}`);
+    if (dL) lines.push(`수비 대장: ${doffs.map(o => o.name).join(', ')} — ${[...new Set(dc.filter(x => x.t !== 'guard').map(x => tn(x.t)))].join('·') || '수비대'}`);
     const mh = opts.hops || 1;
     if (mh > 1) { aP *= marchPow(mh); lines.push(`🐪 ${mh}칸 먼 길을 행군해 온 원정군 — 지친 병사들의 전력 ${Math.round(marchPow(mh) * 100)}%`); }
-    if (unit !== 'spear') lines.push(`병종: ${UNITS[unit].name}`);
-    if (unit === 'chariot') { const flat = PLAINS.includes(cid); aP *= flat ? 1.25 : 0.85; lines.push(flat ? '🐎 평지에서 전차가 거침없이 달린다!' : '⛰ 산지라 전차가 제 힘을 쓰지 못한다.'); }
+    // 병종 상성 · 지형
+    const mu = UD.matchup(ac, dc, flat, siege); aP *= mu.k; if (mu.line) lines.push(mu.line);
+    if (hasT(ac, 'chariot')) lines.push(flat ? '🐎 평지에서 전차가 거침없이 달린다!' : '⛰ 산지라 전차가 제 힘을 쓰지 못한다.');
+    if (hasT(ac, 'camel') && dc.some(x => UD.TYPES[x.t].cls === 'horse')) lines.push('🐫 낙타 냄새에 적의 말들이 놀라 날뛴다!');
+    if (hasT(dc, 'camel') && ac.some(x => UD.TYPES[x.t].cls === 'horse')) lines.push('🐫 적의 낙타 냄새에 아군 말들이 겁을 먹었다.');
+    if (hasT(dc, 'elephant')) lines.push('🐘 적진에 거대한 코끼리들이 버티고 섰다!');
+    const aShot = hasCls(ac, 'shot'), aHorse = hasCls(ac, 'horse');
     if (pr) { aP *= 1 + Math.max(0, pr.fai - 60) / 200; lines.push(`🙏 선지자 ${pr.name}이(가) 여호와께 기도하니 군사들의 마음이 굳세어진다.`); }
-    if (it.size) lines.push(`전쟁 도구: ${[...it].map(k => ITEMS[k].name).join(', ')}`);
+    if (it.size) lines.push(`전쟁 도구: ${[...it].map(k => (itemInfo(k) || { name: k }).name).join(', ')}`);
     if (wallK < 1 && c.def > 0) lines.push(`🪜 ${[it.has('ladder') && '사다리', it.has('ram') && '충차'].filter(Boolean).join('와 ')}로 성벽을 넘본다 — 성벽 효과 ${Math.round((1 - wallK) * 100)}% 감소.`);
     if (it.has('trumpet')) { D *= 0.92; lines.push('📯 양각 나팔 소리가 울리자 적진이 술렁인다!'); }
     if (it.has('torch')) { D *= 0.88; lines.push('🔥 한밤에 항아리를 깨뜨리고 횃불을 들었다! 적이 혼란에 빠졌다. (삿 7:20)'); }
-    const wounded = new Set();
+    // 도구·성물 보정
+    if (it.has('bow') && aShot) aP *= 1 + 0.15 * aShot;
+    if (it.has('jonathan_bow') && aShot) aP *= 1 + 0.25 * aShot;
+    if (it.has('horse') && aHorse) aP *= 1 + 0.15 * aHorse;
+    if (it.has('banner')) aP *= 1.05;
+    const blade = [...it].map(itemInfo).filter(Boolean).reduce((m, x) => Math.max(m, x.atk || 0), 0) + (it.has('jawbone') ? 0.1 : 0);
+    if (blade) aP *= 1 + blade * 0.5;
+    const guardK = (it.has('shield') ? 0.8 : 1) * (it.has('helmet') ? 0.9 : 1) * (it.has('gold_shield') ? 0.9 : 1) * (it.has('faith_shield') ? 0.88 : 1);
+    if (it.has('david_sling') && hasT(ac, 'sling')) aP *= 1.08;
+    if (it.has('ark')) { dP *= 0.92; lines.push('📦 언약궤가 앞서 나아가니 적이 두려워 떤다. (수 6:4)'); }
+    if (it.has('gideon_trumpet')) { D *= 0.95; lines.push('🏺 항아리를 부수고 나팔을 부니 적진이 술렁인다. (삿 7:20)'); }
+    if (pr && it.has('aaron_rod')) aP *= 1 + Math.max(0, pr.fai - 60) / 200;
+    // 말씀 선포: 우리 군이 선지자나 신앙의 성물을 데려가면 한 번 선포한다
+    if (af === S.player && window.WORDS && (pr || [...it].some(k => (itemInfo(k) || {}).faith))) {
+      const cards = WORDS.unlocked(S.scn, F_items(af)).filter(w => !w.need || (w.need === 'siege' ? siege : !flat));
+      const w = cards[Math.floor(Math.random() * cards.length)];
+      if (w) { const v = WORDS.verse(w, eraNow()); D *= it.has('torah_scroll') ? 0.9 : 0.93; aP *= 1.03; lines.push(`📖 말씀 선포 — 「${w.name}」 "${v.text.length > 40 ? v.text.slice(0, 40) + '…' : v.text}" (${v.ref})`); }
+    }
+    const burnable = (it.has('firearrow') || it.has('torch')) && hasT(dc, 'elephant');
+    const wounded = new Set(), beaten = [], duelWins = [];
     for (let r = 1; r <= 8 && A > 0 && D > 0; r++) {
       // 일기토
       if (aL && dL && !wounded.has(aL.id) && !wounded.has(dL.id) && Math.random() < 0.16) {
-        const aw = aL.war + (it.has('sword_goliath') ? 15 : 0);
+        const aw = aL.war + duelBonus(it);
         const pa = aw ** 3 / (aw ** 3 + dL.war ** 3);
         const w = Math.random() < pa ? aL : dL, l = w === aL ? dL : aL;
         lines.push(`🗡 일기토! ${aL.name} 대 ${dL.name} — ${w.name}의 승리!`);
         wounded.add(l.id);
-        if (l === aL) { A *= 0.85; aP *= 0.9; } else { D *= 0.85; dP *= 0.9; }
+        if (l === aL) { A *= 0.85; aP *= 0.9; } else { D *= 0.85; dP *= 0.9; beaten.push(dL); duelWins.push(aL); }
         if (Math.random() < 0.12) { lines.push(`${l.name}이(가) 쓰러졌다.`); killOfficer(l); }
       }
       // 계략
       const aI = aoffs.reduce((m, o) => Math.max(m, o.int), 20), dI = doffs.reduce((m, o) => Math.max(m, o.int), 20);
       if (pr && r === 2 && Math.random() < 0.15) { D *= 0.85; lines.push('⚡ 여호와께서 큰 우레를 발하사 적진이 어지러워졌다! (삼상 7:10)'); }
       if (Math.random() < 0.14) {
-        if (aI * (pr || it.has('trumpet') ? 1.15 : 1) * Math.random() > dI * Math.random()) { D *= 0.88; lines.push(`🔥 ${aName}군의 계략이 적중했다! (지력 ${aI})`); }
-        else { A *= 0.9; lines.push(`🛡 ${dName}이(가) 계략을 간파하고 역습했다.`); }
+        if (aI * (pr || it.has('trumpet') ? 1.15 : 1) * (it.has('firearrow') ? 1.15 : 1) * (it.has('urim_thummim') ? 1.2 : 1) * Math.random() > dI * Math.random()) {
+          D *= 0.88; lines.push(`🔥 ${aName}군의 계략이 적중했다! (지력 ${aI})`);
+          if (hasT(dc, 'elephant') && Math.random() < 0.6) { D *= 0.94; dP *= 0.95; lines.push('🐘 불길에 놀란 코끼리들이 날뛰며 제 편을 짓밟는다!'); }
+        } else { A *= 0.9; lines.push(`🛡 ${dName}이(가) 계략을 간파하고 역습했다.`); }
       }
-      const uK = unit === 'sling' ? (r <= 2 ? 1.35 : 0.9) : 1;
+      if (burnable && r === 1) { D *= 0.95; dP *= 0.95; lines.push('🐘 불화살에 놀란 적의 코끼리가 날뛴다!'); }
+      const uK = hasT(ac, 'sling') ? 1 + hasCls(ac, 'shot') * (r <= 2 ? 0.2 : -0.05) : 1;
       const dmgD = Math.min(D, A * 0.11 * aP / Math.max(0.3, dP) * rnd(0.8, 1.2) * uK * (it.has('sling') ? 1.12 : 1));
-      const dmgA = Math.min(A, D * 0.11 * dP / Math.max(0.3, aP) * rnd(0.8, 1.2) * (it.has('shield') ? 0.8 : 1));
+      const dmgA = Math.min(A, D * 0.11 * dP / Math.max(0.3, aP) * rnd(0.8, 1.2) * guardK);
       D -= dmgD; A -= dmgA;
       lines.push(`${r}합 — 공격 ${fmt(A)} / 수비 ${fmt(D)}`);
-      if (A < soldiers * 0.25) { lines.push(`${aName}군의 사기가 꺾여 퇴각한다.`); break; }
+      if (A < soldiers * (it.has('banner') ? 0.18 : 0.25)) { lines.push(`${aName}군의 사기가 꺾여 퇴각한다.`); break; }
     }
-    return applyBattleResult(af, aoffs, soldiers, cid, train, it, A, D, lines, undefined, mh);
+    if (it.has('bronze_serpent') && A > 0) { const back = Math.round((soldiers - A) * 0.15); A += back; if (back > 0) lines.push(`🐍 놋뱀을 바라본 부상병 ${fmt(back)}명이 살아났다. (민 21:9)`); }
+    if (it.has('herb') && A > 0) { const back = Math.round((soldiers - A) * 0.1); A += back; if (back > 0) lines.push(`🌿 길르앗의 유향으로 부상병 ${fmt(back)}명이 다시 일어섰다.`); }
+    return applyBattleResult(af, aoffs, soldiers, cid, train, it, A, D, lines, undefined, mh, { beaten, duelWins });
+  }
+
+  // ---------- 전리품 ----------
+  // 희귀도 뽑기: q가 높을수록(큰 성·공성) 좋은 것이 잘 나온다. 이미 가진 성물은 다시 나오지 않는다.
+  function rollItem(F, q = 0, cap) {
+    const w = { common: RARITY.common.w - q * 20, rare: RARITY.rare.w + q * 8, epic: RARITY.epic.w + q * 8, legend: RARITY.legend.w + q * 4 };
+    const order = ['common', 'rare', 'epic', 'legend'], lim = cap ? order.indexOf(cap) : 3;
+    let x = Math.random() * order.slice(0, lim + 1).reduce((s, k) => s + w[k], 0), rar = 'common';
+    for (const k of order.slice(0, lim + 1)) { x -= w[k]; if (x <= 0) { rar = k; break; } }
+    for (let i = order.indexOf(rar); i >= 0; i--) {
+      const pool = ITEM_ORDER.filter(k => ITEMS[k].rar === order[i] && (ITEMS[k].era || 0) <= eraNow() && !(ITEMS[k].relic && (F.items || {})[k] > 0));
+      if (pool.length) return pick(pool);
+    }
+    return 'sling';
+  }
+  const F_items = f => fac(f).items || {};
+  function giveItem(F, k) { F.items = F.items || {}; F.items[k] = (F.items[k] || 0) + 1; }
+  // 이긴 장수의 성장: 싸움에 나선 장수는 조금씩 무력·지력이 오른다
+  function growOfficers(res, aoffs, win, ex) {
+    const up = (o, st, n = 1) => { if (!o || !o.alive || o[st] >= 99) return; o[st] = Math.min(99, o[st] + n); res.growth.push({ o, st, n }); };
+    if (win) aoffs.forEach((o, i) => { if (i === 0 || Math.random() < 0.4) up(o, 'war'); if (Math.random() < (ex.schemes ? 0.35 : 0.1)) up(o, 'int'); if (i === 0 && Math.random() < 0.15) up(o, 'cha'); });
+    (ex.duelWins || []).forEach(o => { if (aoffs.includes(o) && !res.growth.some(g => g.o === o && g.st === 'war')) up(o, 'war'); });
   }
 
   // 전투 결과 적용(자동 전투와 전술 전투가 함께 쓴다): 군량, 점령, 전리품, 포로, 멸망, 관계
-  function applyBattleResult(af, aoffs, soldiers, cid, train, it, A, D, lines, forceWin, mh = 1) {
+  // ex: { beaten: 무찌른 적장[], duelWins: 일기토에서 이긴 아군 장수[], found: 전장에서 주운 것[{k}|{gold}|…], schemes: 계략 적중 수 }
+  function applyBattleResult(af, aoffs, soldiers, cid, train, it, A, D, lines, forceWin, mh = 1, ex = {}) {
     const c = city(cid), df = c.owner, doffs = df ? offsIn(cid, df) : [];
     const aName = facName(af);
     A = Math.max(0, Math.round(A)); D = Math.max(0, Math.round(D));
     const win = forceWin != null ? forceWin : D <= 0 || (A > D * 2.5 && A > 300);
-    const res = { win, attLeft: A, lines, captives: [], summary: '', cid };
-    fac(af).food = Math.max(0, fac(af).food - Math.round(soldiers * 0.3 * marchFood(mh) * (it.has('rations') ? 0.5 : 1)));
+    const mine = af === S.player, defMine = df === S.player && !mine;
+    const loot = { gold: 0, food: 0, wood: 0, stone: 0, items: [], found: 0 };
+    const res = { win, attLeft: A, lines, captives: [], summary: '', cid, loot: null, growth: [] };
+    const q = clamp((c.def - 30) / 60, 0, 1) * 0.7 + (df && fac(df).capital === cid ? 0.3 : 0);
+    fac(af).food = Math.max(0, fac(af).food - Math.round(soldiers * 0.3 * marchFood(mh) * (it.has('manna_jar') ? 0 : it.has('rations') ? 0.5 : 1)));
     if (win) {
       lines.push(`🏳 ${CITY_INFO[cid].name} 함락! ${aName}의 깃발이 오른다.`);
       const lootG = c.comm * 8, lootF = c.agri * 40; fac(af).gold += lootG; fac(af).food += lootF;
+      loot.gold += lootG; loot.food += lootF;
       lines.push(`전리품: 금 ${fmt(lootG)}, 식량 ${fmt(lootF)}`);
       c.owner = af; c.soldiers = A; c.train = train; c.loy = clamp(c.loy - 15, 0, 100); c.def = Math.round(c.def * (it.has('ram') ? 0.95 : 0.85));
       aoffs.forEach(o => { if (o.alive) o.city = cid; });
@@ -401,6 +513,40 @@
       c.soldiers = D;
       lines.push(`${CITY_INFO[cid].name}이(가) 버텨냈다. 남은 공격군 ${fmt(A)}명이 돌아간다.`);
       res.summary = `${aName}의 ${CITY_INFO[cid].name} 공격이 실패했다.`;
+    }
+    // 플레이어의 전리품: 목재·석재, 아이템 뽑기, 적장의 칼, 전장에서 주운 것, 장수 성장
+    const P = fac(S.player);
+    if (mine) {
+      if (win) {
+        const wd = Math.round(rnd(150, 350) + c.def * 3), sn = Math.round(rnd(100, 250) + c.def * 3);
+        P.wood = (P.wood || 0) + wd; P.stone = (P.stone || 0) + sn; loot.wood += wd; loot.stone += sn;
+        loot.items.push(rollItem(P, q));
+        if (Math.random() < 0.3 + q * 0.3) loot.items.push(rollItem(P, q));
+      }
+      const beaten = [...new Set((ex.beaten || []).concat(res.captives))].filter(o => o && o.fac !== af);
+      // 적장의 칼은 한 전투에 하나까지 (쓰러뜨림 45% · 사로잡음 30% · 무찌름 15%)
+      let blades = 0;
+      beaten.forEach(o => {
+        const k = 'blade:' + o.id; if (blades >= 1 || (P.items || {})[k] > 0 || loot.items.includes(k)) return;
+        if (Math.random() < (!o.alive ? 0.45 : res.captives.includes(o) ? 0.3 : 0.15)) { loot.items.push(k); blades++; }
+      });
+      (ex.found || []).forEach(f => { if (f.k) loot.items.push(f.k); ['gold', 'food', 'wood', 'stone'].forEach(r => { if (f[r]) { P[r] = (P[r] || 0) + f[r]; loot[r] += f[r]; } }); loot.found++; });
+      growOfficers(res, aoffs, win, ex);
+    } else if (defMine && !win) {
+      // 성을 지켜 내면 적이 버리고 간 무기와 금을 줍는다
+      const g = Math.round(rnd(80, 220)); P.gold += g; loot.gold += g;
+      if (Math.random() < 0.35) loot.items.push(rollItem(P, 0, 'rare'));
+      const bt = (ex.beaten || []).filter(o => o.fac !== S.player)[0];
+      if (bt && Math.random() < 0.3 && !((P.items || {})['blade:' + bt.id] > 0)) loot.items.push('blade:' + bt.id);
+    }
+    if (mine || defMine) {
+      loot.items.forEach(k => giveItem(P, k));
+      if (loot.items.length || loot.gold || loot.found) {
+        res.loot = loot;
+        if (loot.items.length) lines.push(`🎁 얻은 물건: ${loot.items.map(k => `${itemInfo(k).name}(${RARITY[itemInfo(k).rar].name})`).join(', ')}`);
+        if (defMine) lines.push(`🛡 ${CITY_INFO[cid].name}을(를) 지켜 내고 적이 버린 금 ${fmt(loot.gold)}을 거두었다.`);
+      }
+      res.growth.forEach(g => lines.push(`⭐ ${g.o.name} ${STAT_NAME[g.st] || g.st} +${g.n}`));
     }
     if (df) setRel(af, df, getRel(af, df) - 20);
     log(res.summary, win ? 'gold' : '');
@@ -1315,6 +1461,8 @@
     const r = $('#mvN'); r.addEventListener('input', () => { $('#mvNv').textContent = fmt(r.value); });
   }
 
+  // 병종 유지비: 장군 무력 비율로 나눈 병력 × 병종별 금
+  const typeGold = (gs, types, n) => { const ws = gs.reduce((s, o) => s + o.war, 0) || 1; return Math.round(gs.reduce((s, o) => s + n * o.war / ws * ((UD.TYPES[types[o.id]] || {}).gold || 0), 0)); };
   function attackDialog(cid, pre) {
     const P = S.player, c = city(cid), F = fac(P);
     const targets = Object.keys(S.cities).filter(n => city(n).owner !== P).sort((a, b) => hops(cid, a) - hops(cid, b) || CITY_INFO[a].y - CITY_INFO[b].y);
@@ -1324,8 +1472,12 @@
     if (c.soldiers < 500) { const s2 = pre ? bestSource(pre) : sources()[0]; if (s2 && s2.id !== cid) return attackDialog(s2.id, pre); toast('병력이 500명 이상 있어야 출진할 수 있습니다.'); return; }
     const gens = offs.slice().sort((a, b) => b.war - a.war);
     const pros = offs.filter(o => isProphet(o) && F.ruler !== o.id).sort((a, b) => b.fai - a.fai);
-    const own = ITEM_ORDER.filter(k => (F.items || {})[k] > 0);
+    const own = ownedItems(F);
     const n0 = Math.round(c.soldiers * 0.7 / 100) * 100;
+    // 병종: 우리 세력이 쓸 수 있는 것만, 병영 레벨이 모자라면 잠김
+    const av = UD.avail(P), lockT = t => UD.TYPES[t].camp && bl(c, 'camp') < UD.TYPES[t].camp;
+    const gt = {}; // 장수id → 고른 병종
+    const okT = t => av.includes(t) && !lockT(t);
     openModal(`<div class="war-form">
       <label class="fld" for="atFrom">출발 성</label>
       <select id="atFrom">${sources().concat(sources().some(x => x.id === cid) ? [] : [c]).map(s => `<option value="${s.id}" ${s.id === cid ? 'selected' : ''}>${CITY_INFO[s.id].name} — 병력 ${fmt(s.soldiers)} · 대기 장수 ${idleOffs(s.id).length}명</option>`).join('')}</select>
@@ -1334,14 +1486,15 @@
       <p class="mute" id="atMarch"></p>
       <section class="wf-sec"><h3>① 장군 <small>최대 3명 · 무력 순</small></h3>
         <div class="wf-cards">${gens.map((o, i) => `<label class="wf-card"><input type="checkbox" name="gen" value="${o.id}" ${i === 0 && !isProphet(o) ? 'checked' : ''}><span class="thumb">${portraitOf(o)}</span><b>${esc(o.name)}</b><small>무${o.war} 지${o.int}</small></label>`).join('')}</div></section>
-      <section class="wf-sec"><h3>② 군사</h3>
-        <div class="wf-units">${Object.entries(UNITS).map(([k, u], i) => { const lock = u.camp && bl(c, 'camp') < u.camp; return `<label class="wf-unit${lock ? ' lock' : ''}"><input type="radio" name="unit" value="${k}" ${i === 0 ? 'checked' : ''} ${lock ? 'disabled' : ''}><b>${u.name}</b><small>${esc(u.desc)}${lock ? ` — 병영 Lv.${u.camp} 필요 (지금 Lv.${bl(c, 'camp')})` : ''}</small></label>`; }).join('')}</div>
+      <section class="wf-sec"><h3>② 군사 편성 <small>장군마다 병종을 고른다 · 상성: 창→기마·전차, 궁수→보병·코끼리, 기마→궁수, 낙타→말</small></h3>
+        <div class="wf-types">${av.map(t => `<span class="wf-type${lockT(t) ? ' lock' : ''}" style="--tc:${UD.TYPES[t].col}"><i>${UD.TYPES[t].tag}</i><b>${UD.TYPES[t].n}</b><small>${esc(UD.TYPES[t].desc)}${lockT(t) ? ` — 병영 Lv.${UD.TYPES[t].camp} 필요` : UD.TYPES[t].gold ? ` · 1천 명당 금 ${Math.round(UD.TYPES[t].gold * 1000)}` : ''}</small></span>`).join('')}</div>
+        <div class="wf-assign" id="atAssign"></div>
         <label class="fld" for="atN">출진 병력: <b id="atNv">${fmt(n0)}</b> / ${fmt(c.soldiers)}</label>
         <input id="atN" type="range" min="500" max="${c.soldiers}" step="100" value="${n0}"></section>
       <section class="wf-sec"><h3>③ 선지자 <small>장군과 따로 동행해 기도한다</small></h3>
         ${pros.length ? `<div class="wf-cards"><label class="wf-card none"><input type="radio" name="pro" value="" checked><b>동행 없음</b></label>${pros.map(o => `<label class="wf-card"><input type="radio" name="pro" value="${o.id}"><span class="thumb">${portraitOf(o)}</span><b>${esc(o.name)}</b><small>신앙 ${o.fai} · 전력 +${Math.round(Math.max(0, o.fai - 60) / 2)}%</small></label>`).join('')}</div>` : '<p class="mute">이 성에 대기 중인 선지자·제사장(신앙 90 이상 포함)이 없습니다.</p>'}</section>
       <section class="wf-sec"><h3>④ 아이템 <small>두 가지까지 · 병영에서 제작</small></h3>
-        ${own.length ? `<div class="wf-items">${own.map(k => `<label class="wf-item"><input type="checkbox" name="item" value="${k}"><b>${ITEMS[k].name}</b><em>×${F.items[k]}</em><small>${esc(ITEMS[k].desc)}</small></label>`).join('')}</div>` : '<p class="mute">가진 전쟁 도구가 없습니다. 영지의 병영에서 만들 수 있습니다.</p>'}</section>
+        ${own.length ? `<div class="wf-items">${own.map(k => { const I = itemInfo(k); return `<label class="wf-item rar-${I.rar}"><input type="checkbox" name="item" value="${esc(k)}"><b>${esc(I.name)}</b><em>${I.relic ? '성물' : '×' + F.items[k]}</em><small><span class="rar">${RARITY[I.rar].name}</span> ${esc(I.desc)}</small></label>`; }).join('')}</div>` : '<p class="mute">가진 전쟁 도구가 없습니다. 영지의 병영에서 만들 수 있습니다.</p>'}</section>
       <section class="wf-sec"><h3>지휘 방식</h3><div class="wf-units">
         <label class="wf-unit"><input type="radio" name="mode" value="direct" checked><b>직접 지휘</b><small>들판·계곡·공성전 전장에서 부대를 움직이고 일기토를 벌인다</small></label>
         <label class="wf-unit"><input type="radio" name="mode" value="auto"><b>자동 전투</b><small>전투 기록만 보고 빠르게 결과를 낸다</small></label></div></section>
@@ -1351,36 +1504,45 @@
         const q = s => [...document.querySelectorAll('#modalBody ' + s)];
         const pro = (q('input[name=pro]:checked')[0] || {}).value || '';
         const ids = q('input[name=gen]:checked').map(i => i.value).filter(id => id !== pro);
-        const unit = (q('input[name=unit]:checked')[0] || {}).value || 'spear';
+        const types = Object.fromEntries(ids.map(id => [id, gt[id] || 'spear'])), unit = types[ids[0]];
         const items = q('input[name=item]:checked').map(i => i.value);
         if (!ids.length) { toast('장군을 한 명 이상 고르세요.'); return; }
         if (ids.length > 3) { toast('장군은 세 명까지 데려갈 수 있습니다.'); return; }
         if (items.length > 2) { toast('전쟁 도구는 두 가지까지 쓸 수 있습니다.'); return; }
-        const chariotGold = unit === 'chariot' ? Math.round(n / 20) : 0;
-        if (F.gold < chariotGold) { toast(`전차 유지에 금 ${chariotGold}이 필요합니다.`); return; }
+        const chariotGold = typeGold(ids.map(offById), types, n);
+        if (F.gold < chariotGold) { toast(`전차·기마·코끼리 유지에 금 ${chariotGold}이 필요합니다.`); return; }
         const tOwner = city(to).owner;
         if (tOwner && peaceBlocks(P, tOwner)) { toast('말씀에 순종하여 휴전 중입니다. 아직 공격할 수 없습니다.'); return; }
         closeModal();
         if (tOwner && allied(P, tOwner)) { setRel(P, tOwner, 0); citiesOf(P).forEach(x => { x.loy -= 10; fixCity(x); }); log(`${fac(tOwner).name}와의 동맹을 깨뜨렸다. 민심이 흔들린다.`, 'bad'); }
         const gs = ids.map(offById), prophet = pro ? offById(pro) : null;
         gs.forEach(o => { o.done = true; }); if (prophet) prophet.done = true;
-        items.forEach(k => { if (!ITEMS[k].relic) F.items[k]--; });
+        items.forEach(k => { if (!itemInfo(k).relic) F.items[k]--; });
         F.gold -= chariotGold;
         c.soldiers -= n;
         voiceOf(gs[0], 'battle'); snd('sfx', 'horn');
         const direct = ((q('input[name=mode]:checked')[0] || {}).value || 'direct') === 'direct' && window.TACTICS;
         const done = r => { if (!r.win) { c.soldiers += r.attLeft; } sel = r.win ? to : cid; playBattle(r, () => captiveDialog(r.captives)); };
         const hh = hops(cid, to);
-        if (direct) TACTICS.start({ af: P, gens: gs, soldiers: n, cid: to, src: cid, train: c.train, unit, prophet, items, hops: hh, done });
-        else done(battle(P, gs, n, to, c.train, { unit, prophet, items, hops: hh }));
+        if (direct) TACTICS.start({ af: P, gens: gs, soldiers: n, cid: to, src: cid, train: c.train, unit, types, prophet, items, hops: hh, done });
+        else done(battle(P, gs, n, to, c.train, { unit, types, prophet, items, hops: hh }));
       } }], { cancel: true, title: `출진 · ${CITY_INFO[cid].name}`, wide: true });
+    // 고른 장군마다 병종 고르기 줄
+    const drawAssign = () => {
+      const pro = (document.querySelector('#modalBody input[name=pro]:checked') || {}).value || '';
+      const sel = [...document.querySelectorAll('#modalBody input[name=gen]:checked')].map(i => offById(i.value)).filter(o => o.id !== pro);
+      const auto = UD.assign(P, sel);
+      $('#atAssign').innerHTML = sel.length ? sel.map((o, i) => { const want = gt[o.id] || auto[o.id], t = gt[o.id] = okT(want) ? want : ['archer', 'sling', 'spear'].find(x => okT(x) && (i > 0 || x === 'spear')) || 'spear'; return `<label class="wf-gt" style="--tc:${UD.TYPES[t].col}"><i>${UD.TYPES[t].tag}</i><b>${esc(o.name)}</b><small>무${o.war} 지${o.int}</small><select data-gt="${o.id}" aria-label="${esc(o.name)}의 병종">${av.map(k => `<option value="${k}" ${k === t ? 'selected' : ''} ${lockT(k) ? 'disabled' : ''}>${UD.TYPES[k].n}${lockT(k) ? ' (잠김)' : ''}</option>`).join('')}</select></label>`; }).join('') : '<p class="mute">장군을 먼저 고르세요.</p>';
+    };
     const upd = () => {
-      const n = +$('#atN').value, unit = (document.querySelector('#modalBody input[name=unit]:checked') || {}).value, rat = !!document.querySelector('#modalBody input[name=item][value=rations]:checked');
+      const n = +$('#atN').value, rat = !!document.querySelector('#modalBody input[name=item][value=rations]:checked');
+      const ids = [...document.querySelectorAll('#modalBody [data-gt]')].map(s => s.dataset.gt), tg = typeGold(ids.map(offById), gt, n);
       const hh = hops(cid, $('#atTo').value);
       $('#atMarch').textContent = hh <= 1 ? '⚔ 맞닿은 성 — 곧바로 공격합니다.' : `🐪 원정 ${hh}칸 — 먼 길을 행군해 전력 ${Math.round(marchPow(hh) * 100)}%, 군량 ×${marchFood(hh)}. 지면 남은 병사가 ${CITY_INFO[cid].name}(으)로 돌아옵니다.`;
       $('#atNv').textContent = fmt(n);
-      $('#atCost').textContent = `군량 ${fmt(Math.round(n * 0.3 * marchFood(hh) * (rat ? 0.5 : 1)))} 소모 예상${unit === 'chariot' ? ` · 전차 유지 금 ${fmt(Math.round(n / 20))}` : ''} · 훈련 ${c.train} · 신앙 ${Math.round(avgFaith(P))}`;
+      $('#atCost').textContent = `군량 ${fmt(Math.round(n * 0.3 * marchFood(hh) * (rat ? 0.5 : 1)))} 소모 예상${tg ? ` · 전차·기마 유지 금 ${fmt(tg)}` : ''} · 훈련 ${c.train} · 신앙 ${Math.round(avgFaith(P))}`;
     };
+    drawAssign();
     $('#modalBody').addEventListener('input', upd); upd();
     $('#atFrom').addEventListener('change', e => { const to = $('#atTo').value; closeModal(); attackDialog(e.target.value, to); });
     // 선지자로 고른 인물은 장군 칸에서 자동으로 빠진다
@@ -1388,14 +1550,25 @@
       if (e.target.name === 'pro' && e.target.value) { const g = document.querySelector(`#modalBody input[name=gen][value="${e.target.value}"]`); if (g) g.checked = false; }
       if (e.target.name === 'gen' && e.target.checked) { const p = document.querySelector(`#modalBody input[name=pro][value="${e.target.value}"]`); if (p && p.checked) document.querySelector('#modalBody input[name=pro][value=""]').checked = true; }
       if (e.target.name === 'item' && document.querySelectorAll('#modalBody input[name=item]:checked').length > 2) { e.target.checked = false; toast('전쟁 도구는 두 가지까지 쓸 수 있습니다.'); }
+      if (e.target.dataset.gt) { gt[e.target.dataset.gt] = e.target.value; snd('sfx', 'click'); }
+      if (e.target.name === 'gen' || e.target.name === 'pro' || e.target.dataset.gt) { drawAssign(); upd(); }
     });
   }
 
+  // 전리품 화면: 얻은 자원 · 희귀도별 아이템 카드 · 장수 성장
+  const ITEM_ICON = { anointing_horn: '🫙', psalm_scroll: '📜', manna_jar: '🏺', tabernacle_lamp: '🕯', faith_shield: '🛡', urim_thummim: '💎', aaron_rod: '🌿', bronze_serpent: '🐍', torah_scroll: '📜', salvation_helmet: '⛑', gideon_trumpet: '🏺', david_sling: '🪨', moses_staff: '🪄', elijah_mantle: '🧥', ark: '📦', ladder: '🪜', sling: '🪨', rations: '🛒', herb: '🌿', shield: '🛡', torch: '🔥', bow: '🏹', banner: '🚩', firearrow: '🏹', trumpet: '📯', horse: '🐎', helmet: '⛑', ram: '🪵', gold_shield: '🛡', sword_goliath: '🗡', jawbone: '🦴', jonathan_bow: '🏹' };
+  function lootHtml(r) {
+    const L = r.loot, gr = r.growth || [];
+    if (!L && !gr.length) return '';
+    const res = L ? ['gold', 'food', 'wood', 'stone'].filter(k => L[k]).map(k => `<span class="lt-res"><b>${RES_NAME[k]}</b> +${fmt(L[k])}</span>`).join('') : '';
+    const cards = L ? L.items.map((k, i) => { const I = itemInfo(k); if (!I) return ''; return `<div class="lt-card rar-${I.rar}" style="--d:${i * 0.25 + 0.3}s"><i>${I.blade ? '🗡' : ITEM_ICON[k] || '🎁'}</i><span class="rar">${RARITY[I.rar].name}</span><b>${esc(I.name)}</b><small>${esc(I.desc)}</small></div>`; }).join('') : '';
+    return `<section class="loot"><h3>전리품${L && L.found ? ` <small>전장에서 주운 보물 ${L.found}개 포함</small>` : ''}</h3>${res ? `<div class="lt-row">${res}</div>` : ''}${cards ? `<div class="lt-cards">${cards}</div>` : ''}${gr.length ? `<div class="lt-grow">${gr.map(g => `<span>⭐ ${esc(g.o.name)} <b>${STAT_NAME[g.st]} ${g.o[g.st]}</b> <em>+${g.n}</em></span>`).join('')}</div>` : ''}</section>`;
+  }
   function playBattle(r, then) {
     inBattle = true; snd('bgm', 'war'); snd('sfx', 'march');
-    openModal(`<h2>${r.win ? '승전' : '전투'}</h2><div class="blog" id="blog"></div>`, [{ label: '확인', primary: true, fn: () => { inBattle = false; render(); then(); } }].concat(r.win && city(r.cid).owner === S.player ? [{ label: `점령지 ${CITY_INFO[r.cid].name}(으)로 가기`, fn: () => { inBattle = false; showLand(r.cid); then(); } }] : []));
+    openModal(`<h2>${r.win ? '승전' : '전투'}</h2><div class="blog" id="blog"></div>${lootHtml(r)}`, [{ label: '확인', primary: true, fn: () => { inBattle = false; render(); then(); } }].concat(r.win && city(r.cid).owner === S.player ? [{ label: `점령지 ${CITY_INFO[r.cid].name}(으)로 가기`, fn: () => { inBattle = false; showLand(r.cid); then(); } }] : []));
     const box = $('#blog');
-    const fx = l => { if (/함락|멸망/.test(l)) snd('sfx', 'victory'); else if (/버텨냈다|퇴각/.test(l)) snd('sfx', 'defeat'); else if (l.startsWith('🗡')) snd('sfx', 'clash'); else if (l.startsWith('🔥')) snd('sfx', 'fire'); else if (l.startsWith('📯')) snd('sfx', 'horn'); else if (l.startsWith('⚡')) snd('sfx', 'thunder'); else if (l.startsWith('🙏')) snd('sfx', 'holy'); else if (/합 —/.test(l)) snd('sfx', Math.random() < 0.5 ? 'clash' : 'hit'); };
+    const fx = l => { if (/함락|멸망/.test(l)) snd('sfx', 'victory'); else if (/버텨냈다|퇴각/.test(l)) snd('sfx', 'defeat'); else if (l.startsWith('🗡')) snd('sfx', 'clash'); else if (l.startsWith('🔥')) snd('sfx', 'fire'); else if (l.startsWith('📯')) snd('sfx', 'horn'); else if (l.startsWith('⚡')) snd('sfx', 'thunder'); else if (l.startsWith('🙏')) snd('sfx', 'holy'); else if (l.startsWith('🎁')) snd('sfx', 'craft'); else if (l.startsWith('⭐')) snd('sfx', 'level'); else if (/합 —/.test(l)) snd('sfx', Math.random() < 0.5 ? 'clash' : 'hit'); };
     const add = l => { const p = document.createElement('p'); p.textContent = l; box.appendChild(p); box.scrollTop = box.scrollHeight; };
     if (reduceMotion) { r.lines.forEach(add); snd('sfx', r.win ? 'victory' : 'defeat'); }
     else r.lines.forEach((l, i) => setTimeout(() => { add(l); fx(l); }, i * 180));
@@ -1733,7 +1906,7 @@
     onCmd, askEndTurn, render, showBio, toast, portraitOf, avgFaith, facName, yearLabel, fmt, esc, idleOffs, checkStory, playDialogue,
     SEASONS, showLand, showMap, artKey, get mode() { return mode; },
     // 전술 전투(tactics.js)가 쓰는 엔진 함수
-    tac: { marchPow, applyBattleResult, killOfficer, buffVal, ITEMS, UNITS, PLAINS, playBattle, captiveDialog, voiceOf, snd, clamp, rnd, log, isProphet, setInBattle: v => { inBattle = v; } },
+    tac: { marchPow, applyBattleResult, killOfficer, buffVal, ITEMS, UNITS, PLAINS, itemInfo, rollItem, duelBonus, RARITY, eraNow, playBattle, captiveDialog, voiceOf, snd, clamp, rnd, log, isProphet, setInBattle: v => { inBattle = v; } },
   };
   bind();
   const flush = () => { if (S && !$('#app').hidden) { clearTimeout(autoTimer); writeSlot('auto'); } };
