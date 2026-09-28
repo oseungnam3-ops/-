@@ -10,7 +10,19 @@
   const fmt = n => Math.round(n).toLocaleString('ko-KR');
   const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const CITY_INFO = {};
-  CITY_TABLE.forEach(([id, name, x, y, pop, agri, comm, def, desc, only]) => { CITY_INFO[id] = { id, name, x, y, pop, agri, comm, def, desc, only }; });
+  // 세계 지도 좌표: world.js의 투영(등장방형, cos 보정)과 같은 식으로 경도·위도를 옮긴다
+  const WG = typeof WORLD_GEO !== 'undefined' ? WORLD_GEO : { w: 1400.9, h: 920, lon0: 10, lat1: 45, k: 40, cos: 0.83389, land: '', lakes: '', rivers: {} };
+  const wproj = ([lon, lat]) => ({ wx: Math.round((lon - WG.lon0) * WG.cos * WG.k * 10) / 10, wy: Math.round((WG.lat1 - lat) * WG.k * 10) / 10 });
+  const REGION = typeof WORLD_REGION !== 'undefined' ? WORLD_REGION : {};
+  CITY_TABLE.forEach(([id, name, x, y, pop, agri, comm, def, desc, only]) => {
+    const ll = (typeof CITY_LL !== 'undefined' && CITY_LL[id]) || null;
+    CITY_INFO[id] = Object.assign({ id, name, x, y, pop, agri, comm, def, desc, only, world: !!REGION[id], region: REGION[id] || '가나안' }, ll ? wproj(ll) : { wx: null, wy: null });
+  });
+  const isWorld = cid => !!(CITY_INFO[cid] && CITY_INFO[cid].world);
+  // 이 시나리오(시대)에 나오는 성인가: ERA_CITIES 표가 있으면 그것을, 없으면 행의 only(시나리오 id 하나 또는 목록)를 따른다
+  const ERA_OF = typeof ERA_CITIES !== 'undefined' ? ERA_CITIES : {};
+  const inEra = (ci, scnId) => { const e = ERA_OF[ci.id] || ci.only; return !e || (Array.isArray(e) ? e.includes(scnId) : e === scnId); };
+  const GARRISON = typeof CITY_GARRISON !== 'undefined' ? CITY_GARRISON : {};
   // 길: 지금 판에 있는 성끼리만 잇는다 (only가 붙은 성은 그 시나리오에만 나온다)
   const ADJ = {};
   const roadOn = ([a, b]) => !S || (S.cities[a] && S.cities[b]);
@@ -71,8 +83,8 @@
   function newGame(scnId, player) {
     const sc = SCENARIOS.find(s => s.id === scnId);
     S = { scn: scnId, player, turn: 1, year: sc.year, season: 0, cities: {}, facs: {}, offs: [], rel: {}, buffs: {}, flags: {}, done: {}, log: [], over: false };
-    Object.values(CITY_INFO).filter(ci => (!ci.only || ci.only === scnId) && !(sc.hide || []).includes(ci.id)).forEach(ci => {
-      S.cities[ci.id] = { id: ci.id, owner: null, soldiers: 300, train: 40, pop: ci.pop, agri: ci.agri, comm: ci.comm, def: ci.def, faith: 40, loy: 55 };
+    Object.values(CITY_INFO).filter(ci => inEra(ci, scnId) && !(sc.hide || []).includes(ci.id)).forEach(ci => {
+      S.cities[ci.id] = { id: ci.id, owner: null, soldiers: GARRISON[ci.id] || 300, train: 40, pop: ci.pop, agri: ci.agri, comm: ci.comm, def: ci.def, faith: 40, loy: 55 };
     });
     sc.factions.forEach(f => {
       S.facs[f.id] = { id: f.id, name: f.name, color: f.color, capital: f.capital, gold: f.gold, food: f.food, aggr: f.aggr, ruler: null, alive: true };
@@ -108,7 +120,7 @@
     get player() { return S.player; },
     isPlayer: f => S.player === f,
     exists, city, fac,
-    ownerOf: cid => S.cities[cid].owner,
+    ownerOf: cid => (S.cities[cid] ? S.cities[cid].owner : undefined), // 이 시대에 없는 성(세계 성읍 등)은 undefined
     o: offByName,
     alive: n => { const o = offByName(n); return !!o && o.alive; },
     facOf: n => { const o = offByName(n); return o && o.alive ? o.fac : undefined; },
@@ -240,8 +252,9 @@
     sling: { name: '물매병', desc: '처음 두 합 피해 +35%, 이후 -10% (삿 20:16)' },
     chariot: { name: '전차병', desc: '평지 성 공격 +25%, 산지 -15% · 병영 Lv.5 · 금 소모', camp: 5 },
   };
-  const LABEL_LEFT = ['modein', 'emmaus', 'ashkelon', 'gaza']; // 이웃 성과 이름표가 겹치지 않게 왼쪽에 단다
-  const PLAINS = ['emmaus', 'gezer', 'megiddo', 'bethshean', 'gaza', 'ashdod', 'ashkelon', 'ekron', 'joppa', 'hazor', 'damascus', 'jericho', 'beersheba', 'dan', 'tyre'];
+  const LABEL_LEFT = ['modein', 'emmaus', 'ashkelon', 'gaza', 'samaria', 'lachish']; // 이웃 성과 이름표가 겹치지 않게 왼쪽에 단다
+  const PLAINS = ['emmaus', 'gezer', 'megiddo', 'bethshean', 'gaza', 'ashdod', 'ashkelon', 'ekron', 'joppa', 'hazor', 'damascus', 'jericho', 'beersheba', 'dan', 'tyre',
+    'kadesh', 'heshbon', 'edrei', 'sidon', 'goshen', 'tanis', 'memphis', 'thebes', 'alexandria', 'hamath', 'carchemish', 'haran', 'antioch', 'nineveh', 'ashur', 'babylon', 'ur', 'susa', 'midian']; // 세계 성읍: 나일·두 강의 평야
   // 선지자·제사장(또는 신앙 90 이상)은 출진에서 장군과 따로 '선지자' 자리로 따라가 기도한다.
   const isProphet = o => { const r = window.PORTRAIT ? PORTRAIT.roleOf(o) : ''; return r === 'prophet' || r === 'priest' || o.fai >= 90; };
   function initEcon() {
@@ -443,7 +456,7 @@
         const myP = sidePower(f, offsIn(c.id, f), c.train, false, c);
         const targets = enemies.filter(n => !peaceBlocks(f, n.owner) && (!n.owner || getRel(f, n.owner) < 60))
           .map(n => ({ n, score: c.soldiers * 0.7 * myP / Math.max(1, n.soldiers * (n.owner ? sidePower(n.owner, offsIn(n.id, n.owner), n.train, true, n) : 1)) }))
-          .filter(t => t.score > 1.4).sort((a, b) => b.score - a.score);
+          .filter(t => t.score > (isWorld(c.id) !== isWorld(t.n.id) ? 2.2 : 1.4)).sort((a, b) => b.score - a.score); // 가나안 밖과 안을 넘나드는 원정은 훨씬 우세할 때만
         if (targets.length) {
           const t = targets[0].n;
           const force = Math.round(c.soldiers * 0.7);
@@ -466,11 +479,11 @@
       if (ks.length) startUpgrade(c, ks[0]);
       else if (!upBlock(c, 'palace')) startUpgrade(c, 'palace');
     });
-    // 후방 병력을 전선으로
+    // 후방 병력을 전선으로 (세계 성읍과 가나안 성읍 사이로는 옮기지 않는다 — 먼 본국 군대가 가나안 싸움에 쏟아지지 않게)
     citiesOf(f).forEach(c => {
       const front = (ADJ[c.id] || []).some(n => city(n).owner !== f);
       if (!front && c.soldiers > 3000) {
-        const to = (ADJ[c.id] || []).map(city).filter(n => n.owner === f && (ADJ[n.id] || []).some(m => city(m).owner !== f));
+        const to = (ADJ[c.id] || []).map(city).filter(n => n.owner === f && isWorld(n.id) === isWorld(c.id) && (ADJ[n.id] || []).some(m => city(m).owner !== f));
         if (to.length) { const d = pick(to); const n = Math.round(c.soldiers * 0.5); c.soldiers -= n; d.soldiers += n; }
       }
     });
@@ -674,6 +687,9 @@
   // ---------- 화면: 지도 (그림 지도 + 드래그/확대) ----------
   const VB_FULL = { x: -20, y: -20, w: 660, h: 840 };
   let VB = null;
+  let world = false; // 세계 지도를 보고 있는가 (아니면 가나안 그림 지도)
+  let viewFor = null; // 시점을 잡아 둔 게임 상태 — 새 게임·불러오기면 새로 잡는다
+  const VBS = { map: null, world: null }; // 두 지도의 시점을 따로 기억한다
   const SEA_PTS = '-500,-200 272,-200 268,0 262,100 237,190 212,212 200,270 150,407 125,470 80,545 0,650 -500,760';
   const MOUNTAINS = [[430, 62, 1.5, 1], [468, 80, 1.1, 1], [312, 196, 0.9], [330, 150, 0.8], [226, 238, 0.9], [318, 318, 1], [262, 338, 0.8], [318, 520, 0.9], [206, 588, 0.8], [505, 345, 1.1], [512, 392, 1], [482, 602, 1], [452, 662, 1.1], [320, 700, 1.2], [420, 770, 1.1], [520, 520, 1], [560, 160, 1.1], [590, 110, 1]];
   const FORESTS = [[330, 240, 5], [470, 240, 6], [205, 330, 5], [520, 450, 5], [360, 120, 4], [225, 410, 4], [300, 590, 3], [540, 300, 5]];
@@ -711,9 +727,17 @@
     </g>`;
   }
   function drawMap() {
+    // 새 게임·불러오기: 도읍이 세계 성읍이면(예: 애굽을 골랐을 때) 세계 지도에서 시작한다
+    if (viewFor !== S) { viewFor = S; world = isWorld(fac(S.player).capital); VBS.map = VBS.world = null; VB = null; }
+    if (!VB) resetView();
+    if (world) drawWorld(); else drawRegion();
+    applyView();
+    drawMini();
+  }
+  // 가나안 지도 (그림 지도). 세계 성읍은 그리지 않고 가장자리 화살표로만 잇는다.
+  function drawRegion() {
     const svg = $('#map');
     const P = S.player, q = storyTarget();
-    if (!VB) resetView();
     let h = `<defs>
       <linearGradient id="landG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6d8d41"/><stop offset=".45" stop-color="#8a9a4d"/><stop offset=".75" stop-color="#b19a5a"/><stop offset="1" stop-color="#c3a669"/></linearGradient>
       <linearGradient id="seaG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1b5064"/><stop offset="1" stop-color="#2d7285"/></linearGradient>
@@ -741,38 +765,153 @@
     <text class="geo sm" x="120" y="720">네 게 브 광 야</text><text class="geo sm" x="300" y="790">아 라 바 광 야</text><text class="geo sm" x="520" y="330">길 르 앗</text>`;
     const hot = sel && city(sel) && city(sel).owner === P ? (ADJ[sel] || []) : [];
     ROADS.filter(roadOn).forEach(([a, b]) => {
+      if (isWorld(a) || isWorld(b)) return; // 세계로 가는 길은 가장자리 화살표로
       const A = CITY_INFO[a], B = CITY_INFO[b];
       const on = (a === sel && hot.includes(b)) || (b === sel && hot.includes(a));
       h += `<line x1="${A.x}" y1="${A.y}" x2="${B.x}" y2="${B.y}" class="road-b"/><line x1="${A.x}" y1="${A.y}" x2="${B.x}" y2="${B.y}" class="road${on ? ' hot' : ''}"/>`;
     });
+    h += edgeArrows(hot);
+    const here = Object.values(S.cities).filter(c => !isWorld(c.id));
     // 영토: 성마다 주인 색으로 은은하게 칠하고, 내 성은 금색 점선 고리로 두른다
-    h += '<g class="realm">' + Object.values(S.cities).filter(c => c.owner).map(c => { const ci = CITY_INFO[c.id], col = fac(c.owner).color;
+    h += '<g class="realm">' + here.filter(c => c.owner).map(c => { const ci = CITY_INFO[c.id], col = fac(c.owner).color;
       return `<circle cx="${ci.x}" cy="${ci.y}" r="44" fill="${col}" opacity="${c.owner === P ? 0.3 : 0.16}"/>` + (c.owner === P ? `<circle cx="${ci.x}" cy="${ci.y}" r="34" class="myring"/>` : ''); }).join('') + '</g>';
-    Object.values(S.cities).forEach(c => {
-      const ci = CITY_INFO[c.id];
-      const color = c.owner ? fac(c.owner).color : '#8d877a';
-      const cap = c.owner && fac(c.owner).capital === c.id;
-      const gov = governor(c.id);
-      const badge = c.owner ? fac(c.owner).name[0] : '·';
-      const fn = c.owner ? fac(c.owner).name : '무주지', nw = (ci.name.length + (c.owner === P ? 1.2 : 0)) * 10.5 + 10, sw = fn.length * 6.8 + 10, pw = Math.max(nw, sw);
-      h += `<g class="city${sel === c.id ? ' sel' : ''}${c.owner === P ? ' mine' : ''}" data-id="${c.id}" tabindex="0" role="button" aria-label="${ci.name}" transform="translate(${ci.x} ${ci.y})">
-        <circle r="24" fill="transparent"/><g class="cicon">${cityIcon(c, color, cap)}</g>${townSprite(c.id, cap)}
+    here.forEach(c => { const ci = CITY_INFO[c.id]; h += cityMark(c, ci.x, ci.y, { q, left: LABEL_LEFT.includes(c.id), sprite: true }); });
+    svg.innerHTML = h;
+  }
+  // 성 표지: 성 그림 + 깃발(세력 첫 글자) + 이름표 + 병력 배지. 가나안 지도와 세계 지도가 함께 쓴다.
+  // css: 세계 지도에서는 CSS 변환으로 놓고 --ws 배율을 곱해 확대·축소해도 화면 크기가 거의 일정하게 한다.
+  function cityMark(c, x, y, o = {}) {
+    const P = S.player, ci = CITY_INFO[c.id];
+    const color = c.owner ? fac(c.owner).color : '#8d877a';
+    const cap = c.owner && fac(c.owner).capital === c.id;
+    const badge = c.owner ? fac(c.owner).name[0] : '·';
+    const fn = c.owner ? fac(c.owner).name : '무주지', nw = (ci.name.length + (c.owner === P ? 1.2 : 0)) * 10.5 + 10, sw = fn.length * 6.8 + 10, pw = Math.max(nw, sw);
+    const pos = o.css ? `style="transform:translate(${x}px,${y}px) scale(var(--ws,1))"` : `transform="translate(${x} ${y})"`;
+    let h = `<g class="city${sel === c.id ? ' sel' : ''}${c.owner === P ? ' mine' : ''}${o.css ? ' wcity' : ''}" data-id="${c.id}" tabindex="0" role="button" aria-label="${ci.name}${ci.world ? ` (${ci.region})` : ''}" ${pos}>
+        <circle r="24" fill="transparent"/><g class="cicon">${cityIcon(c, color, cap)}</g>${o.sprite ? townSprite(c.id, cap) : ''}
         <g class="cflag" transform="translate(0 -12)">
           <path d="M0 0 V-22" stroke="#2a2014" stroke-width="1.4"/>
           <path d="M-8 -34 h16 v14 l-8 6 l-8 -6z" fill="${color}" stroke="${cap ? '#ffd978' : '#e9dcb6'}" stroke-width="1.3"/>
           <text x="0" y="-22.5" class="cbadge">${esc(badge)}</text>
           ${cap ? '<path d="M-6 -36 l2 -5 l2 3 l2 -4 l2 4 l2 -3 l2 5z" fill="#ffd978" stroke="#6b4a0e" stroke-width=".5"/>' : ''}
-          <g transform="translate(${LABEL_LEFT.includes(c.id) ? -10 - pw : 10} -34)"><rect width="${pw}" height="${c.owner ? 22 : 13}" rx="2" class="cplate"/>
+          <g transform="translate(${o.left ? -10 - pw : 10} -34)"><rect width="${pw}" height="${c.owner ? 22 : 13}" rx="2" class="cplate"/>
             <text x="5" y="10" class="cname">${c.owner === P ? '★ ' : ''}${ci.name}</text>${c.owner ? `<text x="5" y="19" class="cfac">(${esc(fn)})</text>` : `<text x="5" y="10" class="cfac"></text>`}</g>
         </g>
         <g transform="translate(-${String(fmtK(c.soldiers)).length * 2.8 + 5} 12)"><rect x="0" y="-8" width="${String(fmtK(c.soldiers)).length * 5.6 + 10}" height="11" rx="2" fill="#141b2c" opacity=".82"/><text x="5" y="0" class="csold">${fmtK(c.soldiers)}</text></g>`;
-      if (sel === c.id) h += `<path class="bracket" d="M-26 -20 v-8 h8 M26 -20 v-8 h-8 M-26 14 v8 h8 M26 14 v8 h-8" fill="none" stroke="#ffd36a" stroke-width="2.4"/>`;
-      if (q && q === c.id) h += `<g class="qmark" transform="translate(0 -62)"><text y="-16" class="qlabel">사명</text><circle r="10" fill="#1b2233" stroke="#e6b64a" stroke-width="2.4"/><text y="5" class="qbang">!</text><path d="M-5 9 L0 16 L5 9Z" fill="#e6b64a"/></g>`;
-      h += `</g>`;
+    if (sel === c.id) h += `<path class="bracket" d="M-26 -20 v-8 h8 M26 -20 v-8 h-8 M-26 14 v8 h8 M26 14 v8 h-8" fill="none" stroke="#ffd36a" stroke-width="2.4"/>`;
+    if (o.q && o.q === c.id) h += `<g class="qmark" transform="translate(0 -62)"><text y="-16" class="qlabel">사명</text><circle r="10" fill="#1b2233" stroke="#e6b64a" stroke-width="2.4"/><text y="5" class="qbang">!</text><path d="M-5 9 L0 16 L5 9Z" fill="#e6b64a"/></g>`;
+    return h + `</g>`;
+  }
+  // 가나안 지도 가장자리: 세계 성읍으로 가는 길을 긴 선 대신 짧은 화살표("애굽 방면 →")로 보인다. 누르면 세계 지도로.
+  const ARROWS = ['→', '↘', '↓', '↙', '←', '↖', '↑', '↗'];
+  function edgeArrows(hot) {
+    let h = '';
+    ROADS.filter(roadOn).forEach(([a, b, kind]) => {
+      if (isWorld(a) === isWorld(b)) return;
+      const [r, w] = isWorld(a) ? [b, a] : [a, b];
+      const R = CITY_INFO[r], W = CITY_INFO[w], d = Math.hypot(W.x - R.x, W.y - R.y) || 1, ux = (W.x - R.x) / d, uy = (W.y - R.y) / d;
+      const x1 = R.x + ux * 30, y1 = R.y + uy * 30, x2 = R.x + ux * 80, y2 = R.y + uy * 80, ang = Math.atan2(uy, ux) * 180 / Math.PI;
+      const c = city(w), col = c.owner ? fac(c.owner).color : '#8d877a', on = sel === r && hot.includes(w);
+      const anchor = ux < -0.38 ? 'end' : ux > 0.38 ? 'start' : 'middle';
+      const tx = x2 + ux * 12, ty = y2 + uy * 12 + (uy > 0.38 ? 9 : uy < -0.38 ? -14 : -4);
+      const arrow = ARROWS[((Math.round(ang / 45) % 8) + 8) % 8];
+      h += `<g class="edge${on ? ' hot' : ''}" data-world="${w}" tabindex="0" role="button" aria-label="${W.region} 방면 ${W.name} — 세계 지도로 보기">
+        <line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" class="edge-b"/><line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" class="edge-l${kind === 'sea' ? ' sea' : ''}"/>
+        <path d="M-2 -8 L13 0 L-2 8 L2 0Z" transform="translate(${x2} ${y2}) rotate(${ang})" class="edge-h"/>
+        <text x="${tx}" y="${ty}" text-anchor="${anchor}" class="edge-t">${kind === 'sea' ? '⛵ ' : ''}${W.region} 방면 ${arrow}</text>
+        <text x="${tx}" y="${ty + 11}" text-anchor="${anchor}" class="edge-s"><tspan fill="${col}">■</tspan> ${W.name}${c.owner ? ` · ${esc(fac(c.owner).name)}` : ''}</text></g>`;
     });
+    return h;
+  }
+
+  // ---------- 세계 지도 ----------
+  // world.js의 실제 지형(Natural Earth)을 양피지 채색 지도처럼 그린다. 좌표는 세계 지도 단위(wx, wy).
+  const WL = (lon, lat) => wproj([lon, lat]);
+  const WORLD_LABEL_LEFT = ['alexandria', 'memphis', 'carchemish', 'ephesus', 'corinth', 'sinai']; // 이웃 성과 이름표가 겹치지 않게 왼쪽에
+  // [글, 경도, 위도, 종류(r 지역·s 바다·v 강), 회전]
+  const WORLD_TEXT = [
+    ['애 굽', 29.2, 27.4, 'r'], ['시내 광야', 33.5, 29.95, 'r2'], ['구 스', 33.4, 22.9, 'r2'], ['리비아 (붓)', 19.5, 28.8, 'r2'],
+    ['아 람', 38.6, 34.6, 'r'], ['앗 수 르', 43.6, 37.4, 'r'], ['바벨론 (시날)', 43.4, 31.2, 'r'], ['바사 · 엘람', 49.6, 31.0, 'r'], ['메 대', 48.6, 35.6, 'r2'],
+    ['아라비아 광야', 40.4, 28.6, 'r'], ['아 라 랏', 43.4, 39.6, 'r2'], ['소 아 시 아', 32.0, 39.2, 'r'], ['길리기아', 34.8, 37.5, 'r2'],
+    ['헬 라', 21.9, 39.3, 'r'], ['이 달 리 야', 15.4, 40.9, 'r'], ['구브로', 32.7, 35.55, 'r2'],
+    ['대 해', 19.0, 34.2, 's'], ['(지중해)', 19.0, 33.3, 's2'], ['흑 해', 33.6, 43.4, 's'], ['에게 해', 25.2, 38.5, 's2'],
+    ['홍 해', 35.4, 25.8, 's', 59], ['페르시아 만', 50.0, 28.4, 's2', 31],
+    ['나 일 강', 32.1, 27.8, 'v', 78], ['유브라데 강', 40.3, 35.0, 'v', 38], ['힛데겔 (티그리스)', 45.1, 34.1, 'v', 52],
+  ];
+  // 산맥 [경도, 위도, 크기]
+  const WORLD_MTN = [[31.5, 37.4, 1.2], [33.5, 37.2, 1.1], [36.2, 37.7, 1.1], [38.6, 38.3, 1], [41.5, 38.4, 1.2], [44.2, 37.9, 1.1], [45.6, 36.2, 1.1],
+    [46.8, 34.9, 1.1], [47.8, 33.6, 1], [49.2, 32.4, 1], [36.1, 34.3, 0.7], [36.8, 33.6, 0.6], [34.0, 40.3, 0.9], [38.0, 40.2, 0.9], [29.8, 39.4, 0.9],
+    [22.0, 40.1, 0.9], [21.5, 38.7, 0.8], [23.5, 41.6, 0.8], [13.6, 42.5, 0.9], [15.8, 40.4, 0.8], [11.2, 44.2, 0.8], [42.8, 40.0, 1.3], [33.9, 28.6, 0.8]];
+  function drawWorld() {
+    const svg = $('#map'), P = S.player, q = storyTarget();
+    svg.classList.remove('art-on');
+    const hot = sel && city(sel) && city(sel).owner === P ? (ADJ[sel] || []) : [];
+    const W = WG.w, H = WG.h;
+    let h = `<defs>
+      <linearGradient id="wSea" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4f7f86"/><stop offset=".6" stop-color="#5f8f8e"/><stop offset="1" stop-color="#6b9894"/></linearGradient>
+      <linearGradient id="wLand" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#cdb98a"/><stop offset=".5" stop-color="#dcc795"/><stop offset="1" stop-color="#e3cb91"/></linearGradient>
+      <filter id="wPaper" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".035" numOctaves="4" seed="7" result="n"/>
+        <feColorMatrix in="n" type="matrix" values="0 0 0 0 .32  0 0 0 0 .24  0 0 0 0 .12  0 0 0 .55 -.18" result="t"/><feComposite in="t" in2="SourceGraphic" operator="in" result="tc"/><feMerge><feMergeNode in="SourceGraphic"/><feMergeNode in="tc"/></feMerge></filter>
+      <radialGradient id="wDes" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#e8c77e" stop-opacity=".85"/><stop offset="1" stop-color="#e8c77e" stop-opacity="0"/></radialGradient>
+      <radialGradient id="wGrn" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#8d9c55" stop-opacity=".7"/><stop offset="1" stop-color="#8d9c55" stop-opacity="0"/></radialGradient>
+      <path id="wLandP" d="${WG.land}"/>
+      <clipPath id="wClip"><use href="#wLandP"/></clipPath>
+    </defs>
+    <rect x="-600" y="-600" width="${W + 1200}" height="${H + 1200}" fill="#3f6a70"/>
+    <rect x="0" y="0" width="${W}" height="${H}" fill="url(#wSea)" filter="url(#wPaper)"/>
+    <use href="#wLandP" fill="none" stroke="#9cc3b8" stroke-width="12" stroke-linejoin="round" opacity=".45"/>
+    <use href="#wLandP" fill="url(#wLand)" stroke="#6b5230" stroke-width="1.3" stroke-linejoin="round" filter="url(#wPaper)"/>
+    <g clip-path="url(#wClip)">`;
+    // 사막(모래빛)과 비옥한 땅(초록빛)
+    [[350, 800, 380, 170, 'wDes'], [1080, 760, 330, 190, 'wDes'], [1020, 470, 120, 80, 'wDes'], [820, 640, 70, 70, 'wDes'], [640, 690, 110, 120, 'wDes'],
+      [760, 250, 190, 70, 'wGrn'], [470, 200, 130, 90, 'wGrn'], [150, 170, 110, 110, 'wGrn'], [1020, 290, 140, 45, 'wGrn'], [1160, 460, 90, 70, 'wGrn'], [865, 470, 45, 70, 'wGrn']]
+      .forEach(([cx, cy, rx, ry, g]) => { h += `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="url(#${g})"/>`; });
+    // 경위선 (5도마다)
+    for (let lon = 15; lon <= 50; lon += 5) { const x = WL(lon, 45).wx; h += `<line x1="${x}" y1="0" x2="${x}" y2="${H}" class="wgrid"/>`; }
+    h += `</g>`;
+    for (let lat = 25; lat <= 40; lat += 5) { const y = WL(10, lat).wy; h += `<line x1="0" y1="${y}" x2="${W}" y2="${y}" class="wgrid"/>`; }
+    // 강: 초록 들판을 먼저 넓게, 그 위에 물줄기
+    const RV = WG.rivers || {};
+    ['nile', 'euph', 'tigris'].forEach(k => { if (RV[k]) h += `<path d="${RV[k]}" fill="none" stroke="#7f9a4a" stroke-width="13" stroke-linecap="round" stroke-linejoin="round" opacity=".42"/>`; });
+    Object.keys(RV).forEach(k => { h += `<path d="${RV[k]}" fill="none" stroke="#3f7f9c" stroke-width="${k === 'jordan' ? 1.2 : 2}" stroke-linecap="round" stroke-linejoin="round"/>`; });
+    if (WG.lakes) h += `<path d="${WG.lakes}" fill="#3f7f9c" stroke="#2c5f74" stroke-width=".6"/>`;
+    WORLD_MTN.forEach(([lon, lat, s]) => { const p = WL(lon, lat); h += mtn(p.wx, p.wy, s * 0.7, s >= 1.2); });
+    WORLD_TEXT.forEach(([t, lon, lat, k, rot]) => { const p = WL(lon, lat); h += `<text x="${p.wx}" y="${p.wy}" class="wgeo ${k}"${rot ? ` transform="rotate(${rot} ${p.wx} ${p.wy})"` : ''}>${t}</text>`; });
+    // 테두리와 나침반
+    h += `<rect x="0" y="0" width="${W}" height="${H}" fill="none" stroke="#2c2012" stroke-width="7"/><rect x="7" y="7" width="${W - 14}" height="${H - 14}" fill="none" stroke="#c9ad6e" stroke-width="1.4"/>`;
+    const cp = WL(12.6, 24.6);
+    h += `<g class="wcompass" transform="translate(${cp.wx} ${cp.wy})"><circle r="30" fill="none" stroke="#6b5230" stroke-width="1.2"/><path d="M0 -38 L7 0 L0 38 L-7 0Z" fill="#6b5230"/><path d="M-38 0 L0 -6 L38 0 L0 6Z" fill="#a88c55"/><path d="M0 -38 L7 0 L-7 0Z" fill="#b3322a"/><text y="-44" class="wgeo s2" text-anchor="middle">북</text></g>
+      <text x="${cp.wx + 48}" y="${cp.wy + 4}" class="wtitle">성경 세계 지도</text><text x="${cp.wx + 48}" y="${cp.wy + 22}" class="wgeo s2">BC ${S.year}년 · ${esc(scn().title)}</text>`;
+    // 가나안: 본 지도 성읍들을 둘러싼 틀과 이름표 (누르면 가나안 지도로)
+    const here = Object.values(S.cities).filter(c => !isWorld(c.id)).map(c => CITY_INFO[c.id]).filter(ci => ci.wx != null);
+    if (here.length) {
+      const x0 = Math.min(...here.map(c => c.wx)) - 8, x1 = Math.max(...here.map(c => c.wx)) + 8, y0 = Math.min(...here.map(c => c.wy)) - 8, y1 = Math.max(...here.map(c => c.wy)) + 8;
+      h += `<g class="wcanaan" data-goto="canaan" tabindex="0" role="button" aria-label="가나안 지도로 들어가기"><rect x="${x0}" y="${y0}" width="${x1 - x0}" height="${y1 - y0}" rx="6" class="wc-box"/>
+        <g style="transform:translate(${(x0 + x1) / 2}px,${y0 - 4}px) scale(var(--ws,1))"><rect x="-38" y="-30" width="76" height="30" rx="4" class="wc-tag"/><text x="0" y="-16" class="wc-t">가나안</text><text x="0" y="-5" class="wc-s">눌러서 들어가기 ▸</text></g></g>`;
+    }
+    // 길 (뱃길은 점선)
+    ROADS.filter(roadOn).forEach(([a, b, kind]) => {
+      const A = CITY_INFO[a], B = CITY_INFO[b];
+      if (A.wx == null || B.wx == null) return;
+      const wr = isWorld(a) || isWorld(b), on = (a === sel && hot.includes(b)) || (b === sel && hot.includes(a));
+      h += wr ? `<line x1="${A.wx}" y1="${A.wy}" x2="${B.wx}" y2="${B.wy}" class="wroad-b${kind === 'sea' ? ' sea' : ''}"/><line x1="${A.wx}" y1="${A.wy}" x2="${B.wx}" y2="${B.wy}" class="wroad${kind === 'sea' ? ' sea' : ''}${on ? ' hot' : ''}"/>`
+        : `<line x1="${A.wx}" y1="${A.wy}" x2="${B.wx}" y2="${B.wy}" class="wroad-in"/>`;
+    });
+    const far = Object.values(S.cities).filter(c => isWorld(c.id));
+    h += '<g class="realm">' + far.filter(c => c.owner).map(c => { const ci = CITY_INFO[c.id];
+      return `<circle cx="${ci.wx}" cy="${ci.wy}" r="30" fill="${fac(c.owner).color}" opacity="${c.owner === P ? 0.34 : 0.2}"/>`; }).join('') + '</g>';
+    // 가나안 성읍은 작은 점 (누르면 가나안 지도에서 그 성으로)
+    Object.values(S.cities).filter(c => !isWorld(c.id)).forEach(c => { const ci = CITY_INFO[c.id]; if (ci.wx == null) return;
+      const cap = c.owner && fac(c.owner).capital === c.id;
+      h += `<circle cx="${ci.wx}" cy="${ci.wy}" r="${cap ? 4.2 : 3.2}" class="wdot${c.owner === P ? ' mine' : ''}${sel === c.id ? ' sel' : ''}" fill="${c.owner ? fac(c.owner).color : '#8d877a'}" data-goto="${c.id}"><title>${ci.name}${c.owner ? ' · ' + esc(fac(c.owner).name) : ''}</title></circle>`; });
+    far.forEach(c => { const ci = CITY_INFO[c.id]; h += cityMark(c, ci.wx, ci.wy, { q, left: WORLD_LABEL_LEFT.includes(c.id), css: true }); });
     svg.innerHTML = h;
-    applyView();
-    drawMini();
+  }
+  // 세계 지도 ↔ 가나안 지도. 두 지도의 시점은 따로 기억한다.
+  function setWorld(on) {
+    mode = 'map';
+    if (world === on) return;
+    VBS[world ? 'world' : 'map'] = VB; world = on; VB = VBS[world ? 'world' : 'map'];
   }
   const fmtM = n => n >= 10000 ? (n / 10000).toFixed(1) + '만' : fmt(n);
   const fmtK = n => n >= 1000 ? (n / 1000).toFixed(1) + 'k' : String(n);
@@ -786,24 +925,61 @@
   };
   const mapArt = () => { const u = artKey('@map'); return u ? `<image href="${u}" ${MAP_BOX} onload="var s=this.closest('svg');if(s)s.classList.add('art-on')" onerror="var s=this.closest('svg');if(s)s.classList.remove('art-on');this.remove()"/>` : ''; };
   function resetView(full) {
-    const wrap = $('#mapWrap'), ar = wrap.clientWidth / Math.max(1, wrap.clientHeight);
+    const wrap = $('#mapWrap'), ar = (wrap.clientWidth || window.innerWidth) / Math.max(1, wrap.clientHeight || window.innerHeight);
+    if (world) {
+      if (full) { VB = { x: -20, y: -20, w: WG.w + 40, h: WG.h + 40 }; if (ar > VB.w / VB.h) { const w = VB.h * ar; VB.x -= (w - VB.w) / 2; VB.w = w; } else { const hh = VB.w / ar; VB.y -= (hh - VB.h) / 2; VB.h = hh; } return; }
+      const ci = CITY_INFO[S && fac(S.player).capital], cap = ci && ci.wx != null ? ci : CITY_INFO.jerusalem;
+      const w = ar > 0.7 ? Math.min(640 * ar, 1300) : 440, hh = w / ar; VB = { x: cap.wx - w / 2, y: cap.wy - hh / 2, w, h: hh }; clampView(); return;
+    }
     if (full) { VB = Object.assign({}, VB_FULL); if (ar > VB.w / VB.h) { const w = VB.h * ar; VB.x -= (w - VB.w) / 2; VB.w = w; } else { const hh = VB.w / ar; VB.y -= (hh - VB.h) / 2; VB.h = hh; } return; }
-    const cap = CITY_INFO[S && fac(S.player).capital] || CITY_INFO.jerusalem;
+    const cap = (S && !isWorld(fac(S.player).capital) && CITY_INFO[fac(S.player).capital]) || CITY_INFO.jerusalem;
     const w = ar > 0.7 ? Math.min(560 * ar, 900) : 250, hh = w / ar; VB = { x: cap.x - w / 2, y: cap.y - hh / 2, w, h: hh }; clampView();
   }
-  function clampView() { VB.x = clamp(VB.x, -160, 760 - VB.w); VB.y = clamp(VB.y, -120, 900 - VB.h); }
-  function applyView() { $('#map').setAttribute('viewBox', `${VB.x} ${VB.y} ${VB.w} ${VB.h}`); const r = $('#miniView'); if (r) { r.setAttribute('x', VB.x); r.setAttribute('y', VB.y); r.setAttribute('width', VB.w); r.setAttribute('height', VB.h); } }
+  function clampView() {
+    if (world) { // 세계 지도: 틀 밖으로 조금만 나가게, 화면이 지도보다 크면 가운데에
+      const m = 120;
+      VB.x = VB.w > WG.w + 2 * m ? (WG.w - VB.w) / 2 : clamp(VB.x, -m, WG.w + m - VB.w);
+      VB.y = VB.h > WG.h + 2 * m ? (WG.h - VB.h) / 2 : clamp(VB.y, -m, WG.h + m - VB.h);
+      return;
+    }
+    VB.x = clamp(VB.x, -160, 760 - VB.w); VB.y = clamp(VB.y, -120, 900 - VB.h);
+  }
+  function applyView() {
+    const svg = $('#map');
+    svg.setAttribute('viewBox', `${VB.x} ${VB.y} ${VB.w} ${VB.h}`);
+    // 세계 지도의 성 표지는 확대해도 화면에서 거의 같은 크기로 (지도 단위 ÷ 화면 픽셀)
+    if (world) svg.style.setProperty('--ws', clamp(0.95 * VB.w / Math.max(1, svg.clientWidth || window.innerWidth), 0.28, 1.5).toFixed(3));
+    const r = $('#miniView'); if (r) { r.setAttribute('x', VB.x); r.setAttribute('y', VB.y); r.setAttribute('width', VB.w); r.setAttribute('height', VB.h); }
+  }
   function drawMini() {
-    let h = `<rect x="-20" y="-20" width="660" height="840" fill="#5d7440"/><polygon points="${SEA_PTS}" fill="#1f5a6e"/>${mapArt()}`;
-    Object.values(S.cities).forEach(c => { const ci = CITY_INFO[c.id]; h += `<circle cx="${ci.x}" cy="${ci.y}" r="${c.owner === S.player ? 16 : 12}" fill="${c.owner ? fac(c.owner).color : '#8d877a'}" stroke="${c.owner === S.player ? '#fff' : 'none'}" stroke-width="5"/>`; });
-    h += `<rect id="miniView" fill="none" stroke="#ffd36a" stroke-width="8"/>`;
-    $('#mini').innerHTML = h; applyView();
+    const m = $('#mini');
+    let h;
+    if (world) { // 세계 지도 미니맵: 이달리야에서 바사까지를 세로 틀에 맞춰 보인다
+      m.setAttribute('viewBox', `${WG.w * 0.2} -20 ${WG.w * 0.8} ${WG.h + 40}`);
+      h = `<rect x="-400" y="-400" width="${WG.w + 800}" height="${WG.h + 800}" fill="#3f6a70"/><path d="${WG.land}" fill="#cdb581"/>`;
+      Object.values(S.cities).forEach(c => { const ci = CITY_INFO[c.id]; if (ci.wx == null) return; const big = isWorld(c.id);
+        h += `<circle cx="${ci.wx}" cy="${ci.wy}" r="${big ? (c.owner === S.player ? 20 : 15) : 6}" fill="${c.owner ? fac(c.owner).color : '#8d877a'}" stroke="${c.owner === S.player ? '#fff' : 'none'}" stroke-width="5"/>`; });
+      h += `<rect id="miniView" fill="none" stroke="#ffd36a" stroke-width="10"/>`;
+    } else {
+      m.setAttribute('viewBox', '-20 -20 660 840');
+      h = `<rect x="-20" y="-20" width="660" height="840" fill="#5d7440"/><polygon points="${SEA_PTS}" fill="#1f5a6e"/>${mapArt()}`;
+      Object.values(S.cities).forEach(c => { if (isWorld(c.id)) return; const ci = CITY_INFO[c.id]; h += `<circle cx="${ci.x}" cy="${ci.y}" r="${c.owner === S.player ? 16 : 12}" fill="${c.owner ? fac(c.owner).color : '#8d877a'}" stroke="${c.owner === S.player ? '#fff' : 'none'}" stroke-width="5"/>`; });
+      h += `<rect id="miniView" fill="none" stroke="#ffd36a" stroke-width="8"/>`;
+    }
+    m.innerHTML = h; applyView();
+  }
+  // 지도 누르기: 성 · 가장자리 화살표(세계 지도로) · 세계 지도의 가나안 틀과 점(가나안 지도로)
+  function mapTap(t) {
+    const g = t.closest('.city'); if (g) { onCityTap(g.dataset.id); return true; }
+    const e = t.closest('[data-world]'); if (e) { focusCity(e.dataset.world); return true; }
+    const d = t.closest('[data-goto]'); if (d) { if (d.dataset.goto === 'canaan') { setWorld(false); render(); } else focusCity(d.dataset.goto); return true; }
+    return false;
   }
   // 드래그·휠·핀치
   function bindPanZoom() {
     const svg = $('#map'), pts = new Map(); let moved = 0, start = null, pinch = null;
     const toMap = (cx, cy) => { const r = svg.getBoundingClientRect(); return { x: VB.x + (cx - r.left) / r.width * VB.w, y: VB.y + (cy - r.top) / r.height * VB.h }; };
-    const zoom = (f, cx, cy) => { const p = toMap(cx, cy); const nw = clamp(VB.w * f, 180, 1100); const k = nw / VB.w; VB.x = p.x - (p.x - VB.x) * k; VB.y = p.y - (p.y - VB.y) * k; VB.w = nw; VB.h *= k; clampView(); applyView(); };
+    const zoom = (f, cx, cy) => { const p = toMap(cx, cy); const nw = world ? clamp(VB.w * f, 150, 1800) : clamp(VB.w * f, 180, 1100); const k = nw / VB.w; VB.x = p.x - (p.x - VB.x) * k; VB.y = p.y - (p.y - VB.y) * k; VB.w = nw; VB.h *= k; clampView(); applyView(); };
     svg.addEventListener('pointerdown', e => { pts.set(e.pointerId, { x: e.clientX, y: e.clientY }); if (pts.size === 1) { moved = 0; start = { x: e.clientX, y: e.clientY, vx: VB.x, vy: VB.y }; } if (pts.size === 2) { const [a, b] = [...pts.values()]; pinch = Math.hypot(a.x - b.x, a.y - b.y); } });
     svg.addEventListener('pointermove', e => {
       if (!pts.has(e.pointerId)) return; pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
@@ -813,7 +989,7 @@
     const up = e => { pts.delete(e.pointerId); if (pts.size < 2) pinch = null; if (!pts.size) start = null; };
     svg.addEventListener('pointerup', up); svg.addEventListener('pointercancel', up);
     svg.addEventListener('wheel', e => { e.preventDefault(); zoom(e.deltaY > 0 ? 1.12 : 0.89, e.clientX, e.clientY); }, { passive: false });
-    svg.addEventListener('click', e => { if (moved > 6) { e.stopPropagation(); return; } const g = e.target.closest('.city'); if (g) onCityTap(g.dataset.id); }, true);
+    svg.addEventListener('click', e => { if (moved > 6) { e.stopPropagation(); return; } mapTap(e.target); }, true);
     $('#minimap').addEventListener('click', () => { if (mode === 'land') { showMap(); return; } resetView(true); applyView(); });
     window.addEventListener('resize', () => { if (S && !$('#app').hidden) { resetView(); drawMap(); } });
   }
@@ -883,7 +1059,9 @@
     wood: '<svg viewBox="0 0 24 24"><rect x="3" y="12" width="18" height="5" rx="2.5" fill="#b9853f" stroke="#5c3c16"/><rect x="5" y="7" width="15" height="5" rx="2.5" fill="#cf9a52" stroke="#5c3c16"/><circle cx="19" cy="14.5" r="2" fill="#f0d29a"/><circle cx="18" cy="9.5" r="2" fill="#f0d29a"/></svg>',
   };
   // 영지 그림은 같은 구도에 지역 문화만 다르게 그렸다(건물 위치 동일). 지역에 따라 고른다.
-  const LAND_KIND = { coast: ['joppa', 'ekron', 'ashdod', 'gath', 'ashkelon', 'gaza', 'tyre'], canaan: ['dan', 'hazor', 'megiddo', 'bethshean', 'damascus', 'jericho', 'shechem'], desert: ['rabbah', 'dibon', 'kirhareseth', 'bozrah', 'beersheba'] };
+  const LAND_KIND = { coast: ['joppa', 'ekron', 'ashdod', 'gath', 'ashkelon', 'gaza', 'tyre', 'sidon', 'tanis', 'alexandria', 'antioch', 'tarsus', 'ephesus', 'athens', 'corinth', 'kittim', 'rome'],
+    canaan: ['dan', 'hazor', 'megiddo', 'bethshean', 'damascus', 'jericho', 'shechem', 'edrei', 'goshen', 'memphis', 'hamath', 'carchemish', 'babylon', 'nineveh', 'ashur'],
+    desert: ['rabbah', 'dibon', 'kirhareseth', 'bozrah', 'beersheba', 'kadesh', 'heshbon', 'sinai', 'midian', 'thebes', 'haran', 'ur', 'susa', 'persepolis'] };
   const landKind = cid => Object.keys(LAND_KIND).find(k => LAND_KIND[k].includes(cid)) || 'hill';
   const PORT_NAME = { hill: '항구', coast: '항구', canaan: '나루터', desert: '대상 숙소' };
   const landArt = cid => { const k = landKind(cid); return (k !== 'hill' && artKey('@land-' + k)) || artKey('@land'); };
@@ -907,7 +1085,7 @@
     if (mode === 'land' && !on) { const cs = citiesOf(S.player); if (cs.length) { landCid = cs.find(c => c.id === fac(S.player).capital) ? fac(S.player).capital : cs[0].id; } else mode = 'map'; }
     const land = mode === 'land';
     $('#landWrap').hidden = !land; $('#mapWrap').hidden = land;
-    document.querySelectorAll('[data-view]').forEach(b => b.classList.toggle('on', b.dataset.view === mode));
+    document.querySelectorAll('[data-view]').forEach(b => b.classList.toggle('on', b.dataset.view === (mode === 'map' && world ? 'world' : mode)));
     if (!land) return;
     const c = city(landCid), ci = CITY_INFO[landCid], F = fac(S.player), idle = idleOffs(landCid).length;
     const img = $('#landImg'), u = landArt(landCid), kind = landKind(landCid);
@@ -982,7 +1160,7 @@
     w.addEventListener('click', e => { if (moved > 6) { moved = 0; return; } const b = e.target.closest('[data-spot]'); if (b) onSpot(b.dataset.spot); });
     $('#landImg').addEventListener('error', () => { $('#land').classList.add('noart'); });
     $('#landNav').addEventListener('click', e => { const s = e.target.closest('[data-step]'); if (s) return stepLand(+s.dataset.step); if (e.target.closest('[data-realm]')) realmScreen(); });
-    document.querySelectorAll('[data-view]').forEach(b => b.addEventListener('click', () => { if (b.dataset.view === 'land') showLand(landCid); else if (b.dataset.view === 'map') showMap(); else nationScreen(); }));
+    document.querySelectorAll('[data-view]').forEach(b => b.addEventListener('click', () => { if (b.dataset.view === 'land') showLand(landCid); else if (b.dataset.view === 'map' || b.dataset.view === 'world') { setWorld(b.dataset.view === 'world'); render(); } else nationScreen(); }));
     window.addEventListener('resize', () => { if (mode === 'land') centerLand(); });
   }
   // 길 거리(몇 칸): 도로망을 따라 너비 우선 탐색
@@ -1189,14 +1367,18 @@
   function warScreen() {
     const P = S.player, rows = [];
     const mine = citiesOf(P).map(c => c.id);
-    Object.values(S.cities).forEach(c => { if (c.owner === P) return; rows.push({ c, h: Math.min(...mine.map(m => hops(m, c.id))) }); });
+    // 길로 닿는 성만 (세계 성읍도 길이 이어져 있으면 원정할 수 있다)
+    Object.values(S.cities).forEach(c => { if (c.owner === P) return; const h = Math.min(...mine.map(m => hops(m, c.id))); if (h < 99) rows.push({ c, h }); });
     rows.sort((a, b) => a.h - b.h || defPower(a.c) - defPower(b.c));
     const srcs = sources();
+    const row = ({ c, h }) => { const src = bestSource(c.id), sh = src ? hops(src.id, c.id) : h, ci = CITY_INFO[c.id]; return `<li><span class="fbadge" style="--fc:${c.owner ? fac(c.owner).color : '#8d877a'}">${c.owner ? esc(fac(c.owner).name[0]) : '·'}</span>
+      <div><b>${ci.name}${ci.world ? ` <em class="war-reg">${esc(ci.region)}</em>` : ''}</b><small>${c.owner ? esc(fac(c.owner).name) : '주인 없음'} · 병력 ${fmt(c.soldiers)} · 성벽 ${c.def}</small><small>${sh <= 1 ? '⚔ 맞닿은 성' : `🐪 원정 ${sh}칸`}${src ? ` · ${CITY_INFO[src.id].name}에서 출진` : ''}${c.owner && allied(P, c.owner) ? ' · 동맹' : ''}</small></div>
+      <span class="pw">${fmt(Math.round(defPower(c) * 1.3))}</span><button class="btn ${src ? 'primary' : ''}" data-target="${c.id}">${src ? '정벌' : '정찰'}</button></li>`; };
+    const near = rows.filter(r => !isWorld(r.c.id)), far = rows.filter(r => isWorld(r.c.id));
     openModal(`${srcs.length ? `<p class="mute">출진 가능한 성: ${srcs.map(c => CITY_INFO[c.id].name).join(', ')} · 멀리 떨어진 성도 원정할 수 있습니다(한 칸마다 전력 −7%, 군량 +50%).</p>` : `<p class="warn">${whyNoSource()}</p>`}
-      <ul class="war-list">${rows.map(({ c, h }) => { const src = bestSource(c.id), sh = src ? hops(src.id, c.id) : h; return `<li><span class="fbadge" style="--fc:${c.owner ? fac(c.owner).color : '#8d877a'}">${c.owner ? esc(fac(c.owner).name[0]) : '·'}</span>
-      <div><b>${CITY_INFO[c.id].name}</b><small>${c.owner ? esc(fac(c.owner).name) : '주인 없음'} · 병력 ${fmt(c.soldiers)} · 성벽 ${c.def}</small><small>${sh <= 1 ? '⚔ 맞닿은 성' : `🐪 원정 ${sh}칸`}${src ? ` · ${CITY_INFO[src.id].name}에서 출진` : ''}${c.owner && allied(P, c.owner) ? ' · 동맹' : ''}</small></div>
-      <span class="pw">${fmt(Math.round(defPower(c) * 1.3))}</span><button class="btn ${src ? 'primary' : ''}" data-target="${c.id}">${src ? '정벌' : '정찰'}</button></li>`; }).join('')}</ul>`, [], { title: '출전', wide: true });
-    $('#modalBody').querySelectorAll('[data-target]').forEach(b => b.addEventListener('click', () => { const t = b.dataset.target; closeModal(); sel = t; render(); cityPopup(t); }));
+      <ul class="war-list">${near.map(row).join('')}</ul>
+      ${far.length ? `<p class="war-sec">🌍 세계 — 가나안 밖으로 이어진 성 (${far.length})</p><ul class="war-list">${far.map(row).join('')}</ul>` : ''}`, [], { title: '출전', wide: true });
+    $('#modalBody').querySelectorAll('[data-target]').forEach(b => b.addEventListener('click', () => { const t = b.dataset.target; closeModal(); if (isWorld(t) !== world || mode !== 'map') focusCity(t); else { sel = t; render(); } cityPopup(t); }));
   }
   function storyScreen() {
     const ch = curChapter(), all = chain();
@@ -1205,7 +1387,7 @@
       <div class="rewards"><p class="rw-title">보상</p><div class="rw-row"><span class="rw"><i>${ICON.king}</i><b>+${ch.reward.k}</b><small>나라</small></span>
       ${ch.reward.gold ? `<span class="rw"><i>${ICON.gold}</i><b>${fmt(ch.reward.gold)}</b><small>금</small></span>` : ''}${ch.reward.food ? `<span class="rw"><i>${ICON.food}</i><b>${fmt(ch.reward.food)}</b><small>식량</small></span>` : ''}</div></div></div>` : '<p>모든 사명을 이루었습니다.</p>'}
       <ol class="ch-list">${all.map((c, i) => `<li class="${i < S.story.ch ? 'done' : i === S.story.ch ? 'now' : ''}"><b>${esc(c.title)}</b><small>${esc(c.ref)}</small>${i <= S.story.ch ? `<button class="btn" data-replay="${i}">대화 보기</button>` : ''}</li>`).join('')}</ol>`,
-      ch ? [{ label: '가기', primary: true, fn: () => { const t = storyTarget(); if (t) { const ci = CITY_INFO[t]; VB.x = ci.x - VB.w / 2; VB.y = ci.y - VB.h / 2; clampView(); sel = t; render(); } } }] : [], { title: '사명' });
+      ch ? [{ label: '가기', primary: true, fn: () => { const t = storyTarget(); if (t) centerOn(t); } }] : [], { title: '사명' });
     $('#modalBody').querySelectorAll('[data-replay]').forEach(b => b.addEventListener('click', () => { const c = all[+b.dataset.replay]; closeModal(); playDialogue(c.intro.concat(heroLines(+b.dataset.replay, 'intro'), +b.dataset.replay < S.story.ch ? c.outro.concat(heroLines(+b.dataset.replay, 'outro')) : []), null, c); }));
   }
   function logScreen() {
@@ -1467,10 +1649,18 @@
 
   // ---------- 내 영토 ----------
   function focusCity(cid) {
-    mode = 'map'; sel = cid;
-    const ci = CITY_INFO[cid], w = $('#mapWrap'), ar = (w.clientWidth || 400) / Math.max(1, w.clientHeight || 800);
-    const vw = ar > 0.7 ? Math.min(460 * ar, 800) : 230, vh = vw / ar; VB = { x: ci.x - vw / 2, y: ci.y - vh / 2, w: vw, h: vh }; clampView();
+    setWorld(isWorld(cid)); sel = cid; // 세계 성읍이면 세계 지도로, 가나안 성읍이면 가나안 지도로
+    const ci = CITY_INFO[cid], w = $('#mapWrap'), ar = (w.clientWidth || window.innerWidth || 400) / Math.max(1, w.clientHeight || window.innerHeight || 800);
+    const vw = world ? (ar > 0.7 ? Math.min(560 * ar, 1100) : 360) : (ar > 0.7 ? Math.min(460 * ar, 800) : 230), vh = vw / ar;
+    const x = world ? ci.wx : ci.x, y = world ? ci.wy : ci.y;
+    VB = { x: x - vw / 2, y: y - vh / 2, w: vw, h: vh }; clampView();
     render();
+  }
+  // 지금 확대 비율 그대로 그 성으로 옮겨 간다 (다른 지도의 성이면 focusCity)
+  function centerOn(cid) {
+    if (isWorld(cid) !== world || !VB) { focusCity(cid); return; }
+    const ci = CITY_INFO[cid], x = world ? ci.wx : ci.x, y = world ? ci.wy : ci.y;
+    VB.x = x - VB.w / 2; VB.y = y - VB.h / 2; clampView(); sel = cid; render();
   }
   function realmScreen() {
     const P = S.player, F = fac(P);
@@ -1705,7 +1895,7 @@
     document.addEventListener('click', e => { if (e.target.closest('button, .spot, .city')) snd('sfx', 'click'); }, true);
     bindPanZoom();
     bindLand();
-    $('#map').addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { const g = e.target.closest('.city'); if (g) { e.preventDefault(); onCityTap(g.dataset.id); } } });
+    $('#map').addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && mapTap(e.target)) e.preventDefault(); });
     $('#modalBody').addEventListener('click', e => { const bio = e.target.closest('[data-bio]'); if (bio) showBio(bio.dataset.bio); const hc = e.target.closest('[data-hero]'); if (hc) showBio(hc.dataset.hero); });
     $('#modalClose').addEventListener('click', closeModal);
     $('#heroView').addEventListener('click', () => { $('#heroView').hidden = true; });
