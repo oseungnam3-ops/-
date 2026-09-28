@@ -1734,7 +1734,7 @@
   }
   function galleryScreen() {
     const [a, b] = artSets(); const all = Object.assign({}, b, a);
-    const names = [...new Set(Object.keys(all).filter(k => k[0] !== '@').map(k => k.replace(/^[a-z]+:/, '')))];
+    const names = [...new Set(Object.keys(all).filter(k => k[0] !== '@').map(k => k.replace(/^[a-z_]+:/, '')))];
     const order = SCENARIOS.map(s => s.id);
     const firstScn = n => { const i = personInfo(n)[0]; return i ? order.indexOf(i.sc.id) : 99; };
     names.sort((x, y) => firstScn(x) - firstScn(y) || x.localeCompare(y, 'ko'));
@@ -1844,7 +1844,9 @@
       <div class="title-btns">${saved ? `<button class="gbtn" id="contBtn"><span>이어하기</span><small>${esc(SCENARIOS.find(x => x.id === saved.scn).title)} · ${esc(saved.facName)} · BC ${saved.year}년 ${SEASONS[saved.season] || ''} · ${saved.turn}턴</small></button>` : ''}
       <button class="btn" id="loadBtn">불러오기</button><button class="btn" id="galBtn">인물 갤러리</button><button class="btn" id="sndBtn">소리 설정</button><button class="btn" id="manBtn">📖 사용 설명서</button></div>
       <h2 class="sec">시나리오</h2><div class="scns">`;
-    SCENARIOS.forEach(sc => {
+    // 여섯 시대 개편 중: 새 시대(e_*)는 모두 준비될 때까지 ?preview=1 에서만 보인다
+    const preview = /[?&]preview=1/.test(location.search);
+    SCENARIOS.filter(sc => preview || !sc.id.startsWith('e_')).forEach(sc => {
       const main = sc.factions.filter(f => STORY[sc.id] && STORY[sc.id][f.id]), rest = sc.factions.filter(f => !main.includes(f));
       const fb = f => `<button class="facbtn${main.includes(f) ? ' story' : ''}" data-scn="${sc.id}" data-fac="${f.id}" style="--fc:${f.color}"><i>${esc(f.name[0])}</i><b>${esc(f.name)}</b><small>${esc(f.ruler)} · ${Object.keys(f.cities).length}성${main.includes(f) ? ' · 스토리' : ''}</small></button>`;
       h += `<article class="scn"><div class="scn-art" style="${A['@' + sc.id] ? `background-image:url('${A['@' + sc.id]}')` : ''}"><span class="yr">BC ${sc.year}</span><h3>${esc(sc.title)}</h3><span class="ref">${esc(sc.ref)}</span></div>
