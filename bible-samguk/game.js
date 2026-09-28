@@ -1887,13 +1887,13 @@
   window.addEventListener('snd-song', e => { if ($('#modal').hidden || !$('#sndNow')) toast('♪ ' + e.detail.t); const n = $('#sndNow'); if (n && window.SND) { const g = SND.song; if (g) n.innerHTML = `♪ ${esc(g.t)} <small>${esc(g.en)} · ${g.verse}절</small>`; } });
 
   // ---------- 사용 설명서 ----------
-  const MANUAL_PDF = 'https://d2ol7oe51mr4n9.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/6f3caa27-612d-4a1b-b62b-8e3571e63e8b.pdf';
+  const MANUAL_PDF = 'https://d2ol7oe51mr4n9.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/6baef646-7454-47e7-a8d2-d48305212581.pdf';
   function manualDialog() {
-    const ch = [['1', '게임 소개'], ['2', '시작하기 — 세력 선택 · 주인공 · 저장'], ['3', '화면 구성 — 영지 · 지도 · 버튼'], ['4', '내정 — 명령 · 건물 레벨업 · 자원'],
-      ['5', '전쟁 — 출전 · 전술 전투 · 일기토'], ['6', '사명(미션) 수행하기'], ['7', '시대별 시나리오 이야기'], ['8', '인물도감'], ['9', '초보자 공략 · 자주 묻는 질문']];
-    openModal(`<p>처음이라면 <b>2장 시작하기</b>와 <b>9장 초보자 공략</b>부터 읽어 보세요. 화면 캡처와 그림으로 하나씩 설명합니다.</p>
+    const ch = [['1', '게임 소개 — 마하나임 하나님의 군대'], ['2', '시작하기 — 시대 고르기 · 주인공 · 저장'], ['3', '화면과 지도 — 영지 · 가나안 · 세계 지도'], ['4', '내정과 3D 성 — 건물 · 자원 · 장수 만나기'],
+      ['5', '전쟁 — 병종과 상성 · 3D 전투 · 계략 · 전리품'], ['6', '신앙 전투 — 기도 · 말씀 · 성물'], ['7', '사명(미션) 수행하기'], ['8', '여섯 시대 이야기'], ['9', '인물도감'], ['10', '초보자 공략 · 자주 묻는 질문']];
+    openModal(`<p>처음이라면 <b>2장 시작하기</b>와 <b>10장 초보자 공략</b>부터 읽어 보세요. 화면 캡처와 그림으로 하나씩 설명합니다.</p>
       <ol class="man-toc">${ch.map(([n, t]) => `<li><span>${n}</span>${esc(t)}</li>`).join('')}</ol>
-      <div class="code-btns"><a class="btn primary" href="manual/manual.html" target="_blank" rel="noopener">📖 화면으로 보기</a><a class="btn" href="${MANUAL_PDF}" target="_blank" rel="noopener">⬇ PDF 내려받기 (38쪽)</a></div>`,
+      <div class="code-btns"><a class="btn primary" href="manual/manual.html" target="_blank" rel="noopener">📖 화면으로 보기</a><a class="btn" href="${MANUAL_PDF}" target="_blank" rel="noopener">⬇ PDF 내려받기 (51쪽)</a></div>`,
       [], { title: '사용 설명서' });
   }
 
