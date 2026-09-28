@@ -147,3 +147,12 @@ const ART = {
   "@hero-7": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260926_000650_ad30a0f8-df1c-4402-be30-9393842845d6.png",
   "@hero-8": "https://d8j0ntlcm91z4.cloudfront.net/user_3I574YtwmpYHnuLndXo7HfkSOzb/hf_20260926_000651_8b5ce2a1-5d01-41d3-ab2e-53c0ff5e4d9d.png"
 };
+
+// 여섯 시대 개편: 새 시대 id로도 옛 시나리오의 그림(시대 이름이 붙은 초상, 시나리오 그림)을 그대로 쓴다
+(() => {
+  const ALIAS = { e_patriarchs: ['patriarchs'], e_exodus: ['conquest'], e_judges: ['judges'], e_united: ['saul', 'david'], e_divided: ['divided'], e_inter: ['maccabees'] };
+  [ART, typeof ART_REAL !== 'undefined' ? ART_REAL : {}].forEach(set => Object.entries(ALIAS).forEach(([nw, olds]) => olds.forEach(old => {
+    Object.keys(set).forEach(k => { if (k.startsWith(old + ':')) { const n = nw + ':' + k.slice(old.length + 1); if (!set[n]) set[n] = set[k]; } });
+    if (set['@' + old] && !set['@' + nw]) set['@' + nw] = set['@' + old];
+  })));
+})();
