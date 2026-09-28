@@ -197,8 +197,7 @@ SCENARIOS.push({
     rabbah: 2500, ekron: 2000, ashdod: 2500, bethlehem: 1500, gath: 2500, ashkelon: 2000, dibon: 1800, kirhareseth: 2500, lachish: 2500,
     heshbon: 2000, edrei: 2000, kadesh: 800, sinai: 400, midian: 2000, hamath: 3000, carchemish: 3500, tarsus: 2500, hattusa: 4000,
     kittim: 2000, nineveh: 3500, ashur: 3500 },
-  // 이 시대에 아직 없거나(사마리아·알렉산드리아·안디옥), 성경 이야기 밖의 먼 성들은 숨긴다.
-  hide: ['alexandria', 'antioch', 'samaria', 'gibeah', 'rome', 'pella', 'athens', 'sardis', 'ephesus'],
+  // 이 시대에 아직 없는 성(사마리아·알렉산드리아·안디옥·로마 등)은 data.js의 ERA_CITIES가 뺀다.
   officers: [
     ['아브라함', 68, 85, 78, 92, 99, 'army', 'hebron', '데라의 아들, 믿음의 조상. 갈 바를 알지 못하고 부르심에 순종하여 나아갔다. "너는 복이 될지라".', '창 12:1-4; 15:6; 히 11:8-10'],
     ['사라', 15, 75, 70, 88, 88, 'army', 'hebron', '아브라함의 아내 사래. 경수가 끊어진 뒤 웃었으나, 약속하신 이를 미쁘신 줄 알고 아들을 낳았다.', '창 17:15-19; 18:12; 21:1-7; 히 11:11'],
@@ -292,11 +291,12 @@ EVENTS.e_patriarchs = [
     choices: [
       { label: '집에서 길리고 훈련된 자 318명을 거느리고 단까지 쫓아간다', run: G => {
         const s = EPAT.sack(G); EPAT.rescue(G);
-        EPAT.cut(G, 'elam', 0.35, ['dan']); EPAT.cut(G, 'elam', 0.6, ['damascus']);
+        const d = G.city('dan'); const fled = d.owner === 'elam'; if (fled) { d.owner = null; d.soldiers = 500; d.loy = 30; }
+        EPAT.cut(G, 'elam', 0.6, ['damascus']);
         const h = EPAT.home(G); if (h) h.soldiers += 1000;
         G.buff('army', 'atk', 4, 0.3); G.item('army', 'torch', 1);
         EPAT.next(G, 2); G.kingdom(5, '형제를 위하여');
-        return s + ' 아브람이 가신들을 나누어 밤에 그들을 쳐부수고 다메섹 왼편 호바까지 쫓아가 모든 빼앗겼던 재물과 롯과 부녀와 인민을 다 찾아왔다(14:14-16). 아모리 동맹 마므레·에스골·아넬이 합류했다(본진 병력 +1000). 단의 엘람 원정군 65%, 다메섹의 원정군 40% 궤멸, 4턴 동안 공격력 +30%, 횃불과 항아리 1을 얻었다. 이 게임에서는 단을 차지하면 원정군을 몰아낸 것으로 본다.'; } },
+        return s + ' 아브람이 가신들을 나누어 밤에 그들을 쳐부수고 다메섹 왼편 호바까지 쫓아가 모든 빼앗겼던 재물과 롯과 부녀와 인민을 다 찾아왔다(14:14-16). 아모리 동맹 마므레·에스골·아넬이 합류했다(본진 병력 +1000). ' + (fled ? '단의 엘람 원정군이 흩어져 단이 주인 없는 성이 되었고, ' : '') + '다메섹의 원정군 40% 궤멸, 4턴 동안 공격력 +30%, 횃불과 항아리 1을 얻었다. 이 게임에서는 단을 차지하면 원정군을 몰아낸 것으로 본다 — 원정군이 돌아오기 전에 단에 진을 쳐라.'; } },
       { label: '롯이 스스로 택한 길이니 관여하지 않는다', run: G => {
         const s = EPAT.sack(G); if (G.exists('sodom')) G.rel('army', 'sodom', -15);
         EPAT.faithAll(G, -5); G.flags.lotCaptive = true; G.flags.lotRescued = true;

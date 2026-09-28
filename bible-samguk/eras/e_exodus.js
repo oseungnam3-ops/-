@@ -106,8 +106,8 @@ SCENARIOS.push({
   // 해안의 성읍들과 시돈은 여호수아 때에 정복하지 못했다 (수 13:2-6). 세겜은 정복 기록 없이 언약의 자리가 된다 (수 8:30-35; 24장).
   neutral: { tyre: 3000, sidon: 3500, damascus: 4000, shechem: 1800, shiloh: 800, joppa: 1500, gaza: 3000, ashkelon: 2500, ashdod: 3000,
     gath: 3000, ekron: 2500, sinai: 1000, hamath: 3000, carchemish: 3500, haran: 2500, tarsus: 2500, hattusa: 5000, kittim: 2000,
-    nineveh: 3500, ashur: 3500, babylon: 5000, ur: 3000, susa: 4000 },
-  hide: ['alexandria', 'antioch', 'samaria', 'gibeah', 'rome', 'pella', 'athens', 'sardis', 'ephesus'],
+    nineveh: 3500, ashur: 3500, babylon: 5000, ur: 3000, susa: 4000, sardis: 2500, ephesus: 2000, athens: 2000 },
+  // 이 시대에 아직 없는 성(사마리아·알렉산드리아·안디옥·로마 등)은 data.js의 ERA_CITIES가 뺀다.
   officers: [
     ['모세', 60, 92, 90, 88, 100, 'army', 'goshen', '레위 지파 아므람의 아들. 바로의 딸의 아들로 자랐으나 "그리스도를 위하여 받는 수모를 애굽의 모든 보화보다 더 큰 재물로" 여겼다. 떨기나무 불꽃 가운데서 부르심을 받았다.', '출 2:1-10; 3:1-12; 히 11:24-27'],
     ['아론', 40, 70, 72, 85, 88, 'army', 'goshen', '모세의 형, 그의 대언자. 지팡이를 들어 재앙을 불렀고 첫 대제사장이 되었다. 금송아지를 만든 실패도 있었다.', '출 4:14-16; 7:10; 28:1; 32:1-6'],
