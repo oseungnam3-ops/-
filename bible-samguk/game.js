@@ -1893,7 +1893,7 @@
       ['5', '전쟁 — 병종과 상성 · 3D 전투 · 계략 · 전리품'], ['6', '신앙 전투 — 기도 · 말씀 · 성물'], ['7', '사명(미션) 수행하기'], ['8', '여섯 시대 이야기'], ['9', '인물도감'], ['10', '초보자 공략 · 자주 묻는 질문']];
     openModal(`<p>처음이라면 <b>2장 시작하기</b>와 <b>10장 초보자 공략</b>부터 읽어 보세요. 화면 캡처와 그림으로 하나씩 설명합니다.</p>
       <ol class="man-toc">${ch.map(([n, t]) => `<li><span>${n}</span>${esc(t)}</li>`).join('')}</ol>
-      <div class="code-btns"><a class="btn primary" href="manual/manual.html" target="_blank" rel="noopener">📖 화면으로 보기</a><a class="btn" href="${MANUAL_PDF}" target="_blank" rel="noopener">⬇ PDF 내려받기 (51쪽)</a></div>`,
+      <div class="code-btns"><a class="btn primary" href="manual/manual.html" target="_blank" rel="noopener">📖 화면으로 보기</a><a class="btn" href="${MANUAL_PDF}" target="_blank" rel="noopener">⬇ PDF 내려받기 (53쪽)</a></div>`,
       [], { title: '사용 설명서' });
   }
 
