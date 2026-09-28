@@ -400,7 +400,10 @@
   #townStage canvas { display: block; width: 100%; height: 100%; touch-action: none; }
   #townLabels { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
   #townLabels > * { position: absolute; left: 0; top: 0; white-space: nowrap; will-change: transform; }
-  .tl-off { font: 700 12px var(--body); color: #fff; background: rgba(13, 18, 30, .82); padding: 2px 8px; border: 1px solid rgba(230, 182, 74, .8); }
+  .tl-off { font: 700 12px var(--body); color: #fff; background: rgba(13, 18, 30, .82); padding: 2px 8px; border: 1px solid rgba(230, 182, 74, .8); pointer-events: auto; cursor: pointer; }
+  .tl-off:hover { border-color: var(--gold-hi); background: rgba(40, 50, 76, .95); }
+  .tl-npc { font: 600 11px var(--body); color: #3a2507; background: rgba(255, 236, 190, .9); padding: 1px 7px; border: 1px solid #b8862a; pointer-events: auto; cursor: pointer; }
+  .tl-npc:hover { background: #ffe08a; }
   .tl-off i { font-style: normal; font-family: var(--display); color: var(--gold-hi); margin-right: 4px; }
   .tl-off.done { opacity: .55; }
   .tl-bld { display: grid; justify-items: center; font: 12px var(--body); color: var(--ink); background: linear-gradient(rgba(40, 50, 76, .92), rgba(16, 21, 34, .92)); border: 1px solid #6b7aa0; padding: 3px 10px; }
@@ -438,6 +441,26 @@
   .cmd.war { background: linear-gradient(#8e2a22, #521410); border-color: #e0705f; }
   .hint { margin: 0; font-size: 12.5px; color: var(--blue-hi); }
   body.in-town .hud-top, body.in-town .hud-bottom { display: none; }
+  /* 성내: 걷기·시점 버튼, 조이스틱, 대화창 */
+  #townTools { position: absolute; right: 12px; top: calc(var(--th, 60px) + 10px); display: grid; gap: 8px; justify-items: end; }
+  #townTools .btn { padding: 8px 12px; min-width: 50px; box-shadow: 0 2px 8px rgba(0,0,0,.45); }
+  #townTools .btn.on { border-color: var(--gold-hi); color: var(--gold-hi); background: linear-gradient(#5a4a22, #2e2512); }
+  #townReset { font-size: 18px; line-height: 1; }
+  #townJoy { position: absolute; left: 18px; bottom: calc(env(safe-area-inset-bottom, 0px) + 22px); width: 124px; height: 124px; border-radius: 50%; background: radial-gradient(rgba(14, 19, 32, .25), rgba(14, 19, 32, .6)); border: 2px solid rgba(255, 217, 120, .55); touch-action: none; user-select: none; -webkit-user-select: none; }
+  #townJoy i { position: absolute; left: 50%; top: 50%; width: 54px; height: 54px; margin: -27px; border-radius: 50%; background: radial-gradient(circle at 40% 35%, #ffe9a8, #c89232); box-shadow: 0 2px 8px rgba(0,0,0,.5); pointer-events: none; }
+  #townTalkBtn { position: absolute; right: 18px; bottom: calc(env(safe-area-inset-bottom, 0px) + 40px); display: grid; justify-items: center; gap: 0; min-width: 96px; padding: 10px 16px; border-radius: 40px; background: linear-gradient(#ffe08a, #d9a13a); color: #3a2507; border: 1px solid #ffeab0; box-shadow: 0 0 0 2px #4e3207, 0 4px 14px rgba(0,0,0,.5); }
+  #townTalkBtn b { font: 18px var(--display); } #townTalkBtn small { font-size: 11px; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #town.walking #townDock, #town.talking #townDock, #town.talking #townTalkBtn, #town.talking #townJoy { display: none; }
+  #townTalk { position: absolute; left: 0; right: 0; bottom: 0; display: flex; gap: 14px; align-items: flex-end; padding: 12px 16px calc(env(safe-area-inset-bottom, 0px) + 12px); background: linear-gradient(rgba(30, 38, 58, .96), rgba(10, 14, 23, .98)); border-top: 1px solid var(--gold); box-shadow: 0 -6px 18px rgba(0,0,0,.4); }
+  #townTalk .tt-art { flex: none; width: 108px; height: 132px; margin-top: -54px; overflow: hidden; border: 2px solid #d7a93f; background: #1b2233; box-shadow: 0 4px 14px rgba(0,0,0,.5); }
+  #townTalk .tt-art > svg { width: 100%; height: 100%; display: block; }
+  .tt-body { flex: 1; min-width: 0; display: grid; gap: 6px; }
+  .tt-who { margin: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; }
+  .tt-who b { font: 21px var(--display); color: var(--gold-hi); } .tt-who small { font-size: 12px; color: var(--mute); }
+  .tt-line { margin: 0; font-size: 15px; line-height: 1.65; max-width: 62em; }
+  .tt-btns { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tt-btns .btn { padding: 7px 14px; }
+  .tt-btns.tt-cmds .cmd { min-width: 120px; }
 
   /* 출진 */
   .war-form { display: grid; gap: 10px; }
@@ -578,7 +601,10 @@
     .confirm-start { grid-template-columns: 100px 1fr; }
     .town-top { gap: 6px 8px; padding: 8px 10px; }
     .town-top .btn { padding: 6px 10px; }
-    #townReset { display: none; }
+    #townTalk { gap: 10px; padding: 10px 12px calc(env(safe-area-inset-bottom, 0px) + 10px); }
+    #townTalk .tt-art { width: 76px; height: 94px; margin-top: -40px; }
+    .tt-who b { font-size: 18px; } .tt-line { font-size: 14px; line-height: 1.55; }
+    .tt-btns .btn { padding: 6px 10px; font-size: 13px; } .tt-btns.tt-cmds .cmd { min-width: 0; flex: 1 1 40%; }
     #townTitle h2 { white-space: nowrap; font-size: 21px; }
     #townRes { order: 5; flex-basis: 100%; gap: 10px; }
     #townStats { order: 6; position: static; flex-basis: 100%; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 2px 10px; font-size: 11px; padding: 6px 0 0; margin: 0; background: none; border: 0; border-top: 1px solid var(--line); min-width: 0; }
@@ -643,11 +669,17 @@
     <button class="btn" id="townBack">← 나가기</button>
     <div id="townTitle"></div>
     <div id="townRes"></div>
-    <button class="btn" id="townReset" title="시점 초기화">시점</button>
     <button class="btn primary" id="townEnd">턴 종료</button>
     <div id="townStats"></div>
   </header>
   <div id="townDock"></div>
+  <div id="townTools">
+    <button class="btn" id="townWalk" title="걷기 모드: 성 안을 직접 걸어 다니며 사람들을 만난다">걷기</button>
+    <button class="btn" id="townReset" title="처음 시점으로" aria-label="처음 시점으로">↺</button>
+  </div>
+  <div id="townJoy" hidden aria-hidden="true"><i></i></div>
+  <button id="townTalkBtn" hidden></button>
+  <div id="townTalk" hidden role="dialog" aria-label="대화"></div>
 </section>
 
 <section id="tactic" hidden aria-label="전술 전투">
