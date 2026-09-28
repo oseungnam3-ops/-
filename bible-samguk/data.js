@@ -70,17 +70,18 @@ const CITY_TABLE = [
 
 // 시대별로 나오는 성 (없으면 모든 시대). 지금 시나리오 id와 새로 짤 시대 id를 함께 적어 둔다 — 시나리오를 새로 짜면 이 표만 고치면 된다.
 // (행의 마지막 칸 'maccabees'처럼 성 하나에 시나리오 하나만 붙이는 옛 방식도 그대로 쓸 수 있고, 이 표가 있으면 이 표를 따른다.)
-const ERA_OLD = ['patriarchs', 'exodus', 'conquest', 'judges', 'saul', 'david', 'united', 'divided']; // 신구약 중간 이전
-const ERA_LATE = ['maccabees', 'intertestamental']; // 신구약 중간 시대
+const ERA_OLD = ['patriarchs', 'exodus', 'conquest', 'judges', 'saul', 'david', 'united', 'divided', 'e_patriarchs', 'e_exodus', 'e_judges', 'e_united', 'e_divided']; // 신구약 중간 이전
+const ERA_LATE = ['maccabees', 'intertestamental', 'e_inter']; // 신구약 중간 시대
+const NOT_PATRI = ERA_OLD.filter(x => x !== 'patriarchs' && x !== 'e_patriarchs');
 const ERA_CITIES = {
   modein: ERA_LATE, emmaus: ERA_LATE, gezer: ERA_LATE,
-  samaria: ['divided', ...ERA_LATE], // 오므리가 세운 도읍 (BC 880 무렵)
+  samaria: ['divided', 'e_divided', ...ERA_LATE], // 오므리가 세운 도읍 (BC 880 무렵)
   alexandria: ERA_LATE, antioch: ERA_LATE, pella: ERA_LATE, rome: ERA_LATE, // 알렉산더 이후
-  persepolis: ['intertestamental'], // 바사 시대 (BC 330 불탐)
-  corinth: ['divided', ...ERA_LATE],
+  persepolis: ['intertestamental', 'e_inter'], // 바사 시대 (BC 330 불탐)
+  corinth: ['divided', 'e_divided', ...ERA_LATE],
   nineveh: ERA_OLD, ur: ERA_OLD, // BC 612 이후 폐허, 우르도 바사 시대에 버려졌다
-  hattusa: ['patriarchs', 'exodus', 'conquest', 'judges'], // 헷 제국 (BC 1180 무렵 버려짐)
-  sardis: ERA_OLD.slice(1).concat(ERA_LATE), ephesus: ERA_OLD.slice(1).concat(ERA_LATE), athens: ERA_OLD.slice(1).concat(ERA_LATE), // 족장 시대에는 아직
+  hattusa: ['patriarchs', 'exodus', 'conquest', 'judges', 'e_patriarchs', 'e_exodus', 'e_judges'], // 헷 제국 (BC 1180 무렵 버려짐)
+  sardis: NOT_PATRI.concat(ERA_LATE), ephesus: NOT_PATRI.concat(ERA_LATE), athens: NOT_PATRI.concat(ERA_LATE), // 족장 시대에는 아직
 };
 // 주인 없는 성의 기본 수비병 (시나리오의 neutral이 따로 정하면 그것을 따른다. 여기 없는 성은 300)
 const CITY_GARRISON = {
