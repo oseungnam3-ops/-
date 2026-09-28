@@ -1131,7 +1131,7 @@
     let h;
     if (world) { // 세계 지도 미니맵: 이달리야에서 바사까지를 세로 틀에 맞춰 보인다
       m.setAttribute('viewBox', `${WG.w * 0.2} -20 ${WG.w * 0.8} ${WG.h + 40}`);
-      h = `<rect x="-400" y="-400" width="${WG.w + 800}" height="${WG.h + 800}" fill="#3f6a70"/><path d="${WG.land}" fill="#cdb581"/>`;
+      h = `<rect x="-400" y="-400" width="${WG.w + 800}" height="${WG.h + 800}" fill="#3f6a70"/><path d="${WG.land}" fill="#cdb581"/>` + (WART ? `<image href="${WART.base}" x="0" y="0" width="${WG.w}" height="${WG.h}" preserveAspectRatio="none" onerror="this.remove()"/>` : '');
       Object.values(S.cities).forEach(c => { const ci = CITY_INFO[c.id]; if (ci.wx == null) return; const big = isWorld(c.id);
         h += `<circle cx="${ci.wx}" cy="${ci.wy}" r="${big ? (c.owner === S.player ? 20 : 15) : 6}" fill="${c.owner ? fac(c.owner).color : '#8d877a'}" stroke="${c.owner === S.player ? '#fff' : 'none'}" stroke-width="5"/>`; });
       h += `<rect id="miniView" fill="none" stroke="#ffd36a" stroke-width="10"/>`;
