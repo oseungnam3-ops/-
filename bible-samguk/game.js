@@ -10,13 +10,16 @@
   const fmt = n => Math.round(n).toLocaleString('ko-KR');
   const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const CITY_INFO = {};
-  CITY_TABLE.forEach(([id, name, x, y, pop, agri, comm, def, desc]) => { CITY_INFO[id] = { id, name, x, y, pop, agri, comm, def, desc }; });
+  CITY_TABLE.forEach(([id, name, x, y, pop, agri, comm, def, desc, only]) => { CITY_INFO[id] = { id, name, x, y, pop, agri, comm, def, desc, only }; });
+  // 길: 지금 판에 있는 성끼리만 잇는다 (only가 붙은 성은 그 시나리오에만 나온다)
   const ADJ = {};
-  ROADS.forEach(([a, b]) => { (ADJ[a] = ADJ[a] || []).push(b); (ADJ[b] = ADJ[b] || []).push(a); });
+  const roadOn = ([a, b]) => !S || (S.cities[a] && S.cities[b]);
+  function buildAdj() { Object.keys(ADJ).forEach(k => delete ADJ[k]); ROADS.filter(roadOn).forEach(([a, b]) => { (ADJ[a] = ADJ[a] || []).push(b); (ADJ[b] = ADJ[b] || []).push(a); }); }
   const snd = (f, ...a) => { try { if (window.SND) SND[f](...a); } catch (e) { /* 소리 오류는 게임을 멈추지 않는다 */ } };
   const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   let S = null; // 게임 상태 (JSON 저장 가능)
+  buildAdj();
   let sel = null; // 선택한 도시
   const scn = () => SCENARIOS.find(s => s.id === S.scn);
 
@@ -68,13 +71,14 @@
   function newGame(scnId, player) {
     const sc = SCENARIOS.find(s => s.id === scnId);
     S = { scn: scnId, player, turn: 1, year: sc.year, season: 0, cities: {}, facs: {}, offs: [], rel: {}, buffs: {}, flags: {}, done: {}, log: [], over: false };
-    Object.values(CITY_INFO).forEach(ci => {
+    Object.values(CITY_INFO).filter(ci => (!ci.only || ci.only === scnId) && !(sc.hide || []).includes(ci.id)).forEach(ci => {
       S.cities[ci.id] = { id: ci.id, owner: null, soldiers: 300, train: 40, pop: ci.pop, agri: ci.agri, comm: ci.comm, def: ci.def, faith: 40, loy: 55 };
     });
     sc.factions.forEach(f => {
       S.facs[f.id] = { id: f.id, name: f.name, color: f.color, capital: f.capital, gold: f.gold, food: f.food, aggr: f.aggr, ruler: null, alive: true };
       Object.entries(f.cities).forEach(([cid, sold]) => { const c = S.cities[cid]; c.owner = f.id; c.soldiers = sold; c.train = 50; });
     });
+    buildAdj();
     Object.entries(sc.neutral || {}).forEach(([cid, sold]) => { S.cities[cid].soldiers = sold; });
     sc.officers.forEach((row, i) => addOfficer(row, i));
     sc.factions.forEach(f => { const r = offByName(f.ruler); if (r) S.facs[f.id].ruler = r.id; });
@@ -236,7 +240,8 @@
     sling: { name: '물매병', desc: '처음 두 합 피해 +35%, 이후 -10% (삿 20:16)' },
     chariot: { name: '전차병', desc: '평지 성 공격 +25%, 산지 -15% · 병영 Lv.5 · 금 소모', camp: 5 },
   };
-  const PLAINS = ['megiddo', 'bethshean', 'gaza', 'ashdod', 'ashkelon', 'ekron', 'joppa', 'hazor', 'damascus', 'jericho', 'beersheba', 'dan', 'tyre'];
+  const LABEL_LEFT = ['modein', 'emmaus', 'ashkelon', 'gaza']; // 이웃 성과 이름표가 겹치지 않게 왼쪽에 단다
+  const PLAINS = ['emmaus', 'gezer', 'megiddo', 'bethshean', 'gaza', 'ashdod', 'ashkelon', 'ekron', 'joppa', 'hazor', 'damascus', 'jericho', 'beersheba', 'dan', 'tyre'];
   // 선지자·제사장(또는 신앙 90 이상)은 출진에서 장군과 따로 '선지자' 자리로 따라가 기도한다.
   const isProphet = o => { const r = window.PORTRAIT ? PORTRAIT.roleOf(o) : ''; return r === 'prophet' || r === 'priest' || o.fai >= 90; };
   function initEcon() {
@@ -660,7 +665,7 @@
   function loadData(data) {
     closeModal();
     if (window.TOWN) TOWN.exit(true);
-    S = data; migrate(); sel = null; VB = null;
+    S = data; buildAdj(); migrate(); sel = null; VB = null;
     startPlay();
     autosave();
     toast(`${fac(S.player).name} · BC ${S.year}년 ${SEASONS[S.season]}부터 이어갑니다.`);
@@ -735,7 +740,7 @@
     <text class="geo sm" x="344" y="585" transform="rotate(84 344 585)">사 해</text><text class="geo sm" x="262" y="612">유 다 산 지</text>
     <text class="geo sm" x="120" y="720">네 게 브 광 야</text><text class="geo sm" x="300" y="790">아 라 바 광 야</text><text class="geo sm" x="520" y="330">길 르 앗</text>`;
     const hot = sel && city(sel) && city(sel).owner === P ? (ADJ[sel] || []) : [];
-    ROADS.forEach(([a, b]) => {
+    ROADS.filter(roadOn).forEach(([a, b]) => {
       const A = CITY_INFO[a], B = CITY_INFO[b];
       const on = (a === sel && hot.includes(b)) || (b === sel && hot.includes(a));
       h += `<line x1="${A.x}" y1="${A.y}" x2="${B.x}" y2="${B.y}" class="road-b"/><line x1="${A.x}" y1="${A.y}" x2="${B.x}" y2="${B.y}" class="road${on ? ' hot' : ''}"/>`;
@@ -757,7 +762,7 @@
           <path d="M-8 -34 h16 v14 l-8 6 l-8 -6z" fill="${color}" stroke="${cap ? '#ffd978' : '#e9dcb6'}" stroke-width="1.3"/>
           <text x="0" y="-22.5" class="cbadge">${esc(badge)}</text>
           ${cap ? '<path d="M-6 -36 l2 -5 l2 3 l2 -4 l2 4 l2 -3 l2 5z" fill="#ffd978" stroke="#6b4a0e" stroke-width=".5"/>' : ''}
-          <g transform="translate(10 -34)"><rect width="${pw}" height="${c.owner ? 22 : 13}" rx="2" class="cplate"/>
+          <g transform="translate(${LABEL_LEFT.includes(c.id) ? -10 - pw : 10} -34)"><rect width="${pw}" height="${c.owner ? 22 : 13}" rx="2" class="cplate"/>
             <text x="5" y="10" class="cname">${c.owner === P ? '★ ' : ''}${ci.name}</text>${c.owner ? `<text x="5" y="19" class="cfac">(${esc(fn)})</text>` : `<text x="5" y="10" class="cfac"></text>`}</g>
         </g>
         <g transform="translate(-${String(fmtK(c.soldiers)).length * 2.8 + 5} 12)"><rect x="0" y="-8" width="${String(fmtK(c.soldiers)).length * 5.6 + 10}" height="11" rx="2" fill="#141b2c" opacity=".82"/><text x="5" y="0" class="csold">${fmtK(c.soldiers)}</text></g>`;
