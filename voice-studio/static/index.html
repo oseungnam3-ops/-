@@ -127,10 +127,12 @@ async function loadVoices(){
     $("#msg").textContent = "무료 AI 음성 연결됨";
   }catch{
     // 서버가 없으면 브라우저 내장 음성(무료)으로 미리듣기만 제공
-    await new Promise(res=>{ if(speechSynthesis.getVoices().length) res(); else {speechSynthesis.onvoiceschanged=res; setTimeout(res,800);} });
-    voices = speechSynthesis.getVoices().filter(v=>/ko/i.test(v.lang)).map(v=>({id:v.voiceURI,name:v.name,gender:"",locale:v.lang}));
-    if(!voices.length) voices = speechSynthesis.getVoices().map(v=>({id:v.voiceURI,name:v.name,gender:"",locale:v.lang}));
-    $("#msg").textContent = "브라우저 음성 모드 (다운로드는 서버 필요)";
+    if(!("speechSynthesis" in window)){ voices=[{id:"",name:"기본 음성",gender:"",locale:"ko-KR"}]; $("#msg").textContent="이 브라우저는 음성 읽기를 지원하지 않습니다"; return; }
+    await new Promise(res=>{ if(speechSynthesis.getVoices().length) res(); else {speechSynthesis.onvoiceschanged=res; setTimeout(res,1500);} });
+    const all = speechSynthesis.getVoices().map(v=>({id:v.voiceURI,name:v.name,gender:"",locale:v.lang}));
+    const ko = all.filter(v=>/^ko/i.test(v.locale.replace("_","-")));
+    voices = [{id:"",name:"기본 음성",gender:"",locale:"ko-KR"}, ...(ko.length?ko:all)];
+    $("#msg").textContent = ko.length ? `브라우저 한국어 음성 ${ko.length}개` : "한국어 음성이 없어 기본 음성 사용";
   }
 }
 
@@ -178,11 +180,19 @@ async function fetchAudio(b){
 }
 
 function speakWeb(b){
-  return new Promise(res=>{
+  return new Promise((res,rej)=>{
     const u = new SpeechSynthesisUtterance(b.text);
-    const v = speechSynthesis.getVoices().find(v=>v.voiceURI===b.voice); if(v){u.voice=v;u.lang=v.lang}else u.lang="ko-KR";
-    const [r,p] = EMO_WEB[b.emotion]; u.rate = r*parseFloat($("#speed").value); u.pitch = p;
-    u.onend=u.onerror=()=>res(); speechSynthesis.cancel(); speechSynthesis.speak(u);
+    const v = b.voice && speechSynthesis.getVoices().find(v=>v.voiceURI===b.voice);
+    if(v){u.voice=v;u.lang=v.lang}else u.lang="ko-KR";
+    const [r,p] = EMO_WEB[b.emotion]; u.rate = Math.min(2,r*parseFloat($("#speed").value)); u.pitch = p; u.volume = 1;
+    let done=false; const fin=f=>{ if(done) return; done=true; clearTimeout(t); f(); };
+    const t = setTimeout(()=>fin(res), (dur(b.text)+4)*1000);   // onend가 오지 않는 기기 대비
+    u.onend=()=>fin(res);
+    u.onerror=e=>fin(()=> e.error==="canceled"||e.error==="interrupted" ? res() : rej(new Error(
+      e.error==="not-allowed" ? "이 화면에서는 소리 재생이 막혀 있습니다" :
+      e.error==="synthesis-unavailable"||e.error==="language-unavailable" ? "폰에 한국어 음성이 없습니다. 설정 > 텍스트 음성 변환에서 Google 음성을 설치하세요" : "음성 오류: "+e.error)));
+    speechSynthesis.cancel();
+    setTimeout(()=>{ speechSynthesis.resume(); speechSynthesis.speak(u); }, 80);
   });
 }
 
