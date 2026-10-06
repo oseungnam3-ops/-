@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AI 음성 스튜디오</title>
+<style>
+:root{--bg:#fff;--fg:#1f2329;--mut:#8a8f98;--line:#e5e7eb;--card:#f3f4f6;--pri:#ff7a45;--dark:#1f2329;--sel:#cfe3ff}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,"Noto Sans KR",sans-serif;color:var(--fg);background:var(--bg);padding-bottom:150px}
+header{position:sticky;top:0;z-index:5;background:#fff;border-bottom:1px solid var(--line);display:flex;gap:8px;align-items:center;padding:10px 12px}
+header input{flex:1;min-width:0;border:0;font-size:16px;font-weight:600;outline:0}
+button{font:inherit;cursor:pointer}
+.btn{border:1px solid var(--line);background:#fff;border-radius:10px;padding:8px 12px}
+.btn.dark{background:var(--dark);color:#fff;border-color:var(--dark)}
+.tools{display:flex;gap:10px;overflow-x:auto;padding:10px 12px;border-bottom:1px solid var(--line);background:#fff;position:sticky;top:55px;z-index:4;scrollbar-width:none}
+.tools::-webkit-scrollbar{display:none}
+.grp{display:flex;flex-direction:column;gap:4px;padding-right:12px;border-right:1px solid var(--line);flex:none}
+.grp:last-child{border:0}
+.grp label{font-size:12px;color:#555}
+select,.grp input[type=number]{background:var(--card);border:0;border-radius:10px;padding:9px 10px;font-size:15px;min-width:90px}
+.speed{display:flex;align-items:center;gap:6px}
+.speed input{width:110px}
+main{padding:14px 14px 0}
+.block{margin-bottom:14px}
+.who{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:12px;padding:5px 8px;font-size:13px;background:#fff;margin-bottom:6px}
+.who select{background:transparent;padding:2px;min-width:0;font-size:14px}
+.row{display:flex;gap:6px;align-items:flex-start}
+textarea{flex:1;border:1px solid transparent;border-left:2px solid var(--line);border-radius:6px;padding:8px 10px;font:inherit;font-size:16px;line-height:1.6;resize:none;outline:0;min-height:44px;overflow:hidden}
+textarea:focus{background:#fafafa;border-left-color:var(--pri)}
+.blk-btns{display:flex;flex-direction:column;gap:4px}
+.blk-btns button{border:0;background:var(--card);border-radius:8px;width:32px;height:32px}
+.blk-emo{font-size:12px;color:var(--mut);margin-left:4px}
+.add{width:100%;border:1.5px dashed var(--line);background:transparent;border-radius:12px;padding:12px;color:var(--mut)}
+.import{width:100%;min-height:90px;border:1px solid var(--line);border-radius:10px;padding:10px;font:inherit;display:none;margin-bottom:10px}
+footer{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);padding:10px 14px 14px}
+.player{display:flex;align-items:center;gap:12px}
+.time{font-variant-numeric:tabular-nums;min-width:96px;font-size:15px}
+.time small{color:var(--mut)}
+.play{width:52px;height:52px;border-radius:50%;border:0;background:var(--pri);color:#fff;font-size:22px}
+.bar{height:8px;background:var(--line);border-radius:4px;margin-top:10px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--pri);transition:width .2s}
+.msg{font-size:12px;color:var(--mut);margin-left:auto;text-align:right}
+dialog{border:0;border-radius:18px;padding:22px;width:min(92vw,420px)}
+dialog::backdrop{background:#0006}
+dialog h3{margin:0 0 14px}
+.seg{display:flex;background:var(--card);border-radius:12px;padding:4px;margin:6px 0 14px}
+.seg label{flex:1;text-align:center;padding:10px;border-radius:9px;cursor:pointer;font-size:14px}
+.seg input{display:none}
+.seg input:checked+span{display:block;background:#fff;border-radius:9px;box-shadow:0 1px 3px #0002;margin:-10px;padding:10px}
+.dlg-t{font-size:13px;font-weight:600}
+.note{font-size:12px;color:var(--mut);margin:10px 0}
+</style>
+</head>
+<body>
+<header>
+  <input id="title" value="제목 없음" aria-label="프로젝트 제목">
+  <button class="btn" id="btnImport">대본 가져오기</button>
+  <button class="btn dark" id="btnDown">⬇ 다운로드</button>
+</header>
+
+<div class="tools">
+  <div class="grp"><label>감정</label>
+    <select id="emotion">
+      <option value="normal">일반</option><option value="happy">기쁨</option><option value="sad">슬픔</option>
+      <option value="angry">화남</option><option value="high">높은 톤</option><option value="low">낮은 톤</option><option value="whisper">속삭임</option>
+    </select></div>
+  <div class="grp"><label>속도</label>
+    <div class="speed"><input type="range" id="speed" min="0.5" max="2" step="0.1" value="1"><b id="speedV">1.0x</b></div></div>
+  <div class="grp"><label>쉼 (초)</label>
+    <input type="number" id="pause" min="0" max="5" step="0.1" value="0.3"></div>
+  <div class="grp"><label>전체 적용</label>
+    <button class="btn" id="applyAll">모든 문단에 적용</button></div>
+</div>
+
+<main>
+  <textarea class="import" id="importBox" placeholder="대본을 붙여넣으면 한 줄(문단)씩 나뉩니다"></textarea>
+  <button class="btn" id="doImport" style="display:none;margin-bottom:12px">대본으로 나누기</button>
+  <div id="blocks"></div>
+  <button class="add" id="addBlock">＋ 문단 추가</button>
+</main>
+
+<footer>
+  <div class="player">
+    <div class="time"><span id="cur">0:00</span> <small>/ <span id="tot">0:00</span></small></div>
+    <button class="btn" id="prev">⏮</button>
+    <button class="play" id="play">▶</button>
+    <button class="btn" id="next">⏭</button>
+    <div class="msg" id="msg"></div>
+  </div>
+  <div class="bar"><i id="prog"></i></div>
+</footer>
+
+<dialog id="dlg">
+  <h3>음성 다운로드</h3>
+  <div class="dlg-t">형식</div>
+  <div class="seg"><label><input type="radio" name="out" value="merge" checked><span>한 파일로 합치기</span></label>
+                   <label><input type="radio" name="out" value="split"><span>문장 별로 나누기 (zip)</span></label></div>
+  <p class="note">무료 Microsoft 신경망 음성(mp3)으로 변환합니다. 서버 연결이 필요합니다.</p>
+  <div style="display:flex;gap:8px"><button class="btn" style="flex:1" id="dlgCancel">취소</button>
+    <button class="btn dark" style="flex:2" id="dlgGo">다운로드</button></div>
+</dialog>
+
+<script>
+const $ = s => document.querySelector(s);
+const EMO = {normal:"일반",happy:"기쁨",sad:"슬픔",angry:"화남",high:"높은 톤",low:"낮은 톤",whisper:"속삭임"};
+const EMO_WEB = {normal:[1,1],happy:[1.08,1.15],sad:[.85,.8],angry:[1.1,.9],high:[1,1.3],low:[1,.7],whisper:[.9,1]}; // [rate,pitch]
+const SAMPLE = ["늙은 삽화가 노인은 고양이를 그릴 때, 펜을 한 번도 떼지 않았어요.","끊어진 데가 하나도 없는 고양이. 노인은 그 고양이를 실이라고 불렀어요."];
+
+let voices = [];        // 서버 음성
+let useServer = false;
+let blocks = [];        // {text, voice, emotion}
+let playing = false, idx = 0, audio = new Audio(), cancelFlag = 0;
+const cache = new Map();
+
+const store = {
+  save(){ try{localStorage.setItem("vs",JSON.stringify({title:$("#title").value,blocks,speed:$("#speed").value,pause:$("#pause").value}))}catch{} },
+  load(){ try{return JSON.parse(localStorage.getItem("vs"))}catch{return null} }
+};
+
+function defaultVoice(){ return voices[0]?.id || ""; }
+
+async function loadVoices(){
+  try{
+    const r = await fetch("/api/voices"); if(!r.ok) throw 0;
+    voices = await r.json(); useServer = true;
+    $("#msg").textContent = "무료 AI 음성 연결됨";
+  }catch{
+    // 서버가 없으면 브라우저 내장 음성(무료)으로 미리듣기만 제공
+    await new Promise(res=>{ if(speechSynthesis.getVoices().length) res(); else {speechSynthesis.onvoiceschanged=res; setTimeout(res,800);} });
+    voices = speechSynthesis.getVoices().filter(v=>/ko/i.test(v.lang)).map(v=>({id:v.voiceURI,name:v.name,gender:"",locale:v.lang}));
+    if(!voices.length) voices = speechSynthesis.getVoices().map(v=>({id:v.voiceURI,name:v.name,gender:"",locale:v.lang}));
+    $("#msg").textContent = "브라우저 음성 모드 (다운로드는 서버 필요)";
+  }
+}
+
+function voiceOptions(sel){
+  return voices.map(v=>`<option value="${v.id}" ${v.id===sel?"selected":""}>${v.name}${v.gender==="Female"?" (여)":v.gender==="Male"?" (남)":""} · ${v.locale}</option>`).join("");
+}
+
+function render(){
+  const root = $("#blocks"); root.innerHTML = "";
+  blocks.forEach((b,i)=>{
+    const d = document.createElement("div"); d.className="block"; d.dataset.i=i;
+    d.innerHTML = `<span class="who"><select class="v">${voiceOptions(b.voice)}</select>
+      <select class="e">${Object.entries(EMO).map(([k,v])=>`<option value="${k}" ${k===b.emotion?"selected":""}>${v}</option>`).join("")}</select></span>
+      <div class="row"><textarea rows="1" placeholder="문장을 입력하세요"></textarea>
+      <div class="blk-btns"><button class="pl" title="이 문단 듣기">▶</button><button class="rm" title="삭제">✕</button></div></div>`;
+    const ta = d.querySelector("textarea"); ta.value = b.text;
+    const fit = ()=>{ta.style.height="auto";ta.style.height=ta.scrollHeight+"px"}; setTimeout(fit);
+    ta.oninput = ()=>{b.text=ta.value;fit();updateTotal();store.save()};
+    d.querySelector(".v").onchange = e=>{b.voice=e.target.value;store.save()};
+    d.querySelector(".e").onchange = e=>{b.emotion=e.target.value;store.save()};
+    d.querySelector(".pl").onclick = ()=>playFrom(i,true);
+    d.querySelector(".rm").onclick = ()=>{ if(blocks.length>1){blocks.splice(i,1);render();store.save()} };
+    root.appendChild(d);
+  });
+  updateTotal();
+}
+
+const dur = t => Math.max(1, t.replace(/\s/g,"").length/ (5.5*parseFloat($("#speed").value)));  // 대략 초 추정
+function updateTotal(){
+  const p = parseFloat($("#pause").value)||0;
+  const s = blocks.filter(b=>b.text.trim()).reduce((a,b)=>a+dur(b.text)+p,0);
+  $("#tot").textContent = fmt(s);
+}
+const fmt = s => `${Math.floor(s/60)}:${String(Math.round(s%60)).padStart(2,"0")}`;
+
+function setHighlight(i){ document.querySelectorAll(".block").forEach((el,k)=>el.querySelector("textarea").style.background = k===i?"#fff4ec":""); }
+
+async function fetchAudio(b){
+  const speed = parseFloat($("#speed").value);
+  const key = JSON.stringify([b.text,b.voice,b.emotion,speed]);
+  if(cache.has(key)) return cache.get(key);
+  const r = await fetch("/api/tts",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({text:b.text,voice:b.voice,emotion:b.emotion,speed})});
+  if(!r.ok) throw new Error((await r.json().catch(()=>({}))).detail || r.status);
+  const url = URL.createObjectURL(await r.blob()); cache.set(key,url); return url;
+}
+
+function speakWeb(b){
+  return new Promise(res=>{
+    const u = new SpeechSynthesisUtterance(b.text);
+    const v = speechSynthesis.getVoices().find(v=>v.voiceURI===b.voice); if(v){u.voice=v;u.lang=v.lang}else u.lang="ko-KR";
+    const [r,p] = EMO_WEB[b.emotion]; u.rate = r*parseFloat($("#speed").value); u.pitch = p;
+    u.onend=u.onerror=()=>res(); speechSynthesis.cancel(); speechSynthesis.speak(u);
+  });
+}
+
+function stop(){ cancelFlag++; playing=false; audio.pause(); speechSynthesis.cancel(); $("#play").textContent="▶"; setHighlight(-1); }
+
+async function playFrom(start, single=false){
+  stop(); const my = cancelFlag; playing = true; $("#play").textContent="⏸";
+  const pause = (parseFloat($("#pause").value)||0)*1000;
+  const list = blocks.map((b,i)=>[b,i]).filter(([b])=>b.text.trim());
+  for(const [b,i] of list){
+    if(i<start) continue;
+    if(my!==cancelFlag) return;
+    idx = i; setHighlight(i);
+    $("#prog").style.width = (list.findIndex(x=>x[1]===i)/list.length*100)+"%";
+    try{
+      if(useServer){
+        $("#msg").textContent = "음성 생성 중…";
+        const url = await fetchAudio(b); if(my!==cancelFlag) return;
+        $("#msg").textContent = "";
+        audio.src = url; await audio.play();
+        await new Promise(res=>{audio.onended=res; audio.onerror=res});
+      } else await speakWeb(b);
+    }catch(e){ $("#msg").textContent = "오류: "+e.message; stop(); return; }
+    if(single) break;
+    if(my!==cancelFlag) return;
+    await new Promise(r=>setTimeout(r,pause));
+  }
+  if(my===cancelFlag){ stop(); $("#prog").style.width="100%"; }
+}
+
+$("#play").onclick = ()=> playing ? stop() : playFrom(idx);
+$("#prev").onclick = ()=>{ idx=Math.max(0,idx-1); playing&&playFrom(idx); setHighlight(idx); };
+$("#next").onclick = ()=>{ idx=Math.min(blocks.length-1,idx+1); playing&&playFrom(idx); setHighlight(idx); };
+$("#speed").oninput = e=>{ $("#speedV").textContent=parseFloat(e.target.value).toFixed(1)+"x"; updateTotal(); store.save(); };
+$("#pause").oninput = ()=>{updateTotal();store.save()};
+$("#title").oninput = store.save;
+$("#addBlock").onclick = ()=>{ blocks.push({text:"",voice:blocks.at(-1)?.voice||defaultVoice(),emotion:"normal"}); render(); document.querySelectorAll("textarea:not(.import)").item(blocks.length-1).focus(); store.save(); };
+$("#applyAll").onclick = ()=>{ const e=$("#emotion").value; blocks.forEach(b=>b.emotion=e); render(); store.save(); };
+$("#btnImport").onclick = ()=>{ const on=$("#importBox").style.display!=="block"; $("#importBox").style.display=on?"block":"none"; $("#doImport").style.display=on?"inline-block":"none"; };
+$("#doImport").onclick = ()=>{
+  const lines = $("#importBox").value.split(/\n+/).map(s=>s.trim()).filter(Boolean); if(!lines.length) return;
+  const v = blocks[0]?.voice||defaultVoice();
+  blocks = lines.map(t=>({text:t,voice:v,emotion:"normal"}));
+  $("#importBox").value=""; $("#btnImport").click(); render(); store.save();
+};
+
+$("#btnDown").onclick = ()=>{ if(!useServer) return alert("다운로드는 서버(python server.py) 실행 중에만 가능합니다."); $("#dlg").showModal(); };
+$("#dlgCancel").onclick = ()=>$("#dlg").close();
+$("#dlgGo").onclick = async ()=>{
+  const split = document.querySelector("[name=out]:checked").value==="split";
+  const body = {blocks:blocks.filter(b=>b.text.trim()).map(b=>({...b,speed:parseFloat($("#speed").value)})),pause_ms:Math.round((parseFloat($("#pause").value)||0)*1000),split};
+  if(!body.blocks.length) return alert("대본이 비어 있습니다");
+  $("#dlgGo").textContent="생성 중…"; $("#dlgGo").disabled=true;
+  try{
+    const r = await fetch("/api/render",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
+    if(!r.ok) throw new Error((await r.json().catch(()=>({}))).detail||r.status);
+    const a = document.createElement("a"); a.href=URL.createObjectURL(await r.blob());
+    a.download = ($("#title").value||"voice")+(split?".zip":".mp3"); a.click(); $("#dlg").close();
+  }catch(e){ alert("실패: "+e.message); }
+  $("#dlgGo").textContent="다운로드"; $("#dlgGo").disabled=false;
+};
+
+(async()=>{
+  await loadVoices();
+  const s = store.load();
+  if(s){ $("#title").value=s.title; $("#speed").value=s.speed||1; $("#pause").value=s.pause??.3; $("#speedV").textContent=parseFloat($("#speed").value).toFixed(1)+"x"; blocks=s.blocks||[]; }
+  if(!blocks.length) blocks = SAMPLE.map(t=>({text:t,voice:defaultVoice(),emotion:"normal"}));
+  render();
+})();
+</script>
+</body>
+</html>
