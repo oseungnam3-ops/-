@@ -3,5 +3,5 @@ services:
     name: ai-voice-studio
     runtime: docker
     dockerfilePath: ./voice-studio/Dockerfile
-    dockerContext: ./voice-studio
+    dockerContext: .
     plan: free

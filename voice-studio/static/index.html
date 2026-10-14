@@ -56,6 +56,7 @@ dialog h3{margin:0 0 14px}
 <header>
   <input id="title" value="제목 없음" aria-label="프로젝트 제목">
   <button class="btn" id="btnImport">대본 가져오기</button>
+  <button class="btn" id="btnMotion">🎬 모션 영상</button>
   <button class="btn dark" id="btnDown">⬇ 다운로드</button>
 </header>
 
@@ -99,6 +100,23 @@ dialog h3{margin:0 0 14px}
   <p class="note">무료 Microsoft 신경망 음성(mp3)으로 변환합니다. 서버 연결이 필요합니다.</p>
   <div style="display:flex;gap:8px"><button class="btn" style="flex:1" id="dlgCancel">취소</button>
     <button class="btn dark" style="flex:2" id="dlgGo">다운로드</button></div>
+</dialog>
+
+<dialog id="mdlg">
+  <h3>모션 그래픽 영상 만들기</h3>
+  <p class="note">대본의 문단 하나가 장면 하나가 됩니다. 장면마다 카메라 움직임·전환·효과음이 자동으로 붙습니다.</p>
+  <div class="dlg-t">비율</div>
+  <div class="seg" id="mRatio"><label><input type="radio" name="mr" value="9:16" checked><span>9:16 쇼츠</span></label><label><input type="radio" name="mr" value="16:9"><span>16:9</span></label><label><input type="radio" name="mr" value="1:1"><span>1:1</span></label></div>
+  <div class="dlg-t">분위기</div>
+  <div class="seg"><label><input type="radio" name="mm" value="pop" checked><span>팝</span></label><label><input type="radio" name="mm" value="calm"><span>차분</span></label><label><input type="radio" name="mm" value="fresh"><span>청량</span></label><label><input type="radio" name="mm" value="bold"><span>강렬</span></label></div>
+  <div class="dlg-t">화질</div>
+  <div class="seg"><label><input type="radio" name="ms" value="sd" checked><span>빠르게 (720p)</span></label><label><input type="radio" name="ms" value="hd"><span>선명하게 (1080p)</span></label></div>
+  <label class="note" style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="mNarr" checked> 무료 AI 목소리로 나레이션 넣기 (문단별 목소리 사용)</label>
+  <div class="bar"><i id="mProg"></i></div>
+  <p class="note" id="mStage"></p>
+  <video id="mVideo" controls playsinline style="display:none;width:100%;max-height:50vh;border-radius:12px;background:#000"></video>
+  <div style="display:flex;gap:8px;margin-top:10px"><button class="btn" style="flex:1" id="mClose">닫기</button>
+    <button class="btn dark" style="flex:2" id="mGo">영상 만들기</button></div>
 </dialog>
 
 <script>
@@ -253,6 +271,31 @@ $("#dlgGo").onclick = async ()=>{
     a.download = ($("#title").value||"voice")+(split?".zip":".mp3"); a.click(); $("#dlg").close();
   }catch(e){ alert("실패: "+e.message); }
   $("#dlgGo").textContent="다운로드"; $("#dlgGo").disabled=false;
+};
+
+
+$("#btnMotion").onclick = ()=>{ if(!useServer) return alert("모션 영상은 서버(python server.py) 실행 중에만 만들 수 있습니다."); $("#mdlg").showModal(); };
+$("#mClose").onclick = ()=>$("#mdlg").close();
+$("#mGo").onclick = async ()=>{
+  const text = blocks.map(b=>b.text.trim()).filter(Boolean).join("\n");
+  if(!text) return alert("대본이 비어 있습니다");
+  const v = n=>document.querySelector(`[name=${n}]:checked`).value;
+  const narr = $("#mNarr").checked;
+  $("#mGo").disabled=true; $("#mVideo").style.display="none"; $("#mProg").style.width="2%";
+  try{
+    const r = await fetch("/api/motion",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({text,ratio:v("mr"),mood:v("mm"),size:v("ms"),narration:narr,voice:blocks[0].voice||undefined,emotion:blocks[0].emotion,bgm:false})});
+    if(!r.ok) throw new Error((await r.json().catch(()=>({}))).detail||r.status);
+    const {id} = await r.json();
+    for(;;){
+      await new Promise(res=>setTimeout(res,1500));
+      const st = await (await fetch("/api/motion/"+id)).json();
+      $("#mStage").textContent = st.stage + (st.error?": "+st.error:""); $("#mProg").style.width = Math.round(st.progress*100)+"%";
+      if(st.done){ if(st.error) throw new Error(st.error);
+        const vd=$("#mVideo"); vd.src="/api/motion/"+id+"/video"; vd.style.display="block"; vd.play().catch(()=>{});
+        $("#mStage").innerHTML = `완료 · <a href="/api/motion/${id}/video" download="motion.mp4">mp4 저장</a>`; break; }
+    }
+  }catch(e){ $("#mStage").textContent="실패: "+e.message; }
+  $("#mGo").disabled=false;
 };
 
 (async()=>{

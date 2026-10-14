@@ -7,7 +7,7 @@ from pathlib import Path
 
 import edge_tts
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import FileResponse, Response
+from fastapi.responses import FileResponse, Response, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
@@ -136,6 +136,44 @@ async def render(r: Render):
     gap = silence(r.pause_ms)
     return Response(gap.join(parts), media_type="audio/mpeg",
                     headers={"Content-Disposition": 'attachment; filename="voice.mp3"'})
+
+
+
+class MotionReq(BaseModel):
+    text: str = Field(min_length=1, max_length=8000)
+    ratio: str = "9:16"
+    mood: str = "pop"
+    size: str = "sd"
+    narration: bool = False
+    voice: str = "ko-KR-SunHiNeural"
+    emotion: str = "normal"
+    bgm: bool = True
+
+
+@app.post("/api/motion")
+async def motion_start(r: MotionReq):
+    if not VOICE_RE.match(r.voice):
+        raise HTTPException(400, "잘못된 음성 ID")
+    from motion import gen
+    return {"id": gen.start(**r.model_dump())}
+
+
+@app.get("/api/motion/{job_id}")
+async def motion_status(job_id: str):
+    from motion import gen
+    st = gen.STATE.get(job_id)
+    if not st:
+        raise HTTPException(404, "작업을 찾을 수 없습니다")
+    return {k: v for k, v in st.items() if k != "file"}
+
+
+@app.get("/api/motion/{job_id}/video")
+async def motion_video(job_id: str):
+    from motion import gen
+    st = gen.STATE.get(job_id)
+    if not st or not st.get("file"):
+        raise HTTPException(404, "아직 완성되지 않았습니다")
+    return FileResponse(st["file"], media_type="video/mp4", filename="motion.mp4")
 
 
 @app.get("/")

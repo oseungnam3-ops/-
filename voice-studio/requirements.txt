@@ -1,3 +1,5 @@
 edge-tts>=7.0
+numpy
+pillow
 fastapi>=0.110
 uvicorn>=0.29
