@@ -104,16 +104,20 @@ async def _tts_all(scenes, voice, emotion, folder: Path):
     return out
 
 
-def build_project(work: Path, scenes: list[str], ratio: str, mood: str, size: str, voices: list[str] | None, bgm: bool):
+EFFECTS = ("auto", "lines", "type", "pop", "write")
+
+
+def build_project(work: Path, scenes: list[str], ratio: str, mood: str, size: str, voices: list[str] | None, bgm: bool, effect: str = "auto"):
     m = MOODS.get(mood, MOODS["pop"])
     W0, H0 = RATIOS.get(ratio, RATIOS["9:16"])
     s = SIZES.get(size, 2 / 3)
     W, H = int(W0 * s) // 2 * 2, int(H0 * s) // 2 * 2
     (work / "boards").mkdir(parents=True, exist_ok=True)
-    proj = {"W": W, "H": H, "fps": 30, "kit": m["kit"], "mood_music": m["music"], "bgm": bgm, "scenes": []}
+    proj = {"W": W, "H": H, "fps": 30, "kit": m["kit"], "mood_music": m["music"], "bgm": bgm, "effect": effect if effect in EFFECTS else "auto", "scenes": []}
     for i, t in enumerate(scenes):
         (work / "boards" / f"Scene{i + 1:02d}.dc.html").write_text(board_html(i, len(scenes), t, W, H, m, s, ratio), encoding="utf-8")
-        dur = max(2.8, len(re.sub(r"\s", "", t)) * 0.13 + 1.6)
+        n_ch = len(re.sub(r"\s", "", t))
+        dur = max(2.8, n_ch * (0.13 if effect != "write" else 0.24) + 1.6)
         proj["scenes"].append({"text": t, "dur": round(dur, 2), "voice": (voices[i] if voices else None)})
     (work / "project.json").write_text(json.dumps(proj, ensure_ascii=False), encoding="utf-8")
     shutil.copy(HERE / "scenes_auto.py", work / "scenes_auto.py")
@@ -121,7 +125,7 @@ def build_project(work: Path, scenes: list[str], ratio: str, mood: str, size: st
 
 
 def run_job(job_id: str, text: str, ratio="9:16", mood="pop", size="sd", narration=False,
-            voice="ko-KR-SunHiNeural", emotion="normal", bgm=True):
+            voice="ko-KR-SunHiNeural", emotion="normal", bgm=True, effect="auto"):
     st = STATE[job_id]
     try:
         work = JOBS / job_id; work.mkdir(parents=True, exist_ok=True)
@@ -134,7 +138,7 @@ def run_job(job_id: str, text: str, ratio="9:16", mood="pop", size="sd", narrati
             (work / "voice").mkdir(exist_ok=True)
             voices = asyncio.run(_tts_all(scenes, voice, emotion, work / "voice"))
         st.update(stage="장면 디자인 중", progress=0.1)
-        proj = build_project(work, scenes, ratio, mood, size, voices, bgm)
+        proj = build_project(work, scenes, ratio, mood, size, voices, bgm, effect)
         env = dict(os.environ, MOTION_SKILL=str(HERE.parent.parent / "skills" / "motion-studio"))
         st.update(stage="영상 굽는 중", progress=0.15, scenes=len(scenes))
         p = subprocess.Popen([sys.executable, "scenes_auto.py", "--bake"], cwd=work, env=env,

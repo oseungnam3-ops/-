@@ -148,6 +148,7 @@ class MotionReq(BaseModel):
     voice: str = "ko-KR-SunHiNeural"
     emotion: str = "normal"
     bgm: bool = True
+    effect: str = "auto"
 
 
 @app.post("/api/motion")

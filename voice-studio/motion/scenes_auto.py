@@ -46,10 +46,12 @@ def scene(k, lt, root, els):
     for e in r.get('bar', []): appear.put(img, e, seg(lt, 0.15, 0.7), 'wipe', dir='left')
     for e in r.get('tag', []): appear.put(img, e, seg(lt, 0.3, 0.8), 'up', dist=30)
     txt = (r.get('text') or [None])[0]
-    how = ['lines', 'type', 'pop'][k % 3] if 0 < k < N - 1 else ('pop' if k == 0 else 'lines')
+    eff = P.get('effect', 'auto')   # 메뉴판에서 고른 글자 등장 효과
+    how = eff if eff != 'auto' else (['lines', 'type', 'pop'][k % 3] if 0 < k < N - 1 else ('pop' if k == 0 else 'lines'))
     if txt is not None:
         if how == 'lines': appear.lines(img, txt, seg(lt, 0.35, 1.3))
         elif how == 'type': appear.type_text(img, txt, seg(lt, 0.35, 1.5))
+        elif how == 'write': motion.write(img, txt, seg(lt, 0.3, 0.3 + min(5.0, 0.22 * len(txt['text'].replace(' ', '')) + 0.4)))   # 손글씨: 자모 획 순서대로
         else: appear.put(img, txt, seg(lt, 0.3, 0.9), 'pop')
         if k == N - 1 and lt > 1.2: motion.put(img, txt, s=motion.pulse(lt, 1.3))
     full = camera.full(img)

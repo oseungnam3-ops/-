@@ -109,6 +109,8 @@ dialog h3{margin:0 0 14px}
   <div class="seg" id="mRatio"><label><input type="radio" name="mr" value="9:16" checked><span>9:16 쇼츠</span></label><label><input type="radio" name="mr" value="16:9"><span>16:9</span></label><label><input type="radio" name="mr" value="1:1"><span>1:1</span></label></div>
   <div class="dlg-t">분위기</div>
   <div class="seg"><label><input type="radio" name="mm" value="pop" checked><span>팝</span></label><label><input type="radio" name="mm" value="calm"><span>차분</span></label><label><input type="radio" name="mm" value="fresh"><span>청량</span></label><label><input type="radio" name="mm" value="bold"><span>강렬</span></label></div>
+  <div class="dlg-t">글자 등장 효과 (메뉴판)</div>
+  <div class="seg" style="flex-wrap:wrap"><label><input type="radio" name="me" value="auto" checked><span>자동</span></label><label><input type="radio" name="me" value="lines"><span>줄 올라오기</span></label><label><input type="radio" name="me" value="type"><span>타자</span></label><label><input type="radio" name="me" value="pop"><span>팝</span></label><label><input type="radio" name="me" value="write"><span>손글씨</span></label></div>
   <div class="dlg-t">화질</div>
   <div class="seg"><label><input type="radio" name="ms" value="sd" checked><span>빠르게 (720p)</span></label><label><input type="radio" name="ms" value="hd"><span>선명하게 (1080p)</span></label></div>
   <label class="note" style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="mNarr" checked> 무료 AI 목소리로 나레이션 넣기 (문단별 목소리 사용)</label>
@@ -283,7 +285,7 @@ $("#mGo").onclick = async ()=>{
   const narr = $("#mNarr").checked;
   $("#mGo").disabled=true; $("#mVideo").style.display="none"; $("#mProg").style.width="2%";
   try{
-    const r = await fetch("/api/motion",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({text,ratio:v("mr"),mood:v("mm"),size:v("ms"),narration:narr,voice:blocks[0].voice||undefined,emotion:blocks[0].emotion,bgm:false})});
+    const r = await fetch("/api/motion",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({text,ratio:v("mr"),mood:v("mm"),size:v("ms"),effect:v("me"),narration:narr,voice:blocks[0].voice||undefined,emotion:blocks[0].emotion,bgm:false})});
     if(!r.ok) throw new Error((await r.json().catch(()=>({}))).detail||r.status);
     const {id} = await r.json();
     for(;;){
